@@ -4,40 +4,111 @@
     <meta charset="UTF-8">
     <title>Ophtho CaseLog</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 
     <h1>Ophtho CaseLog</h1>
-    <h2>Log a New Case</h2>
 
-    <label>Procedure Type:</label>
-    <select id="procedure">
-        <option>Cataract / Phaco</option>
-        <option>Vitreoretinal (PPV)</option>
-        <option>Glaucoma</option>
-        <option>Cornea / Keratoplasty</option>
-        <option>Oculoplastics</option>
-        <option>Strabismus</option>
-        <option>Laser (LIO / SLT / YAG)</option>
-    </select>
+    <!-- Login section -->
+    <div id="loginSection">
+        <h2>Login / Sign Up</h2>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="signUp()">Sign Up</button>
+        <button onclick="signIn()">Sign In</button>
+    </div>
 
-    <label>Your Role:</label>
-    <select id="role">
-        <option>Primary Surgeon</option>
-        <option>Assistant</option>
-        <option>Observer</option>
-    </select>
+    <!-- App section -->
+    <div id="appSection" style="display:none">
 
-    <label>Date:</label>
-    <input type="date" id="date">
+        <button onclick="signOut()" style="float:right; background:#e74c3c">Sign Out</button>
+        <h2>Log a New Case</h2>
 
-    <label>Notes:</label>
-    <textarea id="notes" rows="4"></textarea>
+        <label>Resident Name:</label>
+        <input type="text" id="residentName" placeholder="Your full name">
 
-    <button id="saveBtn">Save Case</button>
+        <label>Procedure Type:</label>
+        <select id="procedure">
+            <option>Cataract / Phaco</option>
+            <option>Vitreoretinal (PPV)</option>
+            <option>Glaucoma</option>
+            <option>Cornea / Keratoplasty</option>
+            <option>Oculoplastics</option>
+            <option>Strabismus</option>
+            <option>Laser (LIO / SLT / YAG)</option>
+        </select>
 
-    <div id="caseList"></div>
-    <div id="stats"></div>
+        <label>Your Role:</label>
+        <select id="role">
+            <option>Primary Surgeon</option>
+            <option>Assistant</option>
+            <option>Observer</option>
+        </select>
+
+        <label>Date:</label>
+        <input type="date" id="date">
+
+        <label>Notes:</label>
+        <textarea id="notes" rows="4"></textarea>
+
+        <button id="saveBtn">Save Case</button>
+        <button onclick="exportPDF()" style="background:#27ae60; margin-left:10px">Export PDF</button>
+
+        <!-- Filter/Search section -->
+        <h2>Filter Cases</h2>
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+
+            <div style="flex:1">
+                <label>Search Notes:</label>
+                <input type="text" id="searchNotes" placeholder="Search...">
+            </div>
+
+            <div style="flex:1">
+                <label>Filter by Procedure:</label>
+                <select id="filterProcedure">
+                    <option value="">All Procedures</option>
+                    <option>Cataract / Phaco</option>
+                    <option>Vitreoretinal (PPV)</option>
+                    <option>Glaucoma</option>
+                    <option>Cornea / Keratoplasty</option>
+                    <option>Oculoplastics</option>
+                    <option>Strabismus</option>
+                    <option>Laser (LIO / SLT / YAG)</option>
+                </select>
+            </div>
+
+            <div style="flex:1">
+                <label>Filter by Role:</label>
+                <select id="filterRole">
+                    <option value="">All Roles</option>
+                    <option>Primary Surgeon</option>
+                    <option>Assistant</option>
+                    <option>Observer</option>
+                </select>
+            </div>
+
+            <div style="flex:1">
+                <label>From Date:</label>
+                <input type="date" id="filterDateFrom">
+            </div>
+
+            <div style="flex:1">
+                <label>To Date:</label>
+                <input type="date" id="filterDateTo">
+            </div>
+
+        </div>
+
+        <button onclick="applyFilter()" style="margin-top:10px">Apply Filter</button>
+        <button onclick="clearFilter()" style="margin-top:10px; background:#95a5a6; margin-left:10px">Clear Filter</button>
+
+        <div id="caseList"></div>
+        <div id="stats"></div>
+
+    </div>
 
     <script src="app.js"></script>
 </body>
