@@ -65,14 +65,8 @@ async function showApp() {
     document.getElementById('appSection').style.display   = 'block';
 
     let { data: { user } } = await db.auth.getUser();
-    console.log('User ID:', user.id);
-
-    let { data: profile, error } = await db.from('profiles').select('role').eq('id', user.id).single();
-    console.log('Profile:', profile);
-    console.log('Error:', error);
-
+    let { data: profile } = await db.from('profiles').select('role').eq('id', user.id).single();
     currentUserRole = profile ? profile.role : 'resident';
-    console.log('Role:', currentUserRole);
 
     if (currentUserRole === 'admin') {
         document.getElementById('adminTab').style.display = 'inline-block';
@@ -275,6 +269,38 @@ function exportPDF() {
     doc.save('ophtho-caselog-report.pdf');
 }
 
+// Notifications
+async function setupNotifications() {
+    if (!('Notification' in window)) {
+        alert('Your browser does not support notifications');
+        return;
+    }
+    let permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+        alert('Notifications enabled! You will get daily reminders at 6 PM.');
+        scheduleReminder();
+    } else {
+        alert('Notifications blocked. Please enable them in your browser settings.');
+    }
+}
+
+function scheduleReminder() {
+    setInterval(function() {
+        let now          = new Date();
+        let hour         = now.getHours();
+        let lastReminder = localStorage.getItem('lastReminder');
+        let today        = now.toDateString();
+        if (hour >= 18 && lastReminder !== today) {
+            localStorage.setItem('lastReminder', today);
+            new Notification('Ophtho CaseLog Reminder 🏥', {
+                body: 'Don\'t forget to log your cases today!',
+                icon: '/icon.png'
+            });
+        }
+    }, 60 * 60 * 1000);
+}
+
+// Service worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
         navigator.serviceWorker.register('/service-worker.js');
