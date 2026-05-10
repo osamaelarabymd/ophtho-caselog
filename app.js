@@ -68,14 +68,15 @@ db.auth.getSession().then(({ data }) => {
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('saveBtn').addEventListener('click', async function() {
         let { data: { user } } = await db.auth.getUser();
-        let pgy   = document.getElementById('pgyYear').value;
-        let name  = document.getElementById('residentName').value;
-        let notes = document.getElementById('notes').value;
+        let pgy       = document.getElementById('pgyYear').value;
+        let name      = document.getElementById('residentName').value;
+        let attending = document.getElementById('attending').value;
+        let notes     = document.getElementById('notes').value;
         let { error } = await db.from('cases').insert({
             procedure: document.getElementById('procedure').value,
             role:      document.getElementById('role').value,
             date:      document.getElementById('date').value,
-            notes:     pgy + ' - ' + name + ' - ' + notes,
+            notes:     pgy + ' | ' + name + ' | Attending: ' + attending + ' | ' + notes,
             user_id:   user.id
         });
         if (error) { alert(error.message); }
@@ -96,10 +97,10 @@ async function deleteCase(id) {
 }
 
 function updateDashboard(cases) {
-    let thisMonth    = new Date().toISOString().slice(0, 7);
-    let monthCases   = cases.filter(c => c.date && c.date.startsWith(thisMonth));
-    let totalRequired = Object.values(acgme).reduce((a, b) => a + b, 0);
-    let totalDone    = cases.length;
+    let thisMonth      = new Date().toISOString().slice(0, 7);
+    let monthCases     = cases.filter(c => c.date && c.date.startsWith(thisMonth));
+    let totalRequired  = Object.values(acgme).reduce((a, b) => a + b, 0);
+    let totalDone      = cases.length;
     let overallPercent = Math.min(Math.round((totalDone / totalRequired) * 100), 100);
 
     document.getElementById('summaryCards').innerHTML =
@@ -122,7 +123,7 @@ function updateDashboard(cases) {
             labels: Object.keys(counts),
             datasets: [
                 { label: 'Cases Done', data: Object.values(counts), backgroundColor: '#3498db' },
-                { label: 'Required', data: Object.values(acgme), backgroundColor: '#e0e0e0' }
+                { label: 'Required',   data: Object.values(acgme),  backgroundColor: '#e0e0e0' }
             ]
         },
         options: { responsive: true, scales: { y: { beginAtZero: true } } }

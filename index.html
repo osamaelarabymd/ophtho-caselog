@@ -37,12 +37,9 @@
         <!-- Dashboard tab -->
         <div id="dashboard">
             <h2>Dashboard</h2>
-
             <div id="summaryCards" style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:20px"></div>
-
             <h3>Cases by Procedure</h3>
             <canvas id="procedureChart" height="100"></canvas>
-
             <h3 style="margin-top:30px">ACGME Progress</h3>
             <div id="stats"></div>
         </div>
@@ -62,6 +59,9 @@
                 <option value="PGY-4">PGY-4</option>
                 <option value="PGY-5">PGY-5</option>
             </select>
+
+            <label>Attending Supervisor:</label>
+            <input type="text" id="attending" placeholder="Attending physician name">
 
             <label>Procedure Type:</label>
             <select id="procedure">
@@ -97,7 +97,7 @@
             <div style="display:flex; gap:10px; flex-wrap:wrap">
 
                 <div style="flex:1">
-                    <label>Search Notes:</label>
+                    <label>Search:</label>
                     <input type="text" id="searchNotes" placeholder="Search...">
                 </div>
 
