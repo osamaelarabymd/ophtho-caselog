@@ -57,12 +57,15 @@ db.auth.getSession().then(({ data }) => {
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('saveBtn').addEventListener('click', async function() {
         let { data: { user } } = await db.auth.getUser();
+        let pgy   = document.getElementById('pgyYear').value;
+        let name  = document.getElementById('residentName').value;
+        let notes = document.getElementById('notes').value;
         let { error } = await db.from('cases').insert({
-            procedure:    document.getElementById('procedure').value,
-            role:         document.getElementById('role').value,
-            date:         document.getElementById('date').value,
-            notes:        document.getElementById('residentName').value + ' - ' + document.getElementById('notes').value,
-            user_id:      user.id
+            procedure: document.getElementById('procedure').value,
+            role:      document.getElementById('role').value,
+            date:      document.getElementById('date').value,
+            notes:     pgy + ' - ' + name + ' - ' + notes,
+            user_id:   user.id
         });
         if (error) { alert(error.message); }
         else { loadCases(); }
@@ -88,17 +91,14 @@ function exportPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    // Title
     doc.setFontSize(20);
     doc.setTextColor(44, 62, 80);
     doc.text('Ophtho CaseLog Report', 14, 20);
 
-    // Date
     doc.setFontSize(11);
     doc.setTextColor(100);
     doc.text('Generated: ' + new Date().toLocaleDateString(), 14, 30);
 
-    // Cases table
     doc.setFontSize(14);
     doc.setTextColor(44, 62, 80);
     doc.text('Case Log', 14, 45);
@@ -111,7 +111,6 @@ function exportPDF() {
         headStyles: { fillColor: [52, 152, 219] }
     });
 
-    // ACGME Progress
     let finalY = doc.lastAutoTable.finalY + 15;
     doc.setFontSize(14);
     doc.setTextColor(44, 62, 80);
@@ -139,6 +138,36 @@ function exportPDF() {
     });
 
     doc.save('ophtho-caselog-report.pdf');
+}
+
+// Apply filter
+function applyFilter() {
+    let search    = document.getElementById('searchNotes').value.toLowerCase();
+    let procedure = document.getElementById('filterProcedure').value;
+    let role      = document.getElementById('filterRole').value;
+    let dateFrom  = document.getElementById('filterDateFrom').value;
+    let dateTo    = document.getElementById('filterDateTo').value;
+
+    let filtered = allCases.filter(c => {
+        let matchSearch    = search    === '' || (c.notes && c.notes.toLowerCase().includes(search));
+        let matchProcedure = procedure === '' || c.procedure === procedure;
+        let matchRole      = role      === '' || c.role === role;
+        let matchDateFrom  = dateFrom  === '' || c.date >= dateFrom;
+        let matchDateTo    = dateTo    === '' || c.date <= dateTo;
+        return matchSearch && matchProcedure && matchRole && matchDateFrom && matchDateTo;
+    });
+
+    displayAll(filtered);
+}
+
+// Clear filter
+function clearFilter() {
+    document.getElementById('searchNotes').value     = '';
+    document.getElementById('filterProcedure').value = '';
+    document.getElementById('filterRole').value      = '';
+    document.getElementById('filterDateFrom').value  = '';
+    document.getElementById('filterDateTo').value    = '';
+    displayAll(allCases);
 }
 
 // Display cases + stats
@@ -176,34 +205,4 @@ function displayAll(cases) {
         statsHtml += '</div></div>';
     }
     document.getElementById('stats').innerHTML = statsHtml;
-}// Apply filter
-// فلتر الكيسات
-function applyFilter() {
-    let search    = document.getElementById('searchNotes').value.toLowerCase();
-    let procedure = document.getElementById('filterProcedure').value;
-    let role      = document.getElementById('filterRole').value;
-    let dateFrom  = document.getElementById('filterDateFrom').value;
-    let dateTo    = document.getElementById('filterDateTo').value;
-
-    let filtered = allCases.filter(c => {
-        let matchSearch    = search    === '' || (c.notes && c.notes.toLowerCase().includes(search));
-        let matchProcedure = procedure === '' || c.procedure === procedure;
-        let matchRole      = role      === '' || c.role === role;
-        let matchDateFrom  = dateFrom  === '' || c.date >= dateFrom;
-        let matchDateTo    = dateTo    === '' || c.date <= dateTo;
-        return matchSearch && matchProcedure && matchRole && matchDateFrom && matchDateTo;
-    });
-
-    displayAll(filtered);
-}
-
-// Clear filter
-// امسح الفلتر
-function clearFilter() {
-    document.getElementById('searchNotes').value      = '';
-    document.getElementById('filterProcedure').value  = '';
-    document.getElementById('filterRole').value       = '';
-    document.getElementById('filterDateFrom').value   = '';
-    document.getElementById('filterDateTo').value     = '';
-    displayAll(allCases);
 }

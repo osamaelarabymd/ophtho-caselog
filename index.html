@@ -30,6 +30,15 @@
         <label>Resident Name:</label>
         <input type="text" id="residentName" placeholder="Your full name">
 
+        <label>PGY Year:</label>
+        <select id="pgyYear">
+            <option value="PGY-1">PGY-1</option>
+            <option value="PGY-2">PGY-2</option>
+            <option value="PGY-3">PGY-3</option>
+            <option value="PGY-4">PGY-4</option>
+            <option value="PGY-5">PGY-5</option>
+        </select>
+
         <label>Procedure Type:</label>
         <select id="procedure">
             <option>Cataract / Phaco</option>
@@ -57,7 +66,7 @@
         <button id="saveBtn">Save Case</button>
         <button onclick="exportPDF()" style="background:#27ae60; margin-left:10px">Export PDF</button>
 
-        <!-- Filter/Search section -->
+        <!-- Filter section -->
         <h2>Filter Cases</h2>
         <div style="display:flex; gap:10px; flex-wrap:wrap">
 
