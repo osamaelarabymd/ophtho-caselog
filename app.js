@@ -71,12 +71,13 @@ document.addEventListener('DOMContentLoaded', function() {
         let pgy       = document.getElementById('pgyYear').value;
         let name      = document.getElementById('residentName').value;
         let attending = document.getElementById('attending').value;
+        let hospital  = document.getElementById('hospital').value;
         let notes     = document.getElementById('notes').value;
         let { error } = await db.from('cases').insert({
             procedure: document.getElementById('procedure').value,
             role:      document.getElementById('role').value,
             date:      document.getElementById('date').value,
-            notes:     pgy + ' | ' + name + ' | Attending: ' + attending + ' | ' + notes,
+            notes:     pgy + ' | ' + name + ' | Attending: ' + attending + ' | Hospital: ' + hospital + ' | ' + notes,
             user_id:   user.id
         });
         if (error) { alert(error.message); }
