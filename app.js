@@ -217,4 +217,9 @@ function exportPDF() {
         headStyles: { fillColor: [52, 152, 219] }
     });
     doc.save('ophtho-caselog-report.pdf');
-}
+// Register service worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/service-worker.js');
+    });
+}}
