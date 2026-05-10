@@ -6,6 +6,7 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allCases = [];
 let procedureChart = null;
+let currentUserRole = 'resident';
 
 const acgme = {
     'Cataract / Phaco': 86,
@@ -21,6 +22,7 @@ function showTab(tab) {
     document.getElementById('dashboard').style.display   = 'none';
     document.getElementById('logCase').style.display     = 'none';
     document.getElementById('caseListTab').style.display = 'none';
+    document.getElementById('adminPanel').style.display  = 'none';
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
     if (tab === 'dashboard') {
         document.getElementById('dashboard').style.display = 'block';
@@ -29,6 +31,9 @@ function showTab(tab) {
     } else if (tab === 'caseList') {
         document.getElementById('caseListTab').style.display = 'block';
         displayCaseList(allCases);
+    } else if (tab === 'admin') {
+        document.getElementById('adminPanel').style.display = 'block';
+        loadAdminData();
     }
     event.target.classList.add('active-tab');
 }
@@ -55,9 +60,24 @@ async function signOut() {
     document.getElementById('appSection').style.display   = 'none';
 }
 
-function showApp() {
+async function showApp() {
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('appSection').style.display   = 'block';
+
+    let { data: { user } } = await db.auth.getUser();
+    console.log('User ID:', user.id);
+
+    let { data: profile, error } = await db.from('profiles').select('role').eq('id', user.id).single();
+    console.log('Profile:', profile);
+    console.log('Error:', error);
+
+    currentUserRole = profile ? profile.role : 'resident';
+    console.log('Role:', currentUserRole);
+
+    if (currentUserRole === 'admin') {
+        document.getElementById('adminTab').style.display = 'inline-block';
+    }
+
     loadCases();
 }
 
@@ -95,6 +115,42 @@ async function loadCases() {
 async function deleteCase(id) {
     await db.from('cases').delete().eq('id', id);
     loadCases();
+}
+
+async function loadAdminData() {
+    let { data: cases } = await db.from('cases').select('*');
+    let { data: profiles } = await db.from('profiles').select('*');
+
+    let html = '<h2>👨‍⚕️ Program Director Panel</h2>';
+    html += '<h3>All Residents</h3>';
+    html += '<table>';
+    html += '<tr><th>Email</th><th>Total Cases</th><th>Cataract</th><th>Vitreoretinal</th><th>Glaucoma</th><th>Progress</th></tr>';
+
+    if (profiles) {
+        for (let profile of profiles) {
+            if (profile.role === 'resident') {
+                let userCases = cases ? cases.filter(c => c.user_id === profile.id) : [];
+                let cataract  = userCases.filter(c => c.procedure === 'Cataract / Phaco').length;
+                let vr        = userCases.filter(c => c.procedure === 'Vitreoretinal (PPV)').length;
+                let glaucoma  = userCases.filter(c => c.procedure === 'Glaucoma').length;
+                let total     = userCases.length;
+                let totalReq  = Object.values(acgme).reduce((a, b) => a + b, 0);
+                let percent   = Math.min(Math.round((total / totalReq) * 100), 100);
+
+                html += '<tr>';
+                html += '<td>' + profile.email + '</td>';
+                html += '<td>' + total + '</td>';
+                html += '<td>' + cataract + '/86</td>';
+                html += '<td>' + vr + '/25</td>';
+                html += '<td>' + glaucoma + '/25</td>';
+                html += '<td>' + percent + '%</td>';
+                html += '</tr>';
+            }
+        }
+    }
+
+    html += '</table>';
+    document.getElementById('adminPanel').innerHTML = html;
 }
 
 function updateDashboard(cases) {
@@ -217,9 +273,10 @@ function exportPDF() {
         headStyles: { fillColor: [52, 152, 219] }
     });
     doc.save('ophtho-caselog-report.pdf');
-// Register service worker
+}
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
         navigator.serviceWorker.register('/service-worker.js');
     });
-}}
+}

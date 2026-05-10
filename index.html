@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Ophtho CaseLog</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3498db">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="OphthoLog">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#3498db">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="OphthoCaseLog">
 </head>
 <body>
 
@@ -34,6 +34,7 @@
             <button onclick="showTab('dashboard')" class="tab-btn active-tab">📊 Dashboard</button>
             <button onclick="showTab('logCase')"   class="tab-btn">➕ Log Case</button>
             <button onclick="showTab('caseList')"  class="tab-btn">📋 Case List</button>
+            <button onclick="showTab('admin')" id="adminTab" class="tab-btn" style="display:none; background:#2ecc71; color:white; border-radius:6px">👨‍⚕️ PD Panel</button>
         </div>
 
         <div id="dashboard">
@@ -144,6 +145,8 @@
 
             <div id="caseList"></div>
         </div>
+
+        <div id="adminPanel" style="display:none"></div>
 
     </div>
 
