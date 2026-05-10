@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ophtho CaseLog</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>Ophtho CaseLog</h1>
+    <h2>Log a New Case</h2>
+
+    <label>Procedure Type:</label>
+    <select id="procedure">
+        <option>Cataract / Phaco</option>
+        <option>Vitreoretinal (PPV)</option>
+        <option>Glaucoma</option>
+        <option>Cornea / Keratoplasty</option>
+        <option>Oculoplastics</option>
+        <option>Strabismus</option>
+        <option>Laser (LIO / SLT / YAG)</option>
+    </select>
+
+    <label>Your Role:</label>
+    <select id="role">
+        <option>Primary Surgeon</option>
+        <option>Assistant</option>
+        <option>Observer</option>
+    </select>
+
+    <label>Date:</label>
+    <input type="date" id="date">
+
+    <label>Notes:</label>
+    <textarea id="notes" rows="4"></textarea>
+
+    <button id="saveBtn">Save Case</button>
+
+    <div id="caseList"></div>
+    <div id="stats"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
