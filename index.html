@@ -70,12 +70,13 @@
 
         <button onclick="signOut()" style="float:right; background:#dc2626; width:auto; padding:10px 18px; margin-top:10px; font-size:13px">Sign Out</button>
 
-        <div id="tabs">
-            <button onclick="showTab('dashboard')" class="tab-btn active-tab">📊 Dashboard</button>
-            <button onclick="showTab('logCase')"   class="tab-btn">➕ Log Case</button>
-            <button onclick="showTab('caseList')"  class="tab-btn">📋 Case List</button>
-            <button onclick="showTab('admin')" id="adminTab" class="tab-btn" style="display:none; background:#16a34a; color:white; border-radius:8px; border-bottom:none">👨‍⚕️ PD Panel</button>
-        </div>
+       <div id="tabs">
+    <button onclick="showTab('dashboard')" class="tab-btn active-tab">📊 Dashboard</button>
+    <button onclick="showTab('logCase')"   class="tab-btn">➕ Log Case</button>
+    <button onclick="showTab('caseList')"  class="tab-btn">📋 Case List</button>
+    <button onclick="showTab('analytics')" class="tab-btn">📈 Analytics</button>
+    <button onclick="showTab('admin')" id="adminTab" class="tab-btn" style="display:none; background:#16a34a; color:white; border-radius:8px; border-bottom:none">👨‍⚕️ PD Panel</button>
+</div>
 
         <!-- Dashboard -->
         <div id="dashboard">
@@ -199,6 +200,33 @@
         </div>
 
         <!-- Admin Panel -->
+        <!-- Analytics -->
+<div id="analyticsTab" style="display:none">
+    <h2>📈 Analytics</h2>
+
+    <div id="analyticsSummary" style="display:grid; grid-template-columns: repeat(3,1fr); gap:16px; margin-bottom:24px"></div>
+
+    <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom:24px">
+        <h3>Cases Per Month</h3>
+        <canvas id="monthlyChart" height="120"></canvas>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px">
+        <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)">
+            <h3>Role Breakdown</h3>
+            <canvas id="roleChart" height="200"></canvas>
+        </div>
+        <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)">
+            <h3>Busiest Days</h3>
+            <canvas id="dayChart" height="200"></canvas>
+        </div>
+    </div>
+
+    <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)">
+        <h3>Top Procedures This Month</h3>
+        <div id="topProcedures"></div>
+    </div>
+</div> 
         <div id="adminPanel" style="display:none"></div>
 
     </div>
