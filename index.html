@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Ophtho CaseLog</title>
+    <title>OphthoLog</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#3498db">
+    <meta name="theme-color" content="#2563eb">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="OphthoLog">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -16,46 +17,51 @@
 </head>
 <body>
 
-    <h1>Ophtho CaseLog</h1>
+    <h1>👁️ OphthoLog</h1>
 
+    <!-- Login section -->
     <div id="loginSection">
-        <h2>Login / Sign Up</h2>
-        <input type="email" id="email" placeholder="Email">
+        <h2>👁️ OphthoLog</h2>
+        <p>Ophthalmology Residency Case Tracker</p>
+        <input type="email" id="email" placeholder="Email address">
         <input type="password" id="password" placeholder="Password">
-        <button onclick="signUp()">Sign Up</button>
-        <button onclick="signIn()">Sign In</button>
+        <div class="btn-row">
+            <button onclick="signUp()">Sign Up</button>
+            <button onclick="signIn()">Sign In</button>
+        </div>
     </div>
 
+    <!-- App section -->
     <div id="appSection" style="display:none">
 
-        <button onclick="signOut()" style="float:right; background:#e74c3c">Sign Out</button>
+        <button onclick="signOut()" style="float:right; background:#dc2626; width:auto; padding:10px 18px; margin-top:10px; font-size:13px">Sign Out</button>
 
-        <div id="tabs" style="margin:20px 0; border-bottom: 2px solid #3498db;">
+        <div id="tabs">
             <button onclick="showTab('dashboard')" class="tab-btn active-tab">📊 Dashboard</button>
             <button onclick="showTab('logCase')"   class="tab-btn">➕ Log Case</button>
             <button onclick="showTab('caseList')"  class="tab-btn">📋 Case List</button>
-            <button onclick="showTab('admin')" id="adminTab" class="tab-btn" style="display:none; background:#2ecc71; color:white; border-radius:6px">👨‍⚕️ PD Panel</button>
+            <button onclick="showTab('admin')" id="adminTab" class="tab-btn" style="display:none; background:#16a34a; color:white; border-radius:8px; border-bottom:none">👨‍⚕️ PD Panel</button>
         </div>
 
-        <!-- Dashboard tab -->
+        <!-- Dashboard -->
         <div id="dashboard">
             <h2>Dashboard</h2>
-            <button onclick="setupNotifications()" style="background:#9b59b6; width:auto; padding:10px 20px; margin-bottom:15px">🔔 Enable Daily Reminders</button>
-            <div id="summaryCards" style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:20px"></div>
+            <button onclick="setupNotifications()" style="background:#7c3aed; width:auto; padding:10px 20px; margin-bottom:20px; font-size:13px">🔔 Enable Daily Reminders</button>
+            <div id="summaryCards"></div>
             <h3>Cases by Procedure</h3>
             <canvas id="procedureChart" height="100"></canvas>
             <h3 style="margin-top:30px">ACGME Progress</h3>
             <div id="stats"></div>
         </div>
 
-        <!-- Log Case tab -->
+        <!-- Log Case -->
         <div id="logCase" style="display:none">
             <h2>Log a New Case</h2>
 
-            <label>Resident Name:</label>
+            <label>Resident Name</label>
             <input type="text" id="residentName" placeholder="Your full name">
 
-            <label>PGY Year:</label>
+            <label>PGY Year</label>
             <select id="pgyYear">
                 <option value="PGY-1">PGY-1</option>
                 <option value="PGY-2">PGY-2</option>
@@ -64,13 +70,13 @@
                 <option value="PGY-5">PGY-5</option>
             </select>
 
-            <label>Attending Supervisor:</label>
+            <label>Attending Supervisor</label>
             <input type="text" id="attending" placeholder="Attending physician name">
 
-            <label>Hospital / Institution:</label>
+            <label>Hospital / Institution</label>
             <input type="text" id="hospital" placeholder="e.g. Stanford Medical Center">
 
-            <label>Procedure Type:</label>
+            <label>Procedure Type</label>
             <select id="procedure">
                 <option>Cataract / Phaco</option>
                 <option>Vitreoretinal (PPV)</option>
@@ -81,76 +87,75 @@
                 <option>Laser (LIO / SLT / YAG)</option>
             </select>
 
-            <label>Your Role:</label>
+            <label>Your Role</label>
             <select id="role">
                 <option>Primary Surgeon</option>
                 <option>Assistant</option>
                 <option>Observer</option>
             </select>
 
-            <label>Date:</label>
+            <label>Date</label>
             <input type="date" id="date">
 
-            <label>Notes:</label>
+            <label>Notes</label>
             <textarea id="notes" rows="4"></textarea>
 
-            <button id="saveBtn">Save Case</button>
-            <button onclick="exportPDF()" style="background:#27ae60; margin-left:10px">Export PDF</button>
-            <button onclick="exportMonthlyReport()" style="background:#e67e22; margin-left:10px">📅 Monthly Report</button>
+            <div class="btn-row">
+                <button id="saveBtn">💾 Save Case</button>
+                <button onclick="exportPDF()" style="background:#16a34a">📄 Export PDF</button>
+                <button onclick="exportMonthlyReport()" style="background:#d97706">📅 Monthly Report</button>
+            </div>
         </div>
 
-        <!-- Case List tab -->
+        <!-- Case List -->
         <div id="caseListTab" style="display:none">
-            <h2>Filter Cases</h2>
-            <div style="display:flex; gap:10px; flex-wrap:wrap">
-
-                <div style="flex:1">
-                    <label>Search:</label>
-                    <input type="text" id="searchNotes" placeholder="Search...">
+            <div class="filter-card">
+                <h2>Filter Cases</h2>
+                <div class="filter-grid">
+                    <div>
+                        <label>Search</label>
+                        <input type="text" id="searchNotes" placeholder="Search...">
+                    </div>
+                    <div>
+                        <label>Procedure</label>
+                        <select id="filterProcedure">
+                            <option value="">All Procedures</option>
+                            <option>Cataract / Phaco</option>
+                            <option>Vitreoretinal (PPV)</option>
+                            <option>Glaucoma</option>
+                            <option>Cornea / Keratoplasty</option>
+                            <option>Oculoplastics</option>
+                            <option>Strabismus</option>
+                            <option>Laser (LIO / SLT / YAG)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Role</label>
+                        <select id="filterRole">
+                            <option value="">All Roles</option>
+                            <option>Primary Surgeon</option>
+                            <option>Assistant</option>
+                            <option>Observer</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>From Date</label>
+                        <input type="date" id="filterDateFrom">
+                    </div>
+                    <div>
+                        <label>To Date</label>
+                        <input type="date" id="filterDateTo">
+                    </div>
                 </div>
-
-                <div style="flex:1">
-                    <label>Filter by Procedure:</label>
-                    <select id="filterProcedure">
-                        <option value="">All Procedures</option>
-                        <option>Cataract / Phaco</option>
-                        <option>Vitreoretinal (PPV)</option>
-                        <option>Glaucoma</option>
-                        <option>Cornea / Keratoplasty</option>
-                        <option>Oculoplastics</option>
-                        <option>Strabismus</option>
-                        <option>Laser (LIO / SLT / YAG)</option>
-                    </select>
+                <div class="filter-btns">
+                    <button onclick="applyFilter()">Apply Filter</button>
+                    <button onclick="clearFilter()" style="background:#64748b">Clear Filter</button>
                 </div>
-
-                <div style="flex:1">
-                    <label>Filter by Role:</label>
-                    <select id="filterRole">
-                        <option value="">All Roles</option>
-                        <option>Primary Surgeon</option>
-                        <option>Assistant</option>
-                        <option>Observer</option>
-                    </select>
-                </div>
-
-                <div style="flex:1">
-                    <label>From Date:</label>
-                    <input type="date" id="filterDateFrom">
-                </div>
-
-                <div style="flex:1">
-                    <label>To Date:</label>
-                    <input type="date" id="filterDateTo">
-                </div>
-
             </div>
-
-            <button onclick="applyFilter()" style="margin-top:10px">Apply Filter</button>
-            <button onclick="clearFilter()" style="margin-top:10px; background:#95a5a6; margin-left:10px">Clear Filter</button>
-
             <div id="caseList"></div>
         </div>
 
+        <!-- Admin Panel -->
         <div id="adminPanel" style="display:none"></div>
 
     </div>
