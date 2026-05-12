@@ -40,6 +40,55 @@ function finishOnboarding() {
 
 window.addEventListener('load', checkOnboarding);
 
+// Templates
+function loadTemplates() {
+    let templates = JSON.parse(localStorage.getItem('caseTemplates')) || [];
+    let html = '';
+    for (let i = 0; i < templates.length; i++) {
+        html += '<button onclick="applyTemplate(' + i + ')" style="background:#f1f5f9; color:#1e293b; border:2px solid #e2e8f0; padding:8px 14px; font-size:12px; width:auto; margin:0; border-radius:8px">';
+        html += '⚡ ' + templates[i].procedure + ' — ' + templates[i].role;
+        html += ' <span onclick="deleteTemplate(event,' + i + ')" style="color:#dc2626; margin-left:6px">✕</span>';
+        html += '</button>';
+    }
+    document.getElementById('templatesList').innerHTML = html || '<p style="color:#94a3b8; font-size:13px">No templates yet — fill the form and click Save as Template</p>';
+}
+
+function saveTemplate() {
+    let templates = JSON.parse(localStorage.getItem('caseTemplates')) || [];
+    let template = {
+        procedure:     document.getElementById('procedure').value,
+        role:          document.getElementById('role').value,
+        pgy_year:      document.getElementById('pgyYear').value,
+        resident_name: document.getElementById('residentName').value,
+        attending:     document.getElementById('attending').value,
+        hospital:      document.getElementById('hospital').value
+    };
+    templates.push(template);
+    localStorage.setItem('caseTemplates', JSON.stringify(templates));
+    loadTemplates();
+    alert('Template saved!');
+}
+
+function applyTemplate(index) {
+    let templates = JSON.parse(localStorage.getItem('caseTemplates')) || [];
+    let t = templates[index];
+    document.getElementById('procedure').value    = t.procedure;
+    document.getElementById('role').value         = t.role;
+    document.getElementById('pgyYear').value      = t.pgy_year;
+    document.getElementById('residentName').value = t.resident_name;
+    document.getElementById('attending').value    = t.attending;
+    document.getElementById('hospital').value     = t.hospital;
+    alert('Template applied! Just add the date and notes.');
+}
+
+function deleteTemplate(event, index) {
+    event.stopPropagation();
+    let templates = JSON.parse(localStorage.getItem('caseTemplates')) || [];
+    templates.splice(index, 1);
+    localStorage.setItem('caseTemplates', JSON.stringify(templates));
+    loadTemplates();
+}
+
 function showTab(tab) {
     document.getElementById('dashboard').style.display   = 'none';
     document.getElementById('logCase').style.display     = 'none';
@@ -50,6 +99,7 @@ function showTab(tab) {
         document.getElementById('dashboard').style.display = 'block';
     } else if (tab === 'logCase') {
         document.getElementById('logCase').style.display = 'block';
+        loadTemplates();
     } else if (tab === 'caseList') {
         document.getElementById('caseListTab').style.display = 'block';
         displayCaseList(allCases);
@@ -139,15 +189,15 @@ async function loadAdminData() {
     if (profiles) {
         for (let profile of profiles) {
             if (profile.role === 'resident') {
-                let userCases    = cases ? cases.filter(c => c.user_id === profile.id) : [];
-                let cataract     = userCases.filter(c => c.procedure === 'Cataract / Phaco').length;
-                let vr           = userCases.filter(c => c.procedure === 'Vitreoretinal (PPV)').length;
-                let glaucoma     = userCases.filter(c => c.procedure === 'Glaucoma').length;
-                let total        = userCases.length;
-                let totalReq     = Object.values(acgme).reduce((a, b) => a + b, 0);
-                let percent      = Math.min(Math.round((total / totalReq) * 100), 100);
-                let name         = userCases.length > 0 && userCases[0].resident_name ? userCases[0].resident_name : '-';
-                let pgy          = userCases.length > 0 && userCases[0].pgy_year ? userCases[0].pgy_year : '-';
+                let userCases = cases ? cases.filter(c => c.user_id === profile.id) : [];
+                let cataract  = userCases.filter(c => c.procedure === 'Cataract / Phaco').length;
+                let vr        = userCases.filter(c => c.procedure === 'Vitreoretinal (PPV)').length;
+                let glaucoma  = userCases.filter(c => c.procedure === 'Glaucoma').length;
+                let total     = userCases.length;
+                let totalReq  = Object.values(acgme).reduce((a, b) => a + b, 0);
+                let percent   = Math.min(Math.round((total / totalReq) * 100), 100);
+                let name      = userCases.length > 0 && userCases[0].resident_name ? userCases[0].resident_name : '-';
+                let pgy       = userCases.length > 0 && userCases[0].pgy_year ? userCases[0].pgy_year : '-';
                 html += '<tr>';
                 html += '<td>' + name + '</td>';
                 html += '<td>' + profile.email + '</td>';
@@ -232,7 +282,8 @@ function applyFilter() {
     let dateFrom  = document.getElementById('filterDateFrom').value;
     let dateTo    = document.getElementById('filterDateTo').value;
     let filtered  = allCases.filter(c => {
-        return (search    === '' || (c.notes && c.notes.toLowerCase().includes(search)) ||
+        return (search === '' ||
+                (c.notes && c.notes.toLowerCase().includes(search)) ||
                 (c.resident_name && c.resident_name.toLowerCase().includes(search)) ||
                 (c.attending && c.attending.toLowerCase().includes(search)) ||
                 (c.hospital && c.hospital.toLowerCase().includes(search))) &&

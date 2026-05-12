@@ -19,42 +19,36 @@
 
     <!-- Onboarding Screen -->
     <div id="onboarding" style="display:none">
-
         <div id="slide1" class="onboard-slide">
             <div class="onboard-icon">👁️</div>
             <h1 class="onboard-title">Welcome to<br>OphthoLog</h1>
             <p class="onboard-text">The smart case logging app built for ophthalmology residents</p>
             <button class="onboard-btn" onclick="nextSlide(2)">Get Started →</button>
         </div>
-
         <div id="slide2" class="onboard-slide" style="display:none">
             <div class="onboard-icon">📋</div>
             <h1 class="onboard-title">Log Cases<br>Instantly</h1>
             <p class="onboard-text">Record procedures in seconds — procedure type, role, attending, hospital and notes all in one place</p>
             <button class="onboard-btn" onclick="nextSlide(3)">Next →</button>
         </div>
-
         <div id="slide3" class="onboard-slide" style="display:none">
             <div class="onboard-icon">📊</div>
             <h1 class="onboard-title">Track ACGME<br>Progress</h1>
             <p class="onboard-text">See your progress toward ACGME requirements in real time with beautiful charts and progress bars</p>
             <button class="onboard-btn" onclick="nextSlide(4)">Next →</button>
         </div>
-
         <div id="slide4" class="onboard-slide" style="display:none">
             <div class="onboard-icon">🏥</div>
             <h1 class="onboard-title">Built for<br>Residents</h1>
             <p class="onboard-text">Free forever. Works on iPhone and desktop. Export PDF reports for your Program Director anytime.</p>
             <button class="onboard-btn" onclick="finishOnboarding()">Let's Go! 🚀</button>
         </div>
-
         <div class="onboard-dots">
             <span id="dot1" class="dot active-dot"></span>
             <span id="dot2" class="dot"></span>
             <span id="dot3" class="dot"></span>
             <span id="dot4" class="dot"></span>
         </div>
-
     </div>
 
     <h1>👁️ OphthoLog</h1>
@@ -97,6 +91,15 @@
         <!-- Log Case -->
         <div id="logCase" style="display:none">
             <h2>Log a New Case</h2>
+
+            <!-- Templates -->
+            <div id="templatesSection">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+                    <label style="margin:0; font-size:13px">QUICK TEMPLATES</label>
+                    <button onclick="saveTemplate()" style="background:#7c3aed; width:auto; padding:6px 14px; font-size:12px; margin:0">+ Save as Template</button>
+                </div>
+                <div id="templatesList" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px"></div>
+            </div>
 
             <label>Resident Name</label>
             <input type="text" id="residentName" placeholder="Your full name">
