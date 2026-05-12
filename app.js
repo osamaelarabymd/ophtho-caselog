@@ -18,6 +18,28 @@ const acgme = {
     'Laser (LIO / SLT / YAG)': 25
 };
 
+// Onboarding
+function checkOnboarding() {
+    let seen = localStorage.getItem('onboardingSeen');
+    if (!seen) {
+        document.getElementById('onboarding').style.display = 'flex';
+    }
+}
+
+function nextSlide(num) {
+    document.querySelectorAll('.onboard-slide').forEach(s => s.style.display = 'none');
+    document.querySelectorAll('.dot').forEach(d => d.classList.remove('active-dot'));
+    document.getElementById('slide' + num).style.display = 'block';
+    document.getElementById('dot' + num).classList.add('active-dot');
+}
+
+function finishOnboarding() {
+    localStorage.setItem('onboardingSeen', 'true');
+    document.getElementById('onboarding').style.display = 'none';
+}
+
+window.addEventListener('load', checkOnboarding);
+
 function showTab(tab) {
     document.getElementById('dashboard').style.display   = 'none';
     document.getElementById('logCase').style.display     = 'none';
@@ -63,15 +85,12 @@ async function signOut() {
 async function showApp() {
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('appSection').style.display   = 'block';
-
     let { data: { user } } = await db.auth.getUser();
     let { data: profile } = await db.from('profiles').select('role').eq('id', user.id).single();
     currentUserRole = profile ? profile.role : 'resident';
-
     if (currentUserRole === 'admin') {
         document.getElementById('adminTab').style.display = 'inline-block';
     }
-
     loadCases();
 }
 
@@ -114,12 +133,10 @@ async function deleteCase(id) {
 async function loadAdminData() {
     let { data: cases }    = await db.from('cases').select('*');
     let { data: profiles } = await db.from('profiles').select('*');
-
     let html = '<h2>👨‍⚕️ Program Director Panel</h2>';
     html += '<h3>All Residents</h3>';
     html += '<table>';
     html += '<tr><th>Email</th><th>Total Cases</th><th>Cataract</th><th>Vitreoretinal</th><th>Glaucoma</th><th>Progress</th></tr>';
-
     if (profiles) {
         for (let profile of profiles) {
             if (profile.role === 'resident') {
@@ -130,7 +147,6 @@ async function loadAdminData() {
                 let total     = userCases.length;
                 let totalReq  = Object.values(acgme).reduce((a, b) => a + b, 0);
                 let percent   = Math.min(Math.round((total / totalReq) * 100), 100);
-
                 html += '<tr>';
                 html += '<td>' + profile.email + '</td>';
                 html += '<td>' + total + '</td>';
@@ -142,7 +158,6 @@ async function loadAdminData() {
             }
         }
     }
-
     html += '</table>';
     document.getElementById('adminPanel').innerHTML = html;
 }
@@ -153,19 +168,16 @@ function updateDashboard(cases) {
     let totalRequired  = Object.values(acgme).reduce((a, b) => a + b, 0);
     let totalDone      = cases.length;
     let overallPercent = Math.min(Math.round((totalDone / totalRequired) * 100), 100);
-
     document.getElementById('summaryCards').innerHTML =
         '<div class="summary-card"><h3>' + totalDone + '</h3><p>Total Cases</p></div>' +
         '<div class="summary-card"><h3>' + monthCases.length + '</h3><p>This Month</p></div>' +
         '<div class="summary-card"><h3>' + overallPercent + '%</h3><p>Overall ACGME Progress</p></div>' +
         '<div class="summary-card"><h3>' + Object.keys(acgme).length + '</h3><p>Procedure Types</p></div>';
-
     let counts = {};
     for (let p in acgme) { counts[p] = 0; }
     for (let c of cases) {
         if (counts[c.procedure] !== undefined) { counts[c.procedure]++; }
     }
-
     if (procedureChart) { procedureChart.destroy(); }
     let ctx = document.getElementById('procedureChart').getContext('2d');
     procedureChart = new Chart(ctx, {
@@ -173,20 +185,19 @@ function updateDashboard(cases) {
         data: {
             labels: Object.keys(counts),
             datasets: [
-                { label: 'Cases Done', data: Object.values(counts), backgroundColor: '#3498db' },
-                { label: 'Required',   data: Object.values(acgme),  backgroundColor: '#e0e0e0' }
+                { label: 'Cases Done', data: Object.values(counts), backgroundColor: '#2563eb' },
+                { label: 'Required',   data: Object.values(acgme),  backgroundColor: '#e2e8f0' }
             ]
         },
         options: { responsive: true, scales: { y: { beginAtZero: true } } }
     });
-
     let statsHtml = '';
     for (let p in acgme) {
         let done    = counts[p];
         let req     = acgme[p];
         let percent = Math.min(Math.round((done / req) * 100), 100);
         statsHtml += '<div class="stat-row"><p><strong>' + p + '</strong>: ' + done + ' / ' + req + '</p>';
-        statsHtml += '<div class="progress-bar"><div class="progress-fill" style="width:' + percent + '%">' + percent + '%</div></div></div>';
+        statsHtml += '<div class="progress-bar"><div class="progress-fill" style="width:' + percent + '%"></div></div></div>';
     }
     document.getElementById('stats').innerHTML = statsHtml;
 }
@@ -232,7 +243,7 @@ function exportPDF() {
     const doc = new jsPDF();
     doc.setFontSize(20);
     doc.setTextColor(44, 62, 80);
-    doc.text('Ophtho CaseLog Report', 14, 20);
+    doc.text('OphthoLog Report', 14, 20);
     doc.setFontSize(11);
     doc.setTextColor(100);
     doc.text('Generated: ' + new Date().toLocaleDateString(), 14, 30);
@@ -244,7 +255,7 @@ function exportPDF() {
         head: [['Procedure', 'Role', 'Date', 'Notes']],
         body: allCases.map(c => [c.procedure, c.role, c.date, c.notes]),
         styles: { fontSize: 9 },
-        headStyles: { fillColor: [52, 152, 219] }
+        headStyles: { fillColor: [37, 99, 235] }
     });
     let finalY = doc.lastAutoTable.finalY + 15;
     doc.setFontSize(14);
@@ -264,44 +275,34 @@ function exportPDF() {
         head: [['Procedure', 'Done', 'Required', 'Progress']],
         body: progressData,
         styles: { fontSize: 9 },
-        headStyles: { fillColor: [52, 152, 219] }
+        headStyles: { fillColor: [37, 99, 235] }
     });
-    doc.save('ophtho-caselog-report.pdf');
+    doc.save('ophtholog-report.pdf');
 }
 
-// Monthly report
 function exportMonthlyReport() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-
-    // Get current and last month
     let now           = new Date();
     let thisMonth     = now.toISOString().slice(0, 7);
     let lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     let lastMonth     = lastMonthDate.toISOString().slice(0, 7);
     let monthName     = now.toLocaleString('default', { month: 'long', year: 'numeric' });
-
     let thisMonthCases = allCases.filter(c => c.date && c.date.startsWith(thisMonth));
     let lastMonthCases = allCases.filter(c => c.date && c.date.startsWith(lastMonth));
-
-    // Header
-    doc.setFillColor(52, 152, 219);
+    doc.setFillColor(140, 21, 21);
     doc.rect(0, 0, 220, 35, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(22);
-    doc.text('Ophtho CaseLog', 14, 15);
+    doc.text('OphthoLog', 14, 15);
     doc.setFontSize(14);
     doc.text('Monthly Progress Report — ' + monthName, 14, 27);
-
-    // Summary section
     doc.setTextColor(44, 62, 80);
     doc.setFontSize(14);
     doc.text('Monthly Summary', 14, 50);
-
-    let totalReq      = Object.values(acgme).reduce((a, b) => a + b, 0);
-    let totalDone     = allCases.length;
-    let overallPct    = Math.min(Math.round((totalDone / totalReq) * 100), 100);
-
+    let totalReq   = Object.values(acgme).reduce((a, b) => a + b, 0);
+    let totalDone  = allCases.length;
+    let overallPct = Math.min(Math.round((totalDone / totalReq) * 100), 100);
     doc.autoTable({
         startY: 55,
         head: [['Metric', 'This Month', 'Last Month', 'Total to Date']],
@@ -310,53 +311,41 @@ function exportMonthlyReport() {
             ['ACGME Progress', '-', '-', overallPct + '%']
         ],
         styles: { fontSize: 10 },
-        headStyles: { fillColor: [52, 152, 219] }
+        headStyles: { fillColor: [140, 21, 21] }
     });
-
-    // This month breakdown
     let finalY = doc.lastAutoTable.finalY + 10;
     doc.setFontSize(14);
     doc.setTextColor(44, 62, 80);
     doc.text('This Month — Cases by Procedure', 14, finalY);
-
     let counts = {};
     for (let p in acgme) { counts[p] = 0; }
     for (let c of thisMonthCases) {
         if (counts[c.procedure] !== undefined) { counts[c.procedure]++; }
     }
-
     let monthData = Object.keys(acgme).map(p => [
-        p,
-        counts[p],
-        acgme[p],
+        p, counts[p], acgme[p],
         Math.min(Math.round((allCases.filter(c => c.procedure === p).length / acgme[p]) * 100), 100) + '%'
     ]);
-
     doc.autoTable({
         startY: finalY + 5,
         head: [['Procedure', 'This Month', 'Required Total', 'Overall Progress']],
         body: monthData,
         styles: { fontSize: 9 },
-        headStyles: { fillColor: [52, 152, 219] }
+        headStyles: { fillColor: [140, 21, 21] }
     });
-
-    // This month case list
     if (thisMonthCases.length > 0) {
         let y2 = doc.lastAutoTable.finalY + 10;
         doc.setFontSize(14);
         doc.setTextColor(44, 62, 80);
         doc.text('This Month — Case Details', 14, y2);
-
         doc.autoTable({
             startY: y2 + 5,
             head: [['Date', 'Procedure', 'Role', 'Notes']],
             body: thisMonthCases.map(c => [c.date, c.procedure, c.role, c.notes]),
             styles: { fontSize: 8 },
-            headStyles: { fillColor: [52, 152, 219] }
+            headStyles: { fillColor: [140, 21, 21] }
         });
     }
-
-    // Footer
     let pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
@@ -364,11 +353,9 @@ function exportMonthlyReport() {
         doc.setTextColor(150);
         doc.text('Generated by OphthoLog — ' + new Date().toLocaleDateString(), 14, doc.internal.pageSize.height - 10);
     }
-
-    doc.save('ophtho-monthly-report-' + thisMonth + '.pdf');
+    doc.save('ophtholog-monthly-' + thisMonth + '.pdf');
 }
 
-// Notifications
 async function setupNotifications() {
     if (!('Notification' in window)) {
         alert('Your browser does not support notifications');
@@ -391,15 +378,14 @@ function scheduleReminder() {
         let today        = now.toDateString();
         if (hour >= 18 && lastReminder !== today) {
             localStorage.setItem('lastReminder', today);
-            new Notification('Ophtho CaseLog Reminder 🏥', {
+            new Notification('OphthoLog Reminder 🏥', {
                 body: 'Don\'t forget to log your cases today!',
-                icon: '/icon.png'
+                icon: '/icon.svg'
             });
         }
     }, 60 * 60 * 1000);
 }
 
-// Service worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
         navigator.serviceWorker.register('/service-worker.js');

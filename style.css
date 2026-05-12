@@ -394,4 +394,90 @@ td button {
     }
 
     #logCase { padding: 16px; }
+}/* Onboarding */
+#onboarding {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: #8C1515;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.onboard-slide {
+    text-align: center;
+    max-width: 400px;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.onboard-icon {
+    font-size: 80px;
+    margin-bottom: 24px;
+}
+
+.onboard-title {
+    font-size: 38px;
+    font-weight: 800;
+    color: white;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    border: none;
+    padding: 0;
+}
+
+.onboard-text {
+    font-size: 17px;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+    margin-bottom: 40px;
+}
+
+.onboard-btn {
+    background: white;
+    color: #8C1515;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 16px 48px;
+    border-radius: 50px;
+    width: auto;
+    margin: 0 auto;
+    display: block;
+    transition: transform 0.2s;
+}
+
+.onboard-btn:hover {
+    background: #E8D5A3;
+    color: #8C1515;
+    transform: translateY(-2px);
+}
+
+.onboard-dots {
+    position: fixed;
+    bottom: 50px;
+    display: flex;
+    gap: 10px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    display: inline-block;
+    transition: background 0.3s;
+}
+
+.active-dot {
+    background: white;
+    width: 28px;
+    border-radius: 5px;
 }
