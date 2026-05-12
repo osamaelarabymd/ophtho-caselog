@@ -144,8 +144,8 @@ async function saveEdit() {
         hospital:      document.getElementById('editHospital').value,
         notes:         document.getElementById('editNotes').value
     }).eq('id', id);
-    if (error) { alert(error.message); }
-    else { closeEditModal(); loadCases(); alert('Case updated!'); }
+    if (error) { alert('Error updating case: ' + error.message); }
+    else { closeEditModal(); loadCases(); alert('✅ Case updated successfully!'); }
 }
 
 function showTab(tab) {
@@ -213,6 +213,17 @@ db.auth.getSession().then(({ data }) => {
 
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('saveBtn').addEventListener('click', async function() {
+
+        // Validation
+        if (!document.getElementById('residentName').value) {
+            alert('⚠️ Please enter the resident name before saving.');
+            return;
+        }
+        if (!document.getElementById('date').value) {
+            alert('⚠️ Please select a date before saving.');
+            return;
+        }
+
         let { data: { user } } = await db.auth.getUser();
         let { error } = await db.from('cases').insert({
             procedure:     document.getElementById('procedure').value,
@@ -225,8 +236,19 @@ document.addEventListener('DOMContentLoaded', function() {
             hospital:      document.getElementById('hospital').value,
             user_id:       user.id
         });
-        if (error) { alert(error.message); }
-        else { alert('Case saved!'); loadCases(); }
+
+        if (error) {
+            alert('Error saving case: ' + error.message);
+        } else {
+            // Clear form after save
+            document.getElementById('residentName').value = '';
+            document.getElementById('attending').value    = '';
+            document.getElementById('hospital').value     = '';
+            document.getElementById('notes').value        = '';
+            document.getElementById('date').value         = '';
+            loadCases();
+            alert('✅ Case saved successfully!');
+        }
     });
 });
 
@@ -238,6 +260,7 @@ async function loadCases() {
 }
 
 async function deleteCase(id) {
+    if (!confirm('Are you sure you want to delete this case?')) return;
     await db.from('cases').delete().eq('id', id);
     loadCases();
 }
