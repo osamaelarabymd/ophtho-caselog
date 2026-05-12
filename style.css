@@ -455,4 +455,45 @@ td button {
     #logCase { padding: 16px; }
     .onboard-title { font-size: 30px; }
     .onboard-icon { font-size: 60px; }
+}/* === DARK MODE === */
+body.dark {
+    --primary:     #60a5fa;
+    --primary-dark:#3b82f6;
+    --bg:          #0f172a;
+    --card:        #1e293b;
+    --text:        #f1f5f9;
+    --text-light:  #94a3b8;
+    --border:      #334155;
+    --shadow:      0 4px 6px -1px rgba(0,0,0,0.4);
+}
+
+body.dark h1 {
+    color: #60a5fa;
+    border-color: #60a5fa;
+}
+
+body.dark select,
+body.dark input,
+body.dark textarea {
+    background: #1e293b;
+    color: #f1f5f9;
+    border-color: #334155;
+}
+
+body.dark .tab-btn {
+    color: #94a3b8;
+}
+
+body.dark tr:hover td {
+    background: #334155;
+}
+
+body.dark #loginSection {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+body.dark .onboard-btn {
+    background: #1e293b;
+    color: #60a5fa;
 }

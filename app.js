@@ -6,6 +6,9 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allCases = [];
 let procedureChart = null;
+let monthlyChart = null;
+let roleChart = null;
+let dayChart = null;
 let currentUserRole = 'resident';
 
 const acgme = {
@@ -38,7 +41,27 @@ function finishOnboarding() {
     document.getElementById('onboarding').style.display = 'none';
 }
 
-window.addEventListener('load', checkOnboarding);
+// Dark mode
+function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    let isDark = document.body.classList.contains('dark');
+    localStorage.setItem('darkMode', isDark);
+    document.getElementById('darkBtn').textContent = isDark ? '☀️ Light' : '🌙 Dark';
+}
+
+function loadDarkMode() {
+    let isDark = localStorage.getItem('darkMode') === 'true';
+    if (isDark) {
+        document.body.classList.add('dark');
+        let btn = document.getElementById('darkBtn');
+        if (btn) btn.textContent = '☀️ Light';
+    }
+}
+
+window.addEventListener('load', function() {
+    checkOnboarding();
+    loadDarkMode();
+});
 
 // Templates
 function loadTemplates() {
@@ -93,7 +116,6 @@ function deleteTemplate(event, index) {
 function openEditModal(id) {
     let c = allCases.find(c => c.id === id);
     if (!c) return;
-
     document.getElementById('editId').value            = c.id;
     document.getElementById('editProcedure').value     = c.procedure;
     document.getElementById('editRole').value          = c.role;
@@ -103,7 +125,6 @@ function openEditModal(id) {
     document.getElementById('editAttending').value     = c.attending || '';
     document.getElementById('editHospital').value      = c.hospital || '';
     document.getElementById('editNotes').value         = c.notes || '';
-
     document.getElementById('editModal').style.display = 'flex';
 }
 
@@ -123,27 +144,23 @@ async function saveEdit() {
         hospital:      document.getElementById('editHospital').value,
         notes:         document.getElementById('editNotes').value
     }).eq('id', id);
-
     if (error) { alert(error.message); }
-    else {
-        closeEditModal();
-        loadCases();
-        alert('Case updated!');
-    }
+    else { closeEditModal(); loadCases(); alert('Case updated!'); }
 }
 
 function showTab(tab) {
-    document.getElementById('dashboard').style.display   = 'none';
-    document.getElementById('logCase').style.display     = 'none';
-    document.getElementById('caseListTab').style.display = 'none';
-    document.getElementById('adminPanel').style.display  = 'none';
+    document.getElementById('dashboard').style.display    = 'none';
+    document.getElementById('logCase').style.display      = 'none';
+    document.getElementById('caseListTab').style.display  = 'none';
+    document.getElementById('analyticsTab').style.display = 'none';
+    document.getElementById('adminPanel').style.display   = 'none';
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
     if (tab === 'dashboard') {
         document.getElementById('dashboard').style.display = 'block';
     } else if (tab === 'logCase') {
         document.getElementById('logCase').style.display = 'block';
         loadTemplates();
-     } else if (tab === 'caseList') {
+    } else if (tab === 'caseList') {
         document.getElementById('caseListTab').style.display = 'block';
         displayCaseList(allCases);
     } else if (tab === 'analytics') {
@@ -218,124 +235,6 @@ async function loadCases() {
     let { data: cases } = await db.from('cases').select('*').eq('user_id', user.id);
     allCases = cases || [];
     updateDashboard(allCases);
-    let monthlyChart = null;
-let roleChart = null;
-let dayChart = null;
-
-function showAnalytics() {
-    // Summary cards
-    let total      = allCases.length;
-    let thisMonth  = new Date().toISOString().slice(0, 7);
-    let monthCount = allCases.filter(c => c.date && c.date.startsWith(thisMonth)).length;
-    let primary    = allCases.filter(c => c.role === 'Primary Surgeon').length;
-    let primaryPct = total > 0 ? Math.round((primary / total) * 100) : 0;
-
-    document.getElementById('analyticsSummary').innerHTML =
-        '<div class="summary-card"><h3>' + total + '</h3><p>Total Cases</p></div>' +
-        '<div class="summary-card"><h3>' + monthCount + '</h3><p>This Month</p></div>' +
-        '<div class="summary-card"><h3>' + primaryPct + '%</h3><p>As Primary Surgeon</p></div>';
-
-    // Monthly chart — last 6 months
-    let months = [];
-    let monthlyCounts = [];
-    for (let i = 5; i >= 0; i--) {
-        let d = new Date();
-        d.setMonth(d.getMonth() - i);
-        let key   = d.toISOString().slice(0, 7);
-        let label = d.toLocaleString('default', { month: 'short' });
-        months.push(label);
-        monthlyCounts.push(allCases.filter(c => c.date && c.date.startsWith(key)).length);
-    }
-
-    if (monthlyChart) { monthlyChart.destroy(); }
-    monthlyChart = new Chart(document.getElementById('monthlyChart').getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: months,
-            datasets: [{
-                label: 'Cases',
-                data: monthlyCounts,
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37,99,235,0.1)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#2563eb',
-                pointRadius: 5
-            }]
-        },
-        options: { responsive: true, scales: { y: { beginAtZero: true } } }
-    });
-
-    // Role pie chart
-    let roleCounts = {
-        'Primary Surgeon': 0,
-        'Assistant': 0,
-        'Observer': 0
-    };
-    for (let c of allCases) {
-        if (roleCounts[c.role] !== undefined) { roleCounts[c.role]++; }
-    }
-
-    if (roleChart) { roleChart.destroy(); }
-    roleChart = new Chart(document.getElementById('roleChart').getContext('2d'), {
-        type: 'doughnut',
-        data: {
-            labels: Object.keys(roleCounts),
-            datasets: [{
-                data: Object.values(roleCounts),
-                backgroundColor: ['#2563eb', '#16a34a', '#d97706']
-            }]
-        },
-        options: { responsive: true }
-    });
-
-    // Busiest days chart
-    let dayCounts = [0,0,0,0,0,0,0];
-    let dayNames  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    for (let c of allCases) {
-        if (c.date) {
-            let day = new Date(c.date).getDay();
-            dayCounts[day]++;
-        }
-    }
-
-    if (dayChart) { dayChart.destroy(); }
-    dayChart = new Chart(document.getElementById('dayChart').getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: dayNames,
-            datasets: [{
-                label: 'Cases',
-                data: dayCounts,
-                backgroundColor: '#8C1515'
-            }]
-        },
-        options: { responsive: true, scales: { y: { beginAtZero: true } } }
-    });
-
-    // Top procedures this month
-    let monthCases = allCases.filter(c => c.date && c.date.startsWith(thisMonth));
-    let procCounts = {};
-    for (let c of monthCases) {
-        procCounts[c.procedure] = (procCounts[c.procedure] || 0) + 1;
-    }
-    let sorted = Object.entries(procCounts).sort((a, b) => b[1] - a[1]);
-    let html = '';
-    if (sorted.length === 0) {
-        html = '<p style="color:#94a3b8">No cases logged this month yet.</p>';
-    } else {
-        for (let [proc, count] of sorted) {
-            let pct = Math.round((count / monthCases.length) * 100);
-            html += '<div style="margin-bottom:12px">';
-            html += '<p style="font-size:14px; font-weight:600; margin-bottom:4px">' + proc + ' — ' + count + ' cases (' + pct + '%)</p>';
-            html += '<div style="background:#e2e8f0; border-radius:99px; height:8px">';
-            html += '<div style="background:#2563eb; width:' + pct + '%; height:8px; border-radius:99px"></div>';
-            html += '</div></div>';
-        }
-    }
-    document.getElementById('topProcedures').innerHTML = html;
-}
 }
 
 async function deleteCase(id) {
@@ -362,16 +261,7 @@ async function loadAdminData() {
                 let percent   = Math.min(Math.round((total / totalReq) * 100), 100);
                 let name      = userCases.length > 0 && userCases[0].resident_name ? userCases[0].resident_name : '-';
                 let pgy       = userCases.length > 0 && userCases[0].pgy_year ? userCases[0].pgy_year : '-';
-                html += '<tr>';
-                html += '<td>' + name + '</td>';
-                html += '<td>' + profile.email + '</td>';
-                html += '<td>' + pgy + '</td>';
-                html += '<td>' + total + '</td>';
-                html += '<td>' + cataract + '/86</td>';
-                html += '<td>' + vr + '/25</td>';
-                html += '<td>' + glaucoma + '/25</td>';
-                html += '<td>' + percent + '%</td>';
-                html += '</tr>';
+                html += '<tr><td>' + name + '</td><td>' + profile.email + '</td><td>' + pgy + '</td><td>' + total + '</td><td>' + cataract + '/86</td><td>' + vr + '/25</td><td>' + glaucoma + '/25</td><td>' + percent + '%</td></tr>';
             }
         }
     }
@@ -417,6 +307,91 @@ function updateDashboard(cases) {
         statsHtml += '<div class="progress-bar"><div class="progress-fill" style="width:' + percent + '%"></div></div></div>';
     }
     document.getElementById('stats').innerHTML = statsHtml;
+}
+
+function showAnalytics() {
+    let total      = allCases.length;
+    let thisMonth  = new Date().toISOString().slice(0, 7);
+    let monthCount = allCases.filter(c => c.date && c.date.startsWith(thisMonth)).length;
+    let primary    = allCases.filter(c => c.role === 'Primary Surgeon').length;
+    let primaryPct = total > 0 ? Math.round((primary / total) * 100) : 0;
+    document.getElementById('analyticsSummary').innerHTML =
+        '<div class="summary-card"><h3>' + total + '</h3><p>Total Cases</p></div>' +
+        '<div class="summary-card"><h3>' + monthCount + '</h3><p>This Month</p></div>' +
+        '<div class="summary-card"><h3>' + primaryPct + '%</h3><p>As Primary Surgeon</p></div>';
+    let months = [];
+    let monthlyCounts = [];
+    for (let i = 5; i >= 0; i--) {
+        let d = new Date();
+        d.setMonth(d.getMonth() - i);
+        let key   = d.toISOString().slice(0, 7);
+        let label = d.toLocaleString('default', { month: 'short' });
+        months.push(label);
+        monthlyCounts.push(allCases.filter(c => c.date && c.date.startsWith(key)).length);
+    }
+    if (monthlyChart) { monthlyChart.destroy(); }
+    monthlyChart = new Chart(document.getElementById('monthlyChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Cases',
+                data: monthlyCounts,
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37,99,235,0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#2563eb',
+                pointRadius: 5
+            }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+    let roleCounts = { 'Primary Surgeon': 0, 'Assistant': 0, 'Observer': 0 };
+    for (let c of allCases) {
+        if (roleCounts[c.role] !== undefined) { roleCounts[c.role]++; }
+    }
+    if (roleChart) { roleChart.destroy(); }
+    roleChart = new Chart(document.getElementById('roleChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(roleCounts),
+            datasets: [{ data: Object.values(roleCounts), backgroundColor: ['#2563eb', '#16a34a', '#d97706'] }]
+        },
+        options: { responsive: true }
+    });
+    let dayCounts = [0,0,0,0,0,0,0];
+    let dayNames  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    for (let c of allCases) {
+        if (c.date) { dayCounts[new Date(c.date).getDay()]++; }
+    }
+    if (dayChart) { dayChart.destroy(); }
+    dayChart = new Chart(document.getElementById('dayChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: dayNames,
+            datasets: [{ label: 'Cases', data: dayCounts, backgroundColor: '#8C1515' }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+    let monthCases = allCases.filter(c => c.date && c.date.startsWith(thisMonth));
+    let procCounts = {};
+    for (let c of monthCases) {
+        procCounts[c.procedure] = (procCounts[c.procedure] || 0) + 1;
+    }
+    let sorted = Object.entries(procCounts).sort((a, b) => b[1] - a[1]);
+    let html = '';
+    if (sorted.length === 0) {
+        html = '<p style="color:#94a3b8">No cases logged this month yet.</p>';
+    } else {
+        for (let [proc, count] of sorted) {
+            let pct = Math.round((count / monthCases.length) * 100);
+            html += '<div style="margin-bottom:12px"><p style="font-size:14px; font-weight:600; margin-bottom:4px">' + proc + ' — ' + count + ' cases (' + pct + '%)</p>';
+            html += '<div style="background:#e2e8f0; border-radius:99px; height:8px"><div style="background:#2563eb; width:' + pct + '%; height:8px; border-radius:99px"></div></div></div>';
+        }
+    }
+    document.getElementById('topProcedures').innerHTML = html;
 }
 
 function displayCaseList(cases) {
