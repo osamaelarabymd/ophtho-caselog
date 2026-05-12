@@ -37,9 +37,10 @@
             <button onclick="showTab('admin')" id="adminTab" class="tab-btn" style="display:none; background:#2ecc71; color:white; border-radius:6px">👨‍⚕️ PD Panel</button>
         </div>
 
+        <!-- Dashboard tab -->
         <div id="dashboard">
-    <h2>Dashboard</h2>
-    <button onclick="setupNotifications()" style="background:#9b59b6; width:auto; padding:10px 20px; margin-bottom:15px">🔔 Enable Daily Reminders</button>
+            <h2>Dashboard</h2>
+            <button onclick="setupNotifications()" style="background:#9b59b6; width:auto; padding:10px 20px; margin-bottom:15px">🔔 Enable Daily Reminders</button>
             <div id="summaryCards" style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:20px"></div>
             <h3>Cases by Procedure</h3>
             <canvas id="procedureChart" height="100"></canvas>
@@ -47,6 +48,7 @@
             <div id="stats"></div>
         </div>
 
+        <!-- Log Case tab -->
         <div id="logCase" style="display:none">
             <h2>Log a New Case</h2>
 
@@ -94,8 +96,10 @@
 
             <button id="saveBtn">Save Case</button>
             <button onclick="exportPDF()" style="background:#27ae60; margin-left:10px">Export PDF</button>
+            <button onclick="exportMonthlyReport()" style="background:#e67e22; margin-left:10px">📅 Monthly Report</button>
         </div>
 
+        <!-- Case List tab -->
         <div id="caseListTab" style="display:none">
             <h2>Filter Cases</h2>
             <div style="display:flex; gap:10px; flex-wrap:wrap">
