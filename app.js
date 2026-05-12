@@ -89,6 +89,49 @@ function deleteTemplate(event, index) {
     loadTemplates();
 }
 
+// Edit case modal
+function openEditModal(id) {
+    let c = allCases.find(c => c.id === id);
+    if (!c) return;
+
+    document.getElementById('editId').value            = c.id;
+    document.getElementById('editProcedure').value     = c.procedure;
+    document.getElementById('editRole').value          = c.role;
+    document.getElementById('editDate').value          = c.date;
+    document.getElementById('editResidentName').value  = c.resident_name || '';
+    document.getElementById('editPgyYear').value       = c.pgy_year || 'PGY-1';
+    document.getElementById('editAttending').value     = c.attending || '';
+    document.getElementById('editHospital').value      = c.hospital || '';
+    document.getElementById('editNotes').value         = c.notes || '';
+
+    document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+
+async function saveEdit() {
+    let id = document.getElementById('editId').value;
+    let { error } = await db.from('cases').update({
+        procedure:     document.getElementById('editProcedure').value,
+        role:          document.getElementById('editRole').value,
+        date:          document.getElementById('editDate').value,
+        resident_name: document.getElementById('editResidentName').value,
+        pgy_year:      document.getElementById('editPgyYear').value,
+        attending:     document.getElementById('editAttending').value,
+        hospital:      document.getElementById('editHospital').value,
+        notes:         document.getElementById('editNotes').value
+    }).eq('id', id);
+
+    if (error) { alert(error.message); }
+    else {
+        closeEditModal();
+        loadCases();
+        alert('Case updated!');
+    }
+}
+
 function showTab(tab) {
     document.getElementById('dashboard').style.display   = 'none';
     document.getElementById('logCase').style.display     = 'none';
@@ -257,7 +300,7 @@ function updateDashboard(cases) {
 
 function displayCaseList(cases) {
     let html = '<h2>Saved Cases</h2><table>';
-    html += '<tr><th>Resident</th><th>PGY</th><th>Procedure</th><th>Role</th><th>Date</th><th>Attending</th><th>Hospital</th><th>Notes</th><th>Action</th></tr>';
+    html += '<tr><th>Resident</th><th>PGY</th><th>Procedure</th><th>Role</th><th>Date</th><th>Attending</th><th>Hospital</th><th>Notes</th><th>Actions</th></tr>';
     for (let i = 0; i < cases.length; i++) {
         html += '<tr>';
         html += '<td>' + (cases[i].resident_name || '-') + '</td>';
@@ -268,7 +311,10 @@ function displayCaseList(cases) {
         html += '<td>' + (cases[i].attending || '-') + '</td>';
         html += '<td>' + (cases[i].hospital || '-') + '</td>';
         html += '<td>' + (cases[i].notes || '-') + '</td>';
-        html += '<td><button onclick="deleteCase(\'' + cases[i].id + '\')">Delete</button></td>';
+        html += '<td style="white-space:nowrap">';
+        html += '<button onclick="openEditModal(\'' + cases[i].id + '\')" style="background:#2563eb; padding:6px 10px; font-size:12px; margin:0 4px 0 0; width:auto; border-radius:6px">✏️ Edit</button>';
+        html += '<button onclick="deleteCase(\'' + cases[i].id + '\')" style="background:#dc2626; padding:6px 10px; font-size:12px; margin:0; width:auto; border-radius:6px">🗑️ Delete</button>';
+        html += '</td>';
         html += '</tr>';
     }
     html += '</table>';

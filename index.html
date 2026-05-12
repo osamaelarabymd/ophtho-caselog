@@ -202,7 +202,60 @@
         <div id="adminPanel" style="display:none"></div>
 
     </div>
+    <!-- Edit Modal -->
+<div id="editModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center;">
+    <div style="background:white; padding:30px; border-radius:16px; width:90%; max-width:500px; max-height:90vh; overflow-y:auto;">
+        <h2>✏️ Edit Case</h2>
+        <input type="hidden" id="editId">
 
-    <script src="app.js"></script>
+        <label>Resident Name</label>
+        <input type="text" id="editResidentName" placeholder="Resident name">
+
+        <label>PGY Year</label>
+        <select id="editPgyYear">
+            <option value="PGY-1">PGY-1</option>
+            <option value="PGY-2">PGY-2</option>
+            <option value="PGY-3">PGY-3</option>
+            <option value="PGY-4">PGY-4</option>
+            <option value="PGY-5">PGY-5</option>
+        </select>
+
+        <label>Attending Supervisor</label>
+        <input type="text" id="editAttending" placeholder="Attending name">
+
+        <label>Hospital / Institution</label>
+        <input type="text" id="editHospital" placeholder="Hospital name">
+
+        <label>Procedure Type</label>
+        <select id="editProcedure">
+            <option>Cataract / Phaco</option>
+            <option>Vitreoretinal (PPV)</option>
+            <option>Glaucoma</option>
+            <option>Cornea / Keratoplasty</option>
+            <option>Oculoplastics</option>
+            <option>Strabismus</option>
+            <option>Laser (LIO / SLT / YAG)</option>
+        </select>
+
+        <label>Your Role</label>
+        <select id="editRole">
+            <option>Primary Surgeon</option>
+            <option>Assistant</option>
+            <option>Observer</option>
+        </select>
+
+        <label>Date</label>
+        <input type="date" id="editDate">
+
+        <label>Notes</label>
+        <textarea id="editNotes" rows="3"></textarea>
+
+        <div style="display:flex; gap:10px; margin-top:20px">
+            <button onclick="saveEdit()" style="flex:1; margin:0">💾 Save Changes</button>
+            <button onclick="closeEditModal()" style="flex:1; margin:0; background:#64748b">Cancel</button>
+        </div>
+    </div>
+</div>
+<script src="app.js"></script>
 </body>
 </html>
