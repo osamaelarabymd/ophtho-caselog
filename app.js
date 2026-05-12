@@ -101,17 +101,16 @@ db.auth.getSession().then(({ data }) => {
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('saveBtn').addEventListener('click', async function() {
         let { data: { user } } = await db.auth.getUser();
-        let pgy       = document.getElementById('pgyYear').value;
-        let name      = document.getElementById('residentName').value;
-        let attending = document.getElementById('attending').value;
-        let hospital  = document.getElementById('hospital').value;
-        let notes     = document.getElementById('notes').value;
         let { error } = await db.from('cases').insert({
-            procedure: document.getElementById('procedure').value,
-            role:      document.getElementById('role').value,
-            date:      document.getElementById('date').value,
-            notes:     pgy + ' | ' + name + ' | Attending: ' + attending + ' | Hospital: ' + hospital + ' | ' + notes,
-            user_id:   user.id
+            procedure:     document.getElementById('procedure').value,
+            role:          document.getElementById('role').value,
+            date:          document.getElementById('date').value,
+            notes:         document.getElementById('notes').value,
+            resident_name: document.getElementById('residentName').value,
+            pgy_year:      document.getElementById('pgyYear').value,
+            attending:     document.getElementById('attending').value,
+            hospital:      document.getElementById('hospital').value,
+            user_id:       user.id
         });
         if (error) { alert(error.message); }
         else { alert('Case saved!'); loadCases(); }
@@ -136,19 +135,23 @@ async function loadAdminData() {
     let html = '<h2>👨‍⚕️ Program Director Panel</h2>';
     html += '<h3>All Residents</h3>';
     html += '<table>';
-    html += '<tr><th>Email</th><th>Total Cases</th><th>Cataract</th><th>Vitreoretinal</th><th>Glaucoma</th><th>Progress</th></tr>';
+    html += '<tr><th>Name</th><th>Email</th><th>PGY</th><th>Total Cases</th><th>Cataract</th><th>Vitreoretinal</th><th>Glaucoma</th><th>Progress</th></tr>';
     if (profiles) {
         for (let profile of profiles) {
             if (profile.role === 'resident') {
-                let userCases = cases ? cases.filter(c => c.user_id === profile.id) : [];
-                let cataract  = userCases.filter(c => c.procedure === 'Cataract / Phaco').length;
-                let vr        = userCases.filter(c => c.procedure === 'Vitreoretinal (PPV)').length;
-                let glaucoma  = userCases.filter(c => c.procedure === 'Glaucoma').length;
-                let total     = userCases.length;
-                let totalReq  = Object.values(acgme).reduce((a, b) => a + b, 0);
-                let percent   = Math.min(Math.round((total / totalReq) * 100), 100);
+                let userCases    = cases ? cases.filter(c => c.user_id === profile.id) : [];
+                let cataract     = userCases.filter(c => c.procedure === 'Cataract / Phaco').length;
+                let vr           = userCases.filter(c => c.procedure === 'Vitreoretinal (PPV)').length;
+                let glaucoma     = userCases.filter(c => c.procedure === 'Glaucoma').length;
+                let total        = userCases.length;
+                let totalReq     = Object.values(acgme).reduce((a, b) => a + b, 0);
+                let percent      = Math.min(Math.round((total / totalReq) * 100), 100);
+                let name         = userCases.length > 0 && userCases[0].resident_name ? userCases[0].resident_name : '-';
+                let pgy          = userCases.length > 0 && userCases[0].pgy_year ? userCases[0].pgy_year : '-';
                 html += '<tr>';
+                html += '<td>' + name + '</td>';
                 html += '<td>' + profile.email + '</td>';
+                html += '<td>' + pgy + '</td>';
                 html += '<td>' + total + '</td>';
                 html += '<td>' + cataract + '/86</td>';
                 html += '<td>' + vr + '/25</td>';
@@ -204,10 +207,19 @@ function updateDashboard(cases) {
 
 function displayCaseList(cases) {
     let html = '<h2>Saved Cases</h2><table>';
-    html += '<tr><th>Procedure</th><th>Role</th><th>Date</th><th>Notes</th><th>Action</th></tr>';
+    html += '<tr><th>Resident</th><th>PGY</th><th>Procedure</th><th>Role</th><th>Date</th><th>Attending</th><th>Hospital</th><th>Notes</th><th>Action</th></tr>';
     for (let i = 0; i < cases.length; i++) {
-        html += '<tr><td>' + cases[i].procedure + '</td><td>' + cases[i].role + '</td><td>' + cases[i].date + '</td><td>' + cases[i].notes + '</td>';
-        html += '<td><button onclick="deleteCase(\'' + cases[i].id + '\')">Delete</button></td></tr>';
+        html += '<tr>';
+        html += '<td>' + (cases[i].resident_name || '-') + '</td>';
+        html += '<td>' + (cases[i].pgy_year || '-') + '</td>';
+        html += '<td>' + cases[i].procedure + '</td>';
+        html += '<td>' + cases[i].role + '</td>';
+        html += '<td>' + cases[i].date + '</td>';
+        html += '<td>' + (cases[i].attending || '-') + '</td>';
+        html += '<td>' + (cases[i].hospital || '-') + '</td>';
+        html += '<td>' + (cases[i].notes || '-') + '</td>';
+        html += '<td><button onclick="deleteCase(\'' + cases[i].id + '\')">Delete</button></td>';
+        html += '</tr>';
     }
     html += '</table>';
     document.getElementById('caseList').innerHTML = html;
@@ -220,7 +232,10 @@ function applyFilter() {
     let dateFrom  = document.getElementById('filterDateFrom').value;
     let dateTo    = document.getElementById('filterDateTo').value;
     let filtered  = allCases.filter(c => {
-        return (search    === '' || (c.notes && c.notes.toLowerCase().includes(search))) &&
+        return (search    === '' || (c.notes && c.notes.toLowerCase().includes(search)) ||
+                (c.resident_name && c.resident_name.toLowerCase().includes(search)) ||
+                (c.attending && c.attending.toLowerCase().includes(search)) ||
+                (c.hospital && c.hospital.toLowerCase().includes(search))) &&
                (procedure === '' || c.procedure === procedure) &&
                (role      === '' || c.role === role) &&
                (dateFrom  === '' || c.date >= dateFrom) &&
@@ -252,8 +267,8 @@ function exportPDF() {
     doc.text('Case Log', 14, 45);
     doc.autoTable({
         startY: 50,
-        head: [['Procedure', 'Role', 'Date', 'Notes']],
-        body: allCases.map(c => [c.procedure, c.role, c.date, c.notes]),
+        head: [['Date', 'Procedure', 'Role', 'Attending', 'Hospital', 'Notes']],
+        body: allCases.map(c => [c.date, c.procedure, c.role, c.attending || '-', c.hospital || '-', c.notes || '-']),
         styles: { fontSize: 9 },
         headStyles: { fillColor: [37, 99, 235] }
     });
@@ -283,11 +298,11 @@ function exportPDF() {
 function exportMonthlyReport() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    let now           = new Date();
-    let thisMonth     = now.toISOString().slice(0, 7);
-    let lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    let lastMonth     = lastMonthDate.toISOString().slice(0, 7);
-    let monthName     = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+    let now            = new Date();
+    let thisMonth      = now.toISOString().slice(0, 7);
+    let lastMonthDate  = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    let lastMonth      = lastMonthDate.toISOString().slice(0, 7);
+    let monthName      = now.toLocaleString('default', { month: 'long', year: 'numeric' });
     let thisMonthCases = allCases.filter(c => c.date && c.date.startsWith(thisMonth));
     let lastMonthCases = allCases.filter(c => c.date && c.date.startsWith(lastMonth));
     doc.setFillColor(140, 21, 21);
@@ -340,8 +355,8 @@ function exportMonthlyReport() {
         doc.text('This Month — Case Details', 14, y2);
         doc.autoTable({
             startY: y2 + 5,
-            head: [['Date', 'Procedure', 'Role', 'Notes']],
-            body: thisMonthCases.map(c => [c.date, c.procedure, c.role, c.notes]),
+            head: [['Date', 'Procedure', 'Role', 'Attending', 'Hospital', 'Notes']],
+            body: thisMonthCases.map(c => [c.date, c.procedure, c.role, c.attending || '-', c.hospital || '-', c.notes || '-']),
             styles: { fontSize: 8 },
             headStyles: { fillColor: [140, 21, 21] }
         });
