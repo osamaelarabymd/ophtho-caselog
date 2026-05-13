@@ -74,14 +74,12 @@
     <!-- App -->
     <div id="appSection" style="display:none">
 
-        <!-- Top bar -->
         <div class="top-bar">
             <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSev-87zwv0Ot_7LNJuuNNTBpKpcOvS_vEtSnGbgLGjMVP-iMA/viewform', '_blank')" class="top-btn" style="background:#16a34a">💬 Feedback</button>
             <button id="darkBtn" onclick="toggleDarkMode()" class="top-btn" style="background:#1e293b">🌙 Dark</button>
             <button onclick="signOut()" class="top-btn" style="background:#dc2626">🚪 Sign Out</button>
         </div>
 
-        <!-- Streak banner -->
         <div id="streakBanner" style="display:none; background:linear-gradient(135deg,#f97316,#ef4444); color:white; padding:12px 20px; border-radius:12px; margin-bottom:16px; text-align:center; font-weight:700; font-size:15px"></div>
 
         <!-- Tabs -->
@@ -131,7 +129,6 @@
 
         <!-- Profile -->
         <div id="profileTab" style="display:none">
-
             <div style="background:linear-gradient(135deg, #8C1515 0%, #2563eb 100%); border-radius:20px; padding:28px; margin-bottom:20px; color:white; text-align:center; position:relative; overflow:hidden">
                 <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:rgba(255,255,255,0.05); border-radius:50%"></div>
                 <div style="width:84px; height:84px; background:rgba(255,255,255,0.2); border-radius:50%; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; font-size:38px; border:3px solid rgba(255,255,255,0.4); box-shadow:0 4px 16px rgba(0,0,0,0.2)">👨‍⚕️</div>
@@ -144,10 +141,8 @@
 
             <div class="dash-card" style="margin-bottom:16px">
                 <h3>✏️ Edit Profile</h3>
-
                 <label>Full Name</label>
                 <input type="text" id="profileNameInput" placeholder="e.g. Osama Elaraby">
-
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
                     <div>
                         <label>PGY Year</label>
@@ -164,21 +159,18 @@
                         <input type="text" id="profileProgramInput" placeholder="e.g. Stanford">
                     </div>
                 </div>
-
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
                     <div>
                         <label>Residency Start Year</label>
-                        <input type="number" id="profileStartYear" placeholder="e.g. 2024" min="2000" max="2030">
+                        <input type="number" id="profileStartYear" placeholder="e.g. 2024">
                     </div>
                     <div>
                         <label>Residency End Year</label>
-                        <input type="number" id="profileEndYear" placeholder="e.g. 2028" min="2000" max="2035">
+                        <input type="number" id="profileEndYear" placeholder="e.g. 2028">
                     </div>
                 </div>
-
                 <label>Goals / Notes</label>
                 <textarea id="profileGoals" rows="3" placeholder="e.g. Focus on vitreoretinal surgery..."></textarea>
-
                 <button onclick="saveProfile()">💾 Save Profile</button>
             </div>
 
@@ -192,7 +184,6 @@
                 <div id="profileEmail" style="font-size:14px; color:#64748b; margin-top:8px; padding:12px; background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0"></div>
                 <button onclick="signOut()" style="background:#dc2626; margin-top:16px">🚪 Sign Out</button>
             </div>
-
         </div>
 
         <!-- Log Case -->
@@ -275,49 +266,52 @@
 
         <!-- Case List -->
         <div id="caseListTab" style="display:none">
-            <div class="filter-card">
-                <h2>🔍 Filter Cases</h2>
-                <div class="filter-grid">
-                    <div>
-                        <label>Search</label>
-                        <input type="text" id="searchNotes" placeholder="Search...">
-                    </div>
-                    <div>
-                        <label>Procedure</label>
-                        <select id="filterProcedure">
-                            <option value="">All Procedures</option>
-                            <option>Cataract / Phaco</option>
-                            <option>Vitreoretinal (PPV)</option>
-                            <option>Glaucoma</option>
-                            <option>Cornea / Keratoplasty</option>
-                            <option>Oculoplastics</option>
-                            <option>Strabismus</option>
-                            <option>Laser (LIO / SLT / YAG)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Role</label>
-                        <select id="filterRole">
-                            <option value="">All Roles</option>
-                            <option>Primary Surgeon</option>
-                            <option>Assistant</option>
-                            <option>Observer</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>From Date</label>
-                        <input type="date" id="filterDateFrom">
-                    </div>
-                    <div>
-                        <label>To Date</label>
-                        <input type="date" id="filterDateTo">
-                    </div>
-                </div>
-                <div class="filter-btns">
-                    <button onclick="applyFilter()">Apply Filter</button>
-                    <button onclick="clearFilter()" style="background:#64748b">Clear</button>
+
+            <!-- Search bar -->
+            <div style="background:white; padding:16px; border-radius:14px; margin-bottom:16px; box-shadow:0 2px 12px rgba(37,99,235,0.08); border:1px solid #e2e8f0">
+                <div style="position:relative">
+                    <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px">🔍</span>
+                    <input type="text" id="searchNotes" placeholder="Search cases..." oninput="applyFilter()"
+                        style="padding-left:44px; margin-top:0; border-radius:10px; font-size:14px">
                 </div>
             </div>
+
+            <!-- Filter chips -->
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; align-items:center">
+                <span style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px">Filter:</span>
+                <select id="filterProcedure" onchange="applyFilter()" style="width:auto; padding:7px 12px; font-size:12px; border-radius:20px; margin-top:0; border:2px solid #e2e8f0; background:white">
+                    <option value="">All Procedures</option>
+                    <option>Cataract / Phaco</option>
+                    <option>Vitreoretinal (PPV)</option>
+                    <option>Glaucoma</option>
+                    <option>Cornea / Keratoplasty</option>
+                    <option>Oculoplastics</option>
+                    <option>Strabismus</option>
+                    <option>Laser (LIO / SLT / YAG)</option>
+                </select>
+                <select id="filterRole" onchange="applyFilter()" style="width:auto; padding:7px 12px; font-size:12px; border-radius:20px; margin-top:0; border:2px solid #e2e8f0; background:white">
+                    <option value="">All Roles</option>
+                    <option>Primary Surgeon</option>
+                    <option>Assistant</option>
+                    <option>Observer</option>
+                </select>
+                <input type="date" id="filterDateFrom" onchange="applyFilter()" style="width:auto; padding:7px 12px; font-size:12px; border-radius:20px; margin-top:0; border:2px solid #e2e8f0">
+                <input type="date" id="filterDateTo" onchange="applyFilter()" style="width:auto; padding:7px 12px; font-size:12px; border-radius:20px; margin-top:0; border:2px solid #e2e8f0">
+                <button onclick="clearFilter()" style="width:auto; padding:7px 14px; font-size:12px; border-radius:20px; margin-top:0; background:#64748b">✕ Clear</button>
+            </div>
+
+            <!-- Sort bar -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+                <span id="caseCount" style="font-size:13px; font-weight:600; color:#64748b"></span>
+                <select id="sortOrder" onchange="applyFilter()" style="width:auto; padding:7px 12px; font-size:12px; border-radius:10px; margin-top:0; border:2px solid #e2e8f0; background:white">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="procedure">By Procedure</option>
+                    <option value="role">By Role</option>
+                </select>
+            </div>
+
+            <!-- Case cards -->
             <div id="caseList"></div>
         </div>
 

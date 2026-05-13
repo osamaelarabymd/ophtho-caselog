@@ -21,6 +21,22 @@ const acgme = {
     'Laser (LIO / SLT / YAG)': 25
 };
 
+const procedureColors = {
+    'Cataract / Phaco':        '#2563eb',
+    'Vitreoretinal (PPV)':     '#7c3aed',
+    'Glaucoma':                '#16a34a',
+    'Cornea / Keratoplasty':   '#0891b2',
+    'Oculoplastics':           '#d97706',
+    'Strabismus':              '#dc2626',
+    'Laser (LIO / SLT / YAG)':'#8C1515'
+};
+
+const roleColors = {
+    'Primary Surgeon': '#16a34a',
+    'Assistant':       '#2563eb',
+    'Observer':        '#d97706'
+};
+
 // Toast
 function showToast(message, type = 'success') {
     let toast = document.getElementById('toast');
@@ -117,52 +133,45 @@ function saveProfile() {
 
 function loadProfile() {
     let profile = JSON.parse(localStorage.getItem('userProfile')) || {};
-    if (profile.name)      document.getElementById('profileNameInput').value  = profile.name;
-    if (profile.pgy)       document.getElementById('profilePgyInput').value   = profile.pgy;
+    if (profile.name)      document.getElementById('profileNameInput').value    = profile.name;
+    if (profile.pgy)       document.getElementById('profilePgyInput').value     = profile.pgy;
     if (profile.program)   document.getElementById('profileProgramInput').value = profile.program;
-    if (profile.startYear) document.getElementById('profileStartYear').value  = profile.startYear;
-    if (profile.endYear)   document.getElementById('profileEndYear').value    = profile.endYear;
-    if (profile.goals)     document.getElementById('profileGoals').value      = profile.goals;
+    if (profile.startYear) document.getElementById('profileStartYear').value    = profile.startYear;
+    if (profile.endYear)   document.getElementById('profileEndYear').value      = profile.endYear;
+    if (profile.goals)     document.getElementById('profileGoals').value        = profile.goals;
     updateProfileDisplay();
 }
 
 function updateProfileDisplay() {
-    let profile = JSON.parse(localStorage.getItem('userProfile')) || {};
-
-    // Header card
-    let nameEl = document.getElementById('profileName');
-    let pgyEl  = document.getElementById('profilePgy');
-    let progEl = document.getElementById('profileProgram');
+    let profile  = JSON.parse(localStorage.getItem('userProfile')) || {};
+    let nameEl   = document.getElementById('profileName');
+    let pgyEl    = document.getElementById('profilePgy');
+    let progEl   = document.getElementById('profileProgram');
     if (nameEl) nameEl.textContent = profile.name ? 'Dr. ' + profile.name : 'Dr. Osama Elaraby';
     if (pgyEl)  pgyEl.textContent  = profile.pgy  || 'PGY-1';
     if (progEl) progEl.textContent = (profile.program || 'Stanford University') + ' — Ophthalmology';
 
-    // Goals display
     let goalsEl = document.getElementById('profileGoalsDisplay');
     if (goalsEl) {
-        if (profile.goals) {
-            goalsEl.innerHTML = '<p style="color:#1e293b; font-size:14px; line-height:1.7">' + profile.goals + '</p>';
-        } else {
-            goalsEl.innerHTML = '<p style="color:#94a3b8; font-size:14px">No goals set yet — add them above!</p>';
-        }
+        goalsEl.innerHTML = profile.goals
+            ? '<p style="color:#1e293b; font-size:14px; line-height:1.7">' + profile.goals + '</p>'
+            : '<p style="color:#94a3b8; font-size:14px">No goals set yet — add them above!</p>';
     }
 
-    // Residency timeline
     if (profile.startYear && profile.endYear) {
-        let now     = new Date().getFullYear();
-        let total   = profile.endYear - profile.startYear;
-        let done    = now - profile.startYear;
-        let pct     = Math.min(Math.round((done / total) * 100), 100);
-        let timeEl  = document.getElementById('profileStats');
-        if (timeEl) {
-            timeEl.innerHTML =
+        let now   = new Date().getFullYear();
+        let total = profile.endYear - profile.startYear;
+        let done  = now - profile.startYear;
+        let pct   = Math.min(Math.round((done / total) * 100), 100);
+        let statsEl = document.getElementById('profileStats');
+        if (statsEl) {
+            statsEl.innerHTML =
                 '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">📅</div><h3>' + profile.startYear + '</h3><p>Start Year</p></div>' +
                 '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">🎓</div><h3>' + profile.endYear + '</h3><p>End Year</p></div>' +
                 '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">⏳</div><h3>' + pct + '%</h3><p>Residency Done</p></div>';
         }
     }
 
-    // Welcome card name
     let welcomeEl = document.getElementById('welcomeName');
     if (welcomeEl && profile.name) {
         let parts    = profile.name.trim().split(' ');
@@ -318,12 +327,10 @@ async function loadProfileEmail() {
 }
 
 function loadProfileCaseStats() {
-    let total      = allCases.length;
-    let totalReq   = Object.values(acgme).reduce((a,b)=>a+b,0);
-    let pct        = Math.min(Math.round((total/totalReq)*100),100);
-    let primary    = allCases.filter(c => c.role === 'Primary Surgeon').length;
-    let streak     = localStorage.getItem('streak') || 0;
-
+    let total   = allCases.length;
+    let totalReq = Object.values(acgme).reduce((a,b)=>a+b,0);
+    let pct     = Math.min(Math.round((total/totalReq)*100),100);
+    let streak  = localStorage.getItem('streak') || 0;
     let statsEl = document.getElementById('profileStats');
     if (statsEl) {
         statsEl.innerHTML =
@@ -615,26 +622,72 @@ function showAnalytics() {
     document.getElementById('topProcedures').innerHTML = html;
 }
 
+// Premium card-based case list
 function displayCaseList(cases) {
-    let html = '<h2>Saved Cases</h2><table>';
-    html += '<tr><th>Resident</th><th>PGY</th><th>Procedure</th><th>Role</th><th>Date</th><th>Attending</th><th>Hospital</th><th>Notes</th><th>Actions</th></tr>';
-    for (let i = 0; i < cases.length; i++) {
-        html += '<tr>';
-        html += '<td>' + (cases[i].resident_name || '-') + '</td>';
-        html += '<td>' + (cases[i].pgy_year || '-') + '</td>';
-        html += '<td>' + cases[i].procedure + '</td>';
-        html += '<td>' + cases[i].role + '</td>';
-        html += '<td>' + cases[i].date + '</td>';
-        html += '<td>' + (cases[i].attending || '-') + '</td>';
-        html += '<td>' + (cases[i].hospital || '-') + '</td>';
-        html += '<td>' + (cases[i].notes || '-') + '</td>';
-        html += '<td style="white-space:nowrap">';
-        html += '<button onclick="openEditModal(\'' + cases[i].id + '\')" style="background:#2563eb; padding:6px 8px; font-size:12px; margin:0 2px; width:auto; border-radius:6px">✏️</button>';
-        html += '<button onclick="duplicateCase(\'' + cases[i].id + '\')" style="background:#7c3aed; padding:6px 8px; font-size:12px; margin:0 2px; width:auto; border-radius:6px">🔄</button>';
-        html += '<button onclick="deleteCase(\'' + cases[i].id + '\')" style="background:#dc2626; padding:6px 8px; font-size:12px; margin:0 2px; width:auto; border-radius:6px">🗑️</button>';
-        html += '</td></tr>';
+    let countEl = document.getElementById('caseCount');
+    if (countEl) countEl.textContent = cases.length + ' case' + (cases.length !== 1 ? 's' : '') + ' found';
+
+    if (cases.length === 0) {
+        document.getElementById('caseList').innerHTML =
+            '<div style="text-align:center; padding:60px 20px; color:#94a3b8">' +
+            '<div style="font-size:48px; margin-bottom:16px">📋</div>' +
+            '<p style="font-size:16px; font-weight:600; margin-bottom:8px">No cases found</p>' +
+            '<p style="font-size:14px">Try adjusting your filters or log a new case</p>' +
+            '</div>';
+        return;
     }
-    html += '</table>';
+
+    let html = '<div style="display:flex; flex-direction:column; gap:12px">';
+
+    for (let c of cases) {
+        let color     = procedureColors[c.procedure] || '#2563eb';
+        let roleColor = roleColors[c.role] || '#64748b';
+        let dateStr   = c.date ? new Date(c.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+        let initials  = c.procedure ? c.procedure.slice(0,2).toUpperCase() : '??';
+
+        html += `
+        <div style="background:white; border-radius:16px; padding:0; box-shadow:0 2px 12px rgba(37,99,235,0.08); border:1px solid #e2e8f0; overflow:hidden; transition:transform 0.2s, box-shadow 0.2s"
+             onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 28px rgba(37,99,235,0.13)'"
+             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 12px rgba(37,99,235,0.08)'">
+
+            <!-- Card top bar -->
+            <div style="height:5px; background:${color}; border-radius:16px 16px 0 0"></div>
+
+            <div style="padding:16px 18px">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px">
+
+                    <!-- Left: icon + procedure -->
+                    <div style="display:flex; align-items:center; gap:12px">
+                        <div style="width:44px; height:44px; border-radius:12px; background:${color}18; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:${color}; flex-shrink:0">${initials}</div>
+                        <div>
+                            <div style="font-size:15px; font-weight:700; color:#0f172a; margin-bottom:3px">${c.procedure}</div>
+                            <div style="display:flex; gap:6px; flex-wrap:wrap">
+                                <span style="background:${roleColor}18; color:${roleColor}; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px">${c.role}</span>
+                                <span style="background:#f1f5f9; color:#64748b; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px">📅 ${dateStr}</span>
+                                ${c.pgy_year ? `<span style="background:#f1f5f9; color:#64748b; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px">${c.pgy_year}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: action buttons -->
+                    <div style="display:flex; gap:6px; flex-shrink:0">
+                        <button onclick="openEditModal('${c.id}')" style="background:#2563eb18; color:#2563eb; padding:7px 10px; font-size:13px; margin:0; width:auto; border-radius:8px; font-weight:600" title="Edit">✏️</button>
+                        <button onclick="duplicateCase('${c.id}')" style="background:#7c3aed18; color:#7c3aed; padding:7px 10px; font-size:13px; margin:0; width:auto; border-radius:8px; font-weight:600" title="Duplicate">🔄</button>
+                        <button onclick="deleteCase('${c.id}')" style="background:#dc262618; color:#dc2626; padding:7px 10px; font-size:13px; margin:0; width:auto; border-radius:8px; font-weight:600" title="Delete">🗑️</button>
+                    </div>
+                </div>
+
+                <!-- Details row -->
+                <div style="display:flex; gap:16px; flex-wrap:wrap; border-top:1px solid #f1f5f9; padding-top:10px">
+                    ${c.attending ? `<span style="font-size:12px; color:#64748b">👨‍⚕️ <strong>${c.attending}</strong></span>` : ''}
+                    ${c.hospital  ? `<span style="font-size:12px; color:#64748b">🏥 <strong>${c.hospital}</strong></span>` : ''}
+                    ${c.notes     ? `<span style="font-size:12px; color:#64748b; flex:1">📝 ${c.notes}</span>` : ''}
+                </div>
+            </div>
+        </div>`;
+    }
+
+    html += '</div>';
     document.getElementById('caseList').innerHTML = html;
 }
 
@@ -644,16 +697,27 @@ function applyFilter() {
     let role      = document.getElementById('filterRole').value;
     let dateFrom  = document.getElementById('filterDateFrom').value;
     let dateTo    = document.getElementById('filterDateTo').value;
-    let filtered  = allCases.filter(c =>
-        (search === '' || (c.notes && c.notes.toLowerCase().includes(search)) ||
+    let sort      = document.getElementById('sortOrder') ? document.getElementById('sortOrder').value : 'newest';
+
+    let filtered = allCases.filter(c =>
+        (search === '' ||
+        (c.notes && c.notes.toLowerCase().includes(search)) ||
         (c.resident_name && c.resident_name.toLowerCase().includes(search)) ||
         (c.attending && c.attending.toLowerCase().includes(search)) ||
-        (c.hospital && c.hospital.toLowerCase().includes(search))) &&
+        (c.hospital && c.hospital.toLowerCase().includes(search)) ||
+        (c.procedure && c.procedure.toLowerCase().includes(search))) &&
         (procedure === '' || c.procedure === procedure) &&
         (role      === '' || c.role === role) &&
         (dateFrom  === '' || c.date >= dateFrom) &&
         (dateTo    === '' || c.date <= dateTo)
     );
+
+    // Sort
+    if (sort === 'newest')    filtered.sort((a,b) => b.date > a.date ? 1 : -1);
+    if (sort === 'oldest')    filtered.sort((a,b) => a.date > b.date ? 1 : -1);
+    if (sort === 'procedure') filtered.sort((a,b) => a.procedure.localeCompare(b.procedure));
+    if (sort === 'role')      filtered.sort((a,b) => a.role.localeCompare(b.role));
+
     displayCaseList(filtered);
 }
 
