@@ -17,7 +17,15 @@
 </head>
 <body>
 
-    <!-- Onboarding Screen -->
+    <!-- Toast -->
+    <div id="toast"></div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9998; align-items:center; justify-content:center;">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Onboarding -->
     <div id="onboarding" style="display:none">
         <div id="slide1" class="onboard-slide">
             <div class="onboard-icon">👁️</div>
@@ -53,7 +61,7 @@
 
     <h1>👁️ OphthoLog</h1>
 
-    <!-- Login section -->
+    <!-- Login -->
     <div id="loginSection">
         <h2>👁️ OphthoLog</h2>
         <p>Ophthalmology Residency Case Tracker</p>
@@ -65,18 +73,18 @@
         </div>
     </div>
 
-    <!-- App section -->
+    <!-- App -->
     <div id="appSection" style="display:none">
-        <button onclick="toggleDarkMode()" id="darkBtn" style="float:right; background:#1e293b; width:auto; padding:10px 18px; margin-top:10px; margin-right:10px; font-size:13px">🌙 Dark</button>
-        <button onclick="signOut()" style="float:right; background:#dc2626; width:auto; padding:10px 18px; margin-top:10px; font-size:13px">Sign Out</button>
 
-       <div id="tabs">
-    <button onclick="showTab('dashboard')" class="tab-btn active-tab">📊 Dashboard</button>
-    <button onclick="showTab('logCase')"   class="tab-btn">➕ Log Case</button>
-    <button onclick="showTab('caseList')"  class="tab-btn">📋 Case List</button>
-    <button onclick="showTab('analytics')" class="tab-btn">📈 Analytics</button>
-    <button onclick="showTab('admin')" id="adminTab" class="tab-btn" style="display:none; background:#16a34a; color:white; border-radius:8px; border-bottom:none">👨‍⚕️ PD Panel</button>
-</div>
+<button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSev-87zwv0Ot_7LNJuuNNTBpKpcOvS_vEtSnGbgLGjMVP-iMA/viewform', '_blank')" style="float:right; background:#16a34a; width:auto; padding:10px 18px; margin-top:10px; margin-right:10px; font-size:13px">💬 Feedback</button>        <button onclick="signOut()" style="float:right; background:#dc2626; width:auto; padding:10px 18px; margin-top:10px; font-size:13px">Sign Out</button>
+
+        <div id="tabs">
+            <button onclick="showTab('dashboard')" class="tab-btn active-tab">📊 Dashboard</button>
+            <button onclick="showTab('logCase')"   class="tab-btn">➕ Log Case</button>
+            <button onclick="showTab('caseList')"  class="tab-btn">📋 Case List</button>
+            <button onclick="showTab('analytics')" class="tab-btn">📈 Analytics</button>
+            <button onclick="showTab('admin')" id="adminTab" class="tab-btn" style="display:none; background:#16a34a; color:white; border-radius:8px; border-bottom:none">👨‍⚕️ PD Panel</button>
+        </div>
 
         <!-- Dashboard -->
         <div id="dashboard">
@@ -92,8 +100,6 @@
         <!-- Log Case -->
         <div id="logCase" style="display:none">
             <h2>Log a New Case</h2>
-
-            <!-- Templates -->
             <div id="templatesSection">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
                     <label style="margin:0; font-size:13px">QUICK TEMPLATES</label>
@@ -199,91 +205,81 @@
             <div id="caseList"></div>
         </div>
 
-        <!-- Admin Panel -->
         <!-- Analytics -->
-<div id="analyticsTab" style="display:none">
-    <h2>📈 Analytics</h2>
-
-    <div id="analyticsSummary" style="display:grid; grid-template-columns: repeat(3,1fr); gap:16px; margin-bottom:24px"></div>
-
-    <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom:24px">
-        <h3>Cases Per Month</h3>
-        <canvas id="monthlyChart" height="120"></canvas>
-    </div>
-
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px">
-        <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)">
-            <h3>Role Breakdown</h3>
-            <canvas id="roleChart" height="200"></canvas>
+        <div id="analyticsTab" style="display:none">
+            <h2>📈 Analytics</h2>
+            <div id="analyticsSummary" style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px"></div>
+            <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom:24px">
+                <h3>Cases Per Month</h3>
+                <canvas id="monthlyChart" height="120"></canvas>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px">
+                <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)">
+                    <h3>Role Breakdown</h3>
+                    <canvas id="roleChart" height="200"></canvas>
+                </div>
+                <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)">
+                    <h3>Busiest Days</h3>
+                    <canvas id="dayChart" height="200"></canvas>
+                </div>
+            </div>
+            <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)">
+                <h3>Top Procedures This Month</h3>
+                <div id="topProcedures"></div>
+            </div>
         </div>
-        <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)">
-            <h3>Busiest Days</h3>
-            <canvas id="dayChart" height="200"></canvas>
-        </div>
-    </div>
 
-    <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)">
-        <h3>Top Procedures This Month</h3>
-        <div id="topProcedures"></div>
-    </div>
-</div> 
+        <!-- Admin Panel -->
         <div id="adminPanel" style="display:none"></div>
 
-    </div>
-    <!-- Edit Modal -->
-<div id="editModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center;">
-    <div style="background:white; padding:30px; border-radius:16px; width:90%; max-width:500px; max-height:90vh; overflow-y:auto;">
-        <h2>✏️ Edit Case</h2>
-        <input type="hidden" id="editId">
-
-        <label>Resident Name</label>
-        <input type="text" id="editResidentName" placeholder="Resident name">
-
-        <label>PGY Year</label>
-        <select id="editPgyYear">
-            <option value="PGY-1">PGY-1</option>
-            <option value="PGY-2">PGY-2</option>
-            <option value="PGY-3">PGY-3</option>
-            <option value="PGY-4">PGY-4</option>
-            <option value="PGY-5">PGY-5</option>
-        </select>
-
-        <label>Attending Supervisor</label>
-        <input type="text" id="editAttending" placeholder="Attending name">
-
-        <label>Hospital / Institution</label>
-        <input type="text" id="editHospital" placeholder="Hospital name">
-
-        <label>Procedure Type</label>
-        <select id="editProcedure">
-            <option>Cataract / Phaco</option>
-            <option>Vitreoretinal (PPV)</option>
-            <option>Glaucoma</option>
-            <option>Cornea / Keratoplasty</option>
-            <option>Oculoplastics</option>
-            <option>Strabismus</option>
-            <option>Laser (LIO / SLT / YAG)</option>
-        </select>
-
-        <label>Your Role</label>
-        <select id="editRole">
-            <option>Primary Surgeon</option>
-            <option>Assistant</option>
-            <option>Observer</option>
-        </select>
-
-        <label>Date</label>
-        <input type="date" id="editDate">
-
-        <label>Notes</label>
-        <textarea id="editNotes" rows="3"></textarea>
-
-        <div style="display:flex; gap:10px; margin-top:20px">
-            <button onclick="saveEdit()" style="flex:1; margin:0">💾 Save Changes</button>
-            <button onclick="closeEditModal()" style="flex:1; margin:0; background:#64748b">Cancel</button>
+        <!-- Edit Modal -->
+        <div id="editModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center;">
+            <div style="background:white; padding:30px; border-radius:16px; width:90%; max-width:500px; max-height:90vh; overflow-y:auto;">
+                <h2>✏️ Edit Case</h2>
+                <input type="hidden" id="editId">
+                <label>Resident Name</label>
+                <input type="text" id="editResidentName" placeholder="Resident name">
+                <label>PGY Year</label>
+                <select id="editPgyYear">
+                    <option value="PGY-1">PGY-1</option>
+                    <option value="PGY-2">PGY-2</option>
+                    <option value="PGY-3">PGY-3</option>
+                    <option value="PGY-4">PGY-4</option>
+                    <option value="PGY-5">PGY-5</option>
+                </select>
+                <label>Attending Supervisor</label>
+                <input type="text" id="editAttending" placeholder="Attending name">
+                <label>Hospital / Institution</label>
+                <input type="text" id="editHospital" placeholder="Hospital name">
+                <label>Procedure Type</label>
+                <select id="editProcedure">
+                    <option>Cataract / Phaco</option>
+                    <option>Vitreoretinal (PPV)</option>
+                    <option>Glaucoma</option>
+                    <option>Cornea / Keratoplasty</option>
+                    <option>Oculoplastics</option>
+                    <option>Strabismus</option>
+                    <option>Laser (LIO / SLT / YAG)</option>
+                </select>
+                <label>Your Role</label>
+                <select id="editRole">
+                    <option>Primary Surgeon</option>
+                    <option>Assistant</option>
+                    <option>Observer</option>
+                </select>
+                <label>Date</label>
+                <input type="date" id="editDate">
+                <label>Notes</label>
+                <textarea id="editNotes" rows="3"></textarea>
+                <div style="display:flex; gap:10px; margin-top:20px">
+                    <button onclick="saveEdit()" style="flex:1; margin:0">💾 Save Changes</button>
+                    <button onclick="closeEditModal()" style="flex:1; margin:0; background:#64748b">Cancel</button>
+                </div>
+            </div>
         </div>
+
     </div>
-</div>
-<script src="app.js"></script>
+
+    <script src="app.js"></script>
 </body>
 </html>

@@ -6,9 +6,9 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allCases = [];
 let procedureChart = null;
-let monthlyChart = null;
-let roleChart = null;
-let dayChart = null;
+let monthlyChart   = null;
+let roleChart      = null;
+let dayChart       = null;
 let currentUserRole = 'resident';
 
 const acgme = {
@@ -20,6 +20,24 @@ const acgme = {
     'Strabismus': 26,
     'Laser (LIO / SLT / YAG)': 25
 };
+
+// Toast notifications
+function showToast(message, type = 'success') {
+    let toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = type;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 3000);
+}
+
+// Loading spinner
+function showLoading() {
+    document.getElementById('loadingSpinner').style.display = 'flex';
+}
+
+function hideLoading() {
+    document.getElementById('loadingSpinner').style.display = 'none';
+}
 
 // Onboarding
 function checkOnboarding() {
@@ -89,7 +107,7 @@ function saveTemplate() {
     templates.push(template);
     localStorage.setItem('caseTemplates', JSON.stringify(templates));
     loadTemplates();
-    alert('Template saved!');
+    showToast('📋 Template saved!');
 }
 
 function applyTemplate(index) {
@@ -101,7 +119,7 @@ function applyTemplate(index) {
     document.getElementById('residentName').value = t.resident_name;
     document.getElementById('attending').value    = t.attending;
     document.getElementById('hospital').value     = t.hospital;
-    alert('Template applied! Just add the date and notes.');
+    showToast('⚡ Template applied! Add date and notes.');
 }
 
 function deleteTemplate(event, index) {
@@ -110,6 +128,7 @@ function deleteTemplate(event, index) {
     templates.splice(index, 1);
     localStorage.setItem('caseTemplates', JSON.stringify(templates));
     loadTemplates();
+    showToast('🗑️ Template deleted', 'warning');
 }
 
 // Edit case modal
@@ -134,6 +153,7 @@ function closeEditModal() {
 
 async function saveEdit() {
     let id = document.getElementById('editId').value;
+    showLoading();
     let { error } = await db.from('cases').update({
         procedure:     document.getElementById('editProcedure').value,
         role:          document.getElementById('editRole').value,
@@ -144,8 +164,9 @@ async function saveEdit() {
         hospital:      document.getElementById('editHospital').value,
         notes:         document.getElementById('editNotes').value
     }).eq('id', id);
-    if (error) { alert('Error updating case: ' + error.message); }
-    else { closeEditModal(); loadCases(); alert('✅ Case updated successfully!'); }
+    hideLoading();
+    if (error) { showToast('Error: ' + error.message, 'error'); }
+    else { closeEditModal(); loadCases(); showToast('✅ Case updated!'); }
 }
 
 function showTab(tab) {
@@ -176,16 +197,22 @@ function showTab(tab) {
 async function signUp() {
     let email    = document.getElementById('email').value;
     let password = document.getElementById('password').value;
+    if (!email || !password) { showToast('⚠️ Please enter email and password', 'warning'); return; }
+    showLoading();
     let { error } = await db.auth.signUp({ email, password });
-    if (error) { alert(error.message); }
-    else { alert('Account created! Please sign in.'); }
+    hideLoading();
+    if (error) { showToast(error.message, 'error'); }
+    else { showToast('Account created! Please sign in.'); }
 }
 
 async function signIn() {
     let email    = document.getElementById('email').value;
     let password = document.getElementById('password').value;
+    if (!email || !password) { showToast('⚠️ Please enter email and password', 'warning'); return; }
+    showLoading();
     let { error } = await db.auth.signInWithPassword({ email, password });
-    if (error) { alert(error.message); }
+    hideLoading();
+    if (error) { showToast(error.message, 'error'); }
     else { showApp(); }
 }
 
@@ -204,6 +231,9 @@ async function showApp() {
     if (currentUserRole === 'admin') {
         document.getElementById('adminTab').style.display = 'inline-block';
     }
+    // Auto-fill resident name
+    let savedName = localStorage.getItem('residentName');
+    if (savedName) document.getElementById('residentName').value = savedName;
     loadCases();
 }
 
@@ -213,65 +243,67 @@ db.auth.getSession().then(({ data }) => {
 
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('saveBtn').addEventListener('click', async function() {
-
-        // Validation
         if (!document.getElementById('residentName').value) {
-            alert('⚠️ Please enter the resident name before saving.');
-            return;
+            showToast('⚠️ Please enter resident name', 'warning'); return;
         }
         if (!document.getElementById('date').value) {
-            alert('⚠️ Please select a date before saving.');
-            return;
+            showToast('⚠️ Please select a date', 'warning'); return;
         }
-
+        showLoading();
         let { data: { user } } = await db.auth.getUser();
+        let residentName = document.getElementById('residentName').value;
         let { error } = await db.from('cases').insert({
             procedure:     document.getElementById('procedure').value,
             role:          document.getElementById('role').value,
             date:          document.getElementById('date').value,
             notes:         document.getElementById('notes').value,
-            resident_name: document.getElementById('residentName').value,
+            resident_name: residentName,
             pgy_year:      document.getElementById('pgyYear').value,
             attending:     document.getElementById('attending').value,
             hospital:      document.getElementById('hospital').value,
             user_id:       user.id
         });
-
+        hideLoading();
         if (error) {
-            alert('Error saving case: ' + error.message);
+            showToast('Error: ' + error.message, 'error');
         } else {
-            // Clear form after save
-            document.getElementById('residentName').value = '';
-            document.getElementById('attending').value    = '';
-            document.getElementById('hospital').value     = '';
-            document.getElementById('notes').value        = '';
-            document.getElementById('date').value         = '';
+            localStorage.setItem('residentName', residentName);
+            document.getElementById('attending').value = '';
+            document.getElementById('hospital').value  = '';
+            document.getElementById('notes').value     = '';
+            document.getElementById('date').value      = '';
             loadCases();
-            alert('✅ Case saved successfully!');
+            showToast('✅ Case saved successfully!');
         }
     });
 });
 
 async function loadCases() {
+    showLoading();
     let { data: { user } } = await db.auth.getUser();
     let { data: cases } = await db.from('cases').select('*').eq('user_id', user.id);
     allCases = cases || [];
     updateDashboard(allCases);
+    hideLoading();
 }
 
 async function deleteCase(id) {
     if (!confirm('Are you sure you want to delete this case?')) return;
+    showLoading();
     await db.from('cases').delete().eq('id', id);
+    hideLoading();
     loadCases();
+    showToast('🗑️ Case deleted', 'warning');
 }
 
 async function loadAdminData() {
+    showLoading();
     let { data: cases }    = await db.from('cases').select('*');
     let { data: profiles } = await db.from('profiles').select('*');
+    hideLoading();
     let html = '<h2>👨‍⚕️ Program Director Panel</h2>';
-    html += '<h3>All Residents</h3>';
-    html += '<table>';
-    html += '<tr><th>Name</th><th>Email</th><th>PGY</th><th>Total Cases</th><th>Cataract</th><th>Vitreoretinal</th><th>Glaucoma</th><th>Progress</th></tr>';
+    html += '<h3>All Residents</h3><table>';
+    html += '<tr><th>Name</th><th>Email</th><th>PGY</th><th>Total</th><th>Cataract</th><th>VR</th><th>Glaucoma</th><th>Progress</th></tr>';
     if (profiles) {
         for (let profile of profiles) {
             if (profile.role === 'resident') {
@@ -280,8 +312,7 @@ async function loadAdminData() {
                 let vr        = userCases.filter(c => c.procedure === 'Vitreoretinal (PPV)').length;
                 let glaucoma  = userCases.filter(c => c.procedure === 'Glaucoma').length;
                 let total     = userCases.length;
-                let totalReq  = Object.values(acgme).reduce((a, b) => a + b, 0);
-                let percent   = Math.min(Math.round((total / totalReq) * 100), 100);
+                let percent   = Math.min(Math.round((total / Object.values(acgme).reduce((a,b)=>a+b,0)) * 100), 100);
                 let name      = userCases.length > 0 && userCases[0].resident_name ? userCases[0].resident_name : '-';
                 let pgy       = userCases.length > 0 && userCases[0].pgy_year ? userCases[0].pgy_year : '-';
                 html += '<tr><td>' + name + '</td><td>' + profile.email + '</td><td>' + pgy + '</td><td>' + total + '</td><td>' + cataract + '/86</td><td>' + vr + '/25</td><td>' + glaucoma + '/25</td><td>' + percent + '%</td></tr>';
@@ -305,12 +336,9 @@ function updateDashboard(cases) {
         '<div class="summary-card"><h3>' + Object.keys(acgme).length + '</h3><p>Procedure Types</p></div>';
     let counts = {};
     for (let p in acgme) { counts[p] = 0; }
-    for (let c of cases) {
-        if (counts[c.procedure] !== undefined) { counts[c.procedure]++; }
-    }
+    for (let c of cases) { if (counts[c.procedure] !== undefined) { counts[c.procedure]++; } }
     if (procedureChart) { procedureChart.destroy(); }
-    let ctx = document.getElementById('procedureChart').getContext('2d');
-    procedureChart = new Chart(ctx, {
+    procedureChart = new Chart(document.getElementById('procedureChart').getContext('2d'), {
         type: 'bar',
         data: {
             labels: Object.keys(counts),
@@ -342,77 +370,47 @@ function showAnalytics() {
         '<div class="summary-card"><h3>' + total + '</h3><p>Total Cases</p></div>' +
         '<div class="summary-card"><h3>' + monthCount + '</h3><p>This Month</p></div>' +
         '<div class="summary-card"><h3>' + primaryPct + '%</h3><p>As Primary Surgeon</p></div>';
-    let months = [];
-    let monthlyCounts = [];
+    let months = [], monthlyCounts = [];
     for (let i = 5; i >= 0; i--) {
         let d = new Date();
         d.setMonth(d.getMonth() - i);
-        let key   = d.toISOString().slice(0, 7);
-        let label = d.toLocaleString('default', { month: 'short' });
-        months.push(label);
-        monthlyCounts.push(allCases.filter(c => c.date && c.date.startsWith(key)).length);
+        months.push(d.toLocaleString('default', { month: 'short' }));
+        monthlyCounts.push(allCases.filter(c => c.date && c.date.startsWith(d.toISOString().slice(0,7))).length);
     }
     if (monthlyChart) { monthlyChart.destroy(); }
     monthlyChart = new Chart(document.getElementById('monthlyChart').getContext('2d'), {
         type: 'line',
         data: {
             labels: months,
-            datasets: [{
-                label: 'Cases',
-                data: monthlyCounts,
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37,99,235,0.1)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#2563eb',
-                pointRadius: 5
-            }]
+            datasets: [{ label: 'Cases', data: monthlyCounts, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.1)', borderWidth: 3, fill: true, tension: 0.4, pointBackgroundColor: '#2563eb', pointRadius: 5 }]
         },
         options: { responsive: true, scales: { y: { beginAtZero: true } } }
     });
     let roleCounts = { 'Primary Surgeon': 0, 'Assistant': 0, 'Observer': 0 };
-    for (let c of allCases) {
-        if (roleCounts[c.role] !== undefined) { roleCounts[c.role]++; }
-    }
+    for (let c of allCases) { if (roleCounts[c.role] !== undefined) { roleCounts[c.role]++; } }
     if (roleChart) { roleChart.destroy(); }
     roleChart = new Chart(document.getElementById('roleChart').getContext('2d'), {
         type: 'doughnut',
-        data: {
-            labels: Object.keys(roleCounts),
-            datasets: [{ data: Object.values(roleCounts), backgroundColor: ['#2563eb', '#16a34a', '#d97706'] }]
-        },
+        data: { labels: Object.keys(roleCounts), datasets: [{ data: Object.values(roleCounts), backgroundColor: ['#2563eb', '#16a34a', '#d97706'] }] },
         options: { responsive: true }
     });
     let dayCounts = [0,0,0,0,0,0,0];
-    let dayNames  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    for (let c of allCases) {
-        if (c.date) { dayCounts[new Date(c.date).getDay()]++; }
-    }
+    for (let c of allCases) { if (c.date) { dayCounts[new Date(c.date).getDay()]++; } }
     if (dayChart) { dayChart.destroy(); }
     dayChart = new Chart(document.getElementById('dayChart').getContext('2d'), {
         type: 'bar',
-        data: {
-            labels: dayNames,
-            datasets: [{ label: 'Cases', data: dayCounts, backgroundColor: '#8C1515' }]
-        },
+        data: { labels: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], datasets: [{ label: 'Cases', data: dayCounts, backgroundColor: '#8C1515' }] },
         options: { responsive: true, scales: { y: { beginAtZero: true } } }
     });
     let monthCases = allCases.filter(c => c.date && c.date.startsWith(thisMonth));
     let procCounts = {};
-    for (let c of monthCases) {
-        procCounts[c.procedure] = (procCounts[c.procedure] || 0) + 1;
-    }
+    for (let c of monthCases) { procCounts[c.procedure] = (procCounts[c.procedure] || 0) + 1; }
     let sorted = Object.entries(procCounts).sort((a, b) => b[1] - a[1]);
-    let html = '';
-    if (sorted.length === 0) {
-        html = '<p style="color:#94a3b8">No cases logged this month yet.</p>';
-    } else {
-        for (let [proc, count] of sorted) {
-            let pct = Math.round((count / monthCases.length) * 100);
-            html += '<div style="margin-bottom:12px"><p style="font-size:14px; font-weight:600; margin-bottom:4px">' + proc + ' — ' + count + ' cases (' + pct + '%)</p>';
-            html += '<div style="background:#e2e8f0; border-radius:99px; height:8px"><div style="background:#2563eb; width:' + pct + '%; height:8px; border-radius:99px"></div></div></div>';
-        }
+    let html = sorted.length === 0 ? '<p style="color:#94a3b8">No cases this month yet.</p>' : '';
+    for (let [proc, count] of sorted) {
+        let pct = Math.round((count / monthCases.length) * 100);
+        html += '<div style="margin-bottom:12px"><p style="font-size:14px; font-weight:600; margin-bottom:4px">' + proc + ' — ' + count + ' (' + pct + '%)</p>';
+        html += '<div style="background:#e2e8f0; border-radius:99px; height:8px"><div style="background:#2563eb; width:' + pct + '%; height:8px; border-radius:99px"></div></div></div>';
     }
     document.getElementById('topProcedures').innerHTML = html;
 }
@@ -431,10 +429,9 @@ function displayCaseList(cases) {
         html += '<td>' + (cases[i].hospital || '-') + '</td>';
         html += '<td>' + (cases[i].notes || '-') + '</td>';
         html += '<td style="white-space:nowrap">';
-        html += '<button onclick="openEditModal(\'' + cases[i].id + '\')" style="background:#2563eb; padding:6px 10px; font-size:12px; margin:0 4px 0 0; width:auto; border-radius:6px">✏️ Edit</button>';
-        html += '<button onclick="deleteCase(\'' + cases[i].id + '\')" style="background:#dc2626; padding:6px 10px; font-size:12px; margin:0; width:auto; border-radius:6px">🗑️ Delete</button>';
-        html += '</td>';
-        html += '</tr>';
+        html += '<button onclick="openEditModal(\'' + cases[i].id + '\')" style="background:#2563eb; padding:6px 10px; font-size:12px; margin:0 4px 0 0; width:auto; border-radius:6px">✏️</button>';
+        html += '<button onclick="deleteCase(\'' + cases[i].id + '\')" style="background:#dc2626; padding:6px 10px; font-size:12px; margin:0; width:auto; border-radius:6px">🗑️</button>';
+        html += '</td></tr>';
     }
     html += '</table>';
     document.getElementById('caseList').innerHTML = html;
@@ -446,17 +443,16 @@ function applyFilter() {
     let role      = document.getElementById('filterRole').value;
     let dateFrom  = document.getElementById('filterDateFrom').value;
     let dateTo    = document.getElementById('filterDateTo').value;
-    let filtered  = allCases.filter(c => {
-        return (search === '' ||
-                (c.notes && c.notes.toLowerCase().includes(search)) ||
-                (c.resident_name && c.resident_name.toLowerCase().includes(search)) ||
-                (c.attending && c.attending.toLowerCase().includes(search)) ||
-                (c.hospital && c.hospital.toLowerCase().includes(search))) &&
-               (procedure === '' || c.procedure === procedure) &&
-               (role      === '' || c.role === role) &&
-               (dateFrom  === '' || c.date >= dateFrom) &&
-               (dateTo    === '' || c.date <= dateTo);
-    });
+    let filtered  = allCases.filter(c =>
+        (search === '' || (c.notes && c.notes.toLowerCase().includes(search)) ||
+        (c.resident_name && c.resident_name.toLowerCase().includes(search)) ||
+        (c.attending && c.attending.toLowerCase().includes(search)) ||
+        (c.hospital && c.hospital.toLowerCase().includes(search))) &&
+        (procedure === '' || c.procedure === procedure) &&
+        (role      === '' || c.role === role) &&
+        (dateFrom  === '' || c.date >= dateFrom) &&
+        (dateTo    === '' || c.date <= dateTo)
+    );
     displayCaseList(filtered);
 }
 
@@ -472,147 +468,69 @@ function clearFilter() {
 function exportPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    doc.setFontSize(20);
-    doc.setTextColor(44, 62, 80);
-    doc.text('OphthoLog Report', 14, 20);
-    doc.setFontSize(11);
-    doc.setTextColor(100);
-    doc.text('Generated: ' + new Date().toLocaleDateString(), 14, 30);
-    doc.setFontSize(14);
-    doc.setTextColor(44, 62, 80);
-    doc.text('Case Log', 14, 45);
-    doc.autoTable({
-        startY: 50,
-        head: [['Date', 'Procedure', 'Role', 'Attending', 'Hospital', 'Notes']],
-        body: allCases.map(c => [c.date, c.procedure, c.role, c.attending || '-', c.hospital || '-', c.notes || '-']),
-        styles: { fontSize: 9 },
-        headStyles: { fillColor: [37, 99, 235] }
-    });
+    doc.setFontSize(20); doc.setTextColor(44,62,80); doc.text('OphthoLog Report', 14, 20);
+    doc.setFontSize(11); doc.setTextColor(100); doc.text('Generated: ' + new Date().toLocaleDateString(), 14, 30);
+    doc.setFontSize(14); doc.setTextColor(44,62,80); doc.text('Case Log', 14, 45);
+    doc.autoTable({ startY:50, head:[['Date','Procedure','Role','Attending','Hospital','Notes']], body:allCases.map(c=>[c.date,c.procedure,c.role,c.attending||'-',c.hospital||'-',c.notes||'-']), styles:{fontSize:9}, headStyles:{fillColor:[37,99,235]} });
     let finalY = doc.lastAutoTable.finalY + 15;
-    doc.setFontSize(14);
-    doc.setTextColor(44, 62, 80);
-    doc.text('ACGME Progress Summary', 14, finalY);
+    doc.setFontSize(14); doc.setTextColor(44,62,80); doc.text('ACGME Progress Summary', 14, finalY);
     let counts = {};
     for (let p in acgme) { counts[p] = 0; }
-    for (let c of allCases) {
-        if (counts[c.procedure] !== undefined) { counts[c.procedure]++; }
-    }
-    let progressData = Object.keys(acgme).map(p => [
-        p, counts[p], acgme[p],
-        Math.min(Math.round((counts[p] / acgme[p]) * 100), 100) + '%'
-    ]);
-    doc.autoTable({
-        startY: finalY + 5,
-        head: [['Procedure', 'Done', 'Required', 'Progress']],
-        body: progressData,
-        styles: { fontSize: 9 },
-        headStyles: { fillColor: [37, 99, 235] }
-    });
+    for (let c of allCases) { if (counts[c.procedure] !== undefined) { counts[c.procedure]++; } }
+    doc.autoTable({ startY:finalY+5, head:[['Procedure','Done','Required','Progress']], body:Object.keys(acgme).map(p=>[p,counts[p],acgme[p],Math.min(Math.round((counts[p]/acgme[p])*100),100)+'%']), styles:{fontSize:9}, headStyles:{fillColor:[37,99,235]} });
     doc.save('ophtholog-report.pdf');
 }
 
 function exportMonthlyReport() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    let now            = new Date();
-    let thisMonth      = now.toISOString().slice(0, 7);
-    let lastMonthDate  = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    let lastMonth      = lastMonthDate.toISOString().slice(0, 7);
-    let monthName      = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+    let now = new Date();
+    let thisMonth = now.toISOString().slice(0,7);
+    let lastMonth = new Date(now.getFullYear(), now.getMonth()-1, 1).toISOString().slice(0,7);
+    let monthName = now.toLocaleString('default', {month:'long', year:'numeric'});
     let thisMonthCases = allCases.filter(c => c.date && c.date.startsWith(thisMonth));
     let lastMonthCases = allCases.filter(c => c.date && c.date.startsWith(lastMonth));
-    doc.setFillColor(140, 21, 21);
-    doc.rect(0, 0, 220, 35, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.text('OphthoLog', 14, 15);
-    doc.setFontSize(14);
-    doc.text('Monthly Progress Report — ' + monthName, 14, 27);
-    doc.setTextColor(44, 62, 80);
-    doc.setFontSize(14);
-    doc.text('Monthly Summary', 14, 50);
-    let totalReq   = Object.values(acgme).reduce((a, b) => a + b, 0);
-    let totalDone  = allCases.length;
-    let overallPct = Math.min(Math.round((totalDone / totalReq) * 100), 100);
-    doc.autoTable({
-        startY: 55,
-        head: [['Metric', 'This Month', 'Last Month', 'Total to Date']],
-        body: [
-            ['Cases Logged', thisMonthCases.length, lastMonthCases.length, totalDone],
-            ['ACGME Progress', '-', '-', overallPct + '%']
-        ],
-        styles: { fontSize: 10 },
-        headStyles: { fillColor: [140, 21, 21] }
-    });
+    doc.setFillColor(140,21,21); doc.rect(0,0,220,35,'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(22); doc.text('OphthoLog', 14, 15);
+    doc.setFontSize(14); doc.text('Monthly Progress Report — ' + monthName, 14, 27);
+    doc.setTextColor(44,62,80); doc.setFontSize(14); doc.text('Monthly Summary', 14, 50);
+    let totalReq = Object.values(acgme).reduce((a,b)=>a+b,0);
+    let overallPct = Math.min(Math.round((allCases.length/totalReq)*100),100);
+    doc.autoTable({ startY:55, head:[['Metric','This Month','Last Month','Total to Date']], body:[['Cases Logged',thisMonthCases.length,lastMonthCases.length,allCases.length],['ACGME Progress','-','-',overallPct+'%']], styles:{fontSize:10}, headStyles:{fillColor:[140,21,21]} });
     let finalY = doc.lastAutoTable.finalY + 10;
-    doc.setFontSize(14);
-    doc.setTextColor(44, 62, 80);
-    doc.text('This Month — Cases by Procedure', 14, finalY);
+    doc.setFontSize(14); doc.text('This Month — Cases by Procedure', 14, finalY);
     let counts = {};
     for (let p in acgme) { counts[p] = 0; }
-    for (let c of thisMonthCases) {
-        if (counts[c.procedure] !== undefined) { counts[c.procedure]++; }
-    }
-    let monthData = Object.keys(acgme).map(p => [
-        p, counts[p], acgme[p],
-        Math.min(Math.round((allCases.filter(c => c.procedure === p).length / acgme[p]) * 100), 100) + '%'
-    ]);
-    doc.autoTable({
-        startY: finalY + 5,
-        head: [['Procedure', 'This Month', 'Required Total', 'Overall Progress']],
-        body: monthData,
-        styles: { fontSize: 9 },
-        headStyles: { fillColor: [140, 21, 21] }
-    });
+    for (let c of thisMonthCases) { if (counts[c.procedure] !== undefined) { counts[c.procedure]++; } }
+    doc.autoTable({ startY:finalY+5, head:[['Procedure','This Month','Required','Overall %']], body:Object.keys(acgme).map(p=>[p,counts[p],acgme[p],Math.min(Math.round((allCases.filter(c=>c.procedure===p).length/acgme[p])*100),100)+'%']), styles:{fontSize:9}, headStyles:{fillColor:[140,21,21]} });
     if (thisMonthCases.length > 0) {
         let y2 = doc.lastAutoTable.finalY + 10;
-        doc.setFontSize(14);
-        doc.setTextColor(44, 62, 80);
-        doc.text('This Month — Case Details', 14, y2);
-        doc.autoTable({
-            startY: y2 + 5,
-            head: [['Date', 'Procedure', 'Role', 'Attending', 'Hospital', 'Notes']],
-            body: thisMonthCases.map(c => [c.date, c.procedure, c.role, c.attending || '-', c.hospital || '-', c.notes || '-']),
-            styles: { fontSize: 8 },
-            headStyles: { fillColor: [140, 21, 21] }
-        });
+        doc.setFontSize(14); doc.text('This Month — Case Details', 14, y2);
+        doc.autoTable({ startY:y2+5, head:[['Date','Procedure','Role','Attending','Hospital','Notes']], body:thisMonthCases.map(c=>[c.date,c.procedure,c.role,c.attending||'-',c.hospital||'-',c.notes||'-']), styles:{fontSize:8}, headStyles:{fillColor:[140,21,21]} });
     }
     let pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(9);
-        doc.setTextColor(150);
+        doc.setPage(i); doc.setFontSize(9); doc.setTextColor(150);
         doc.text('Generated by OphthoLog — ' + new Date().toLocaleDateString(), 14, doc.internal.pageSize.height - 10);
     }
     doc.save('ophtholog-monthly-' + thisMonth + '.pdf');
 }
 
 async function setupNotifications() {
-    if (!('Notification' in window)) {
-        alert('Your browser does not support notifications');
-        return;
-    }
+    if (!('Notification' in window)) { showToast('Notifications not supported', 'error'); return; }
     let permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-        alert('Notifications enabled! You will get daily reminders at 6 PM.');
-        scheduleReminder();
-    } else {
-        alert('Notifications blocked. Please enable them in your browser settings.');
-    }
+    if (permission === 'granted') { showToast('🔔 Daily reminders enabled at 6 PM!'); scheduleReminder(); }
+    else { showToast('Notifications blocked', 'warning'); }
 }
 
 function scheduleReminder() {
     setInterval(function() {
-        let now          = new Date();
-        let hour         = now.getHours();
+        let now = new Date();
         let lastReminder = localStorage.getItem('lastReminder');
-        let today        = now.toDateString();
-        if (hour >= 18 && lastReminder !== today) {
+        let today = now.toDateString();
+        if (now.getHours() >= 18 && lastReminder !== today) {
             localStorage.setItem('lastReminder', today);
-            new Notification('OphthoLog Reminder 🏥', {
-                body: 'Don\'t forget to log your cases today!',
-                icon: '/icon.svg'
-            });
+            new Notification('OphthoLog Reminder 🏥', { body: 'Don\'t forget to log your cases today!', icon: '/icon.svg' });
         }
     }, 60 * 60 * 1000);
 }
