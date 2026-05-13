@@ -74,15 +74,17 @@
     <!-- App -->
     <div id="appSection" style="display:none">
 
+        <!-- Top bar -->
         <div class="top-bar">
             <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSev-87zwv0Ot_7LNJuuNNTBpKpcOvS_vEtSnGbgLGjMVP-iMA/viewform', '_blank')" class="top-btn" style="background:#16a34a">💬 Feedback</button>
             <button id="darkBtn" onclick="toggleDarkMode()" class="top-btn" style="background:#1e293b">🌙 Dark</button>
             <button onclick="signOut()" class="top-btn" style="background:#dc2626">🚪 Sign Out</button>
         </div>
 
+        <!-- Streak banner -->
         <div id="streakBanner" style="display:none; background:linear-gradient(135deg,#f97316,#ef4444); color:white; padding:12px 20px; border-radius:12px; margin-bottom:16px; text-align:center; font-weight:700; font-size:15px"></div>
 
-        <!-- Tabs -->
+        <!-- Desktop Tabs -->
         <div id="tabs">
             <button onclick="showTab('dashboard', event)" class="tab-btn active-tab">📊 Dashboard</button>
             <button onclick="showTab('profile', event)"   class="tab-btn">👤 Profile</button>
@@ -130,8 +132,7 @@
         <!-- Profile -->
         <div id="profileTab" style="display:none">
             <div style="background:linear-gradient(135deg, #8C1515 0%, #2563eb 100%); border-radius:20px; padding:28px; margin-bottom:20px; color:white; text-align:center; position:relative; overflow:hidden">
-                <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:rgba(255,255,255,0.05); border-radius:50%"></div>
-                <div style="width:84px; height:84px; background:rgba(255,255,255,0.2); border-radius:50%; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; font-size:38px; border:3px solid rgba(255,255,255,0.4); box-shadow:0 4px 16px rgba(0,0,0,0.2)">👨‍⚕️</div>
+                <div style="width:84px; height:84px; background:rgba(255,255,255,0.2); border-radius:50%; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; font-size:38px; border:3px solid rgba(255,255,255,0.4)">👨‍⚕️</div>
                 <h2 id="profileName" style="color:white; font-size:22px; margin-bottom:6px">Dr. Osama Elaraby</h2>
                 <p id="profilePgy" style="opacity:0.85; font-size:14px; margin-bottom:4px; font-weight:600">PGY-1</p>
                 <p id="profileProgram" style="opacity:0.7; font-size:13px">Stanford University — Ophthalmology</p>
@@ -161,11 +162,11 @@
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
                     <div>
-                        <label>Residency Start Year</label>
+                        <label>Start Year</label>
                         <input type="number" id="profileStartYear" placeholder="e.g. 2024">
                     </div>
                     <div>
-                        <label>Residency End Year</label>
+                        <label>End Year</label>
                         <input type="number" id="profileEndYear" placeholder="e.g. 2028">
                     </div>
                 </div>
@@ -266,8 +267,6 @@
 
         <!-- Case List -->
         <div id="caseListTab" style="display:none">
-
-            <!-- Search bar -->
             <div style="background:white; padding:16px; border-radius:14px; margin-bottom:16px; box-shadow:0 2px 12px rgba(37,99,235,0.08); border:1px solid #e2e8f0">
                 <div style="position:relative">
                     <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px">🔍</span>
@@ -276,7 +275,6 @@
                 </div>
             </div>
 
-            <!-- Filter chips -->
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; align-items:center">
                 <span style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px">Filter:</span>
                 <select id="filterProcedure" onchange="applyFilter()" style="width:auto; padding:7px 12px; font-size:12px; border-radius:20px; margin-top:0; border:2px solid #e2e8f0; background:white">
@@ -300,7 +298,6 @@
                 <button onclick="clearFilter()" style="width:auto; padding:7px 14px; font-size:12px; border-radius:20px; margin-top:0; background:#64748b">✕ Clear</button>
             </div>
 
-            <!-- Sort bar -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
                 <span id="caseCount" style="font-size:13px; font-weight:600; color:#64748b"></span>
                 <select id="sortOrder" onchange="applyFilter()" style="width:auto; padding:7px 12px; font-size:12px; border-radius:10px; margin-top:0; border:2px solid #e2e8f0; background:white">
@@ -311,7 +308,6 @@
                 </select>
             </div>
 
-            <!-- Case cards -->
             <div id="caseList"></div>
         </div>
 
@@ -385,6 +381,32 @@
                     <button onclick="saveEdit()" style="flex:1; margin:0">💾 Save</button>
                     <button onclick="closeEditModal()" style="flex:1; margin:0; background:#64748b">Cancel</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation (Mobile) -->
+        <div id="bottomNav">
+            <div class="bottom-nav-inner">
+                <button class="nav-item active" id="nav-dashboard" onclick="showTab('dashboard', event); setActiveNav('nav-dashboard')">
+                    <span class="nav-icon">📊</span>
+                    <span>Home</span>
+                </button>
+                <button class="nav-item" id="nav-caseList" onclick="showTab('caseList', event); setActiveNav('nav-caseList')">
+                    <span class="nav-icon">📋</span>
+                    <span>Cases</span>
+                </button>
+                <button class="nav-item nav-center" id="nav-logCase" onclick="showTab('logCase', event); setActiveNav('nav-logCase')">
+                    <span class="nav-icon">➕</span>
+                    <span>Log</span>
+                </button>
+                <button class="nav-item" id="nav-analytics" onclick="showTab('analytics', event); setActiveNav('nav-analytics')">
+                    <span class="nav-icon">📈</span>
+                    <span>Stats</span>
+                </button>
+                <button class="nav-item" id="nav-profile" onclick="showTab('profile', event); setActiveNav('nav-profile')">
+                    <span class="nav-icon">👤</span>
+                    <span>Profile</span>
+                </button>
             </div>
         </div>
 

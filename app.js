@@ -22,13 +22,13 @@ const acgme = {
 };
 
 const procedureColors = {
-    'Cataract / Phaco':        '#2563eb',
-    'Vitreoretinal (PPV)':     '#7c3aed',
-    'Glaucoma':                '#16a34a',
-    'Cornea / Keratoplasty':   '#0891b2',
-    'Oculoplastics':           '#d97706',
-    'Strabismus':              '#dc2626',
-    'Laser (LIO / SLT / YAG)':'#8C1515'
+    'Cataract / Phaco':         '#2563eb',
+    'Vitreoretinal (PPV)':      '#7c3aed',
+    'Glaucoma':                 '#16a34a',
+    'Cornea / Keratoplasty':    '#0891b2',
+    'Oculoplastics':            '#d97706',
+    'Strabismus':               '#dc2626',
+    'Laser (LIO / SLT / YAG)': '#8C1515'
 };
 
 const roleColors = {
@@ -287,6 +287,7 @@ async function duplicateCase(id) {
     else { loadCases(); showToast('🔄 Case duplicated!'); }
 }
 
+// Tab navigation
 function showTab(tab, e) {
     document.getElementById('dashboard').style.display    = 'none';
     document.getElementById('logCase').style.display      = 'none';
@@ -320,6 +321,13 @@ function showTab(tab, e) {
     if (e && e.target) e.target.classList.add('active-tab');
 }
 
+// Bottom nav active state
+function setActiveNav(id) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    let el = document.getElementById(id);
+    if (el) el.classList.add('active');
+}
+
 async function loadProfileEmail() {
     let { data: { user } } = await db.auth.getUser();
     let el = document.getElementById('profileEmail');
@@ -327,11 +335,11 @@ async function loadProfileEmail() {
 }
 
 function loadProfileCaseStats() {
-    let total   = allCases.length;
+    let total    = allCases.length;
     let totalReq = Object.values(acgme).reduce((a,b)=>a+b,0);
-    let pct     = Math.min(Math.round((total/totalReq)*100),100);
-    let streak  = localStorage.getItem('streak') || 0;
-    let statsEl = document.getElementById('profileStats');
+    let pct      = Math.min(Math.round((total/totalReq)*100),100);
+    let streak   = localStorage.getItem('streak') || 0;
+    let statsEl  = document.getElementById('profileStats');
     if (statsEl) {
         statsEl.innerHTML =
             '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">📋</div><h3>' + total + '</h3><p>Total Cases</p></div>' +
@@ -622,7 +630,6 @@ function showAnalytics() {
     document.getElementById('topProcedures').innerHTML = html;
 }
 
-// Premium card-based case list
 function displayCaseList(cases) {
     let countEl = document.getElementById('caseCount');
     if (countEl) countEl.textContent = cases.length + ' case' + (cases.length !== 1 ? 's' : '') + ' found';
@@ -649,14 +656,9 @@ function displayCaseList(cases) {
         <div style="background:white; border-radius:16px; padding:0; box-shadow:0 2px 12px rgba(37,99,235,0.08); border:1px solid #e2e8f0; overflow:hidden; transition:transform 0.2s, box-shadow 0.2s"
              onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 28px rgba(37,99,235,0.13)'"
              onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 12px rgba(37,99,235,0.08)'">
-
-            <!-- Card top bar -->
             <div style="height:5px; background:${color}; border-radius:16px 16px 0 0"></div>
-
             <div style="padding:16px 18px">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px">
-
-                    <!-- Left: icon + procedure -->
                     <div style="display:flex; align-items:center; gap:12px">
                         <div style="width:44px; height:44px; border-radius:12px; background:${color}18; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:${color}; flex-shrink:0">${initials}</div>
                         <div>
@@ -668,16 +670,12 @@ function displayCaseList(cases) {
                             </div>
                         </div>
                     </div>
-
-                    <!-- Right: action buttons -->
                     <div style="display:flex; gap:6px; flex-shrink:0">
-                        <button onclick="openEditModal('${c.id}')" style="background:#2563eb18; color:#2563eb; padding:7px 10px; font-size:13px; margin:0; width:auto; border-radius:8px; font-weight:600" title="Edit">✏️</button>
-                        <button onclick="duplicateCase('${c.id}')" style="background:#7c3aed18; color:#7c3aed; padding:7px 10px; font-size:13px; margin:0; width:auto; border-radius:8px; font-weight:600" title="Duplicate">🔄</button>
-                        <button onclick="deleteCase('${c.id}')" style="background:#dc262618; color:#dc2626; padding:7px 10px; font-size:13px; margin:0; width:auto; border-radius:8px; font-weight:600" title="Delete">🗑️</button>
+                        <button onclick="openEditModal('${c.id}')" style="background:#2563eb18; color:#2563eb; padding:7px 10px; font-size:13px; margin:0; width:auto; border-radius:8px; font-weight:600">✏️</button>
+                        <button onclick="duplicateCase('${c.id}')" style="background:#7c3aed18; color:#7c3aed; padding:7px 10px; font-size:13px; margin:0; width:auto; border-radius:8px; font-weight:600">🔄</button>
+                        <button onclick="deleteCase('${c.id}')" style="background:#dc262618; color:#dc2626; padding:7px 10px; font-size:13px; margin:0; width:auto; border-radius:8px; font-weight:600">🗑️</button>
                     </div>
                 </div>
-
-                <!-- Details row -->
                 <div style="display:flex; gap:16px; flex-wrap:wrap; border-top:1px solid #f1f5f9; padding-top:10px">
                     ${c.attending ? `<span style="font-size:12px; color:#64748b">👨‍⚕️ <strong>${c.attending}</strong></span>` : ''}
                     ${c.hospital  ? `<span style="font-size:12px; color:#64748b">🏥 <strong>${c.hospital}</strong></span>` : ''}
@@ -712,7 +710,6 @@ function applyFilter() {
         (dateTo    === '' || c.date <= dateTo)
     );
 
-    // Sort
     if (sort === 'newest')    filtered.sort((a,b) => b.date > a.date ? 1 : -1);
     if (sort === 'oldest')    filtered.sort((a,b) => a.date > b.date ? 1 : -1);
     if (sort === 'procedure') filtered.sort((a,b) => a.procedure.localeCompare(b.procedure));
