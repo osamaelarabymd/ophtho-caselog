@@ -37,6 +37,13 @@ const roleColors = {
     'Observer':        '#d97706'
 };
 
+const milestones = [
+    { pct: 25,  emoji: '🌱', title: 'Great Start!',        text: "You've completed 25% of your ACGME requirements!",  badge: '25% Pioneer',      color: '#d97706' },
+    { pct: 50,  emoji: '🔥', title: 'Halfway There!',      text: "Amazing! You're halfway through your ACGME goals!", badge: '50% Achiever',     color: '#2563eb' },
+    { pct: 75,  emoji: '⭐', title: 'Almost There!',       text: "75% complete — you're in the home stretch!",        badge: '75% Champion',     color: '#7c3aed' },
+    { pct: 100, emoji: '🏆', title: 'ACGME Complete!',     text: "Outstanding! You've completed ALL ACGME requirements!", badge: '100% Legend',  color: '#16a34a' }
+];
+
 // Toast
 function showToast(message, type = 'success') {
     let toast = document.getElementById('toast');
@@ -49,6 +56,54 @@ function showToast(message, type = 'success') {
 // Loading
 function showLoading() { document.getElementById('loadingSpinner').style.display = 'flex'; }
 function hideLoading() { document.getElementById('loadingSpinner').style.display = 'none'; }
+
+// Milestone
+function checkMilestones(percent) {
+    let reached = JSON.parse(localStorage.getItem('milestonesReached')) || [];
+    for (let m of milestones) {
+        if (percent >= m.pct && !reached.includes(m.pct)) {
+            reached.push(m.pct);
+            localStorage.setItem('milestonesReached', JSON.stringify(reached));
+            showMilestone(m);
+            break;
+        }
+    }
+}
+
+function showMilestone(m) {
+    document.getElementById('milestoneEmoji').textContent  = m.emoji;
+    document.getElementById('milestoneTitle').textContent  = m.title;
+    document.getElementById('milestoneText').textContent   = m.text;
+    document.getElementById('milestoneBadge').textContent  = '🏅 ' + m.badge;
+    document.getElementById('milestoneBadge').style.background = 'linear-gradient(135deg,' + m.color + ',#7c3aed)';
+    document.getElementById('milestoneModal').style.display = 'flex';
+
+    setTimeout(() => {
+        if (typeof confetti !== 'undefined') {
+            confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#2563eb','#8C1515','#16a34a','#d97706','#7c3aed'] });
+        }
+    }, 300);
+}
+
+function closeMilestone() {
+    document.getElementById('milestoneModal').style.display = 'none';
+}
+
+function updateAchievementBadges(percent) {
+    let reached  = JSON.parse(localStorage.getItem('milestonesReached')) || [];
+    let badgesEl = document.getElementById('achievementBadges');
+    if (!badgesEl || reached.length === 0) return;
+
+    let html = '';
+    for (let m of milestones) {
+        if (reached.includes(m.pct)) {
+            html += `<div style="background:linear-gradient(135deg,${m.color},#7c3aed); color:white; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(0,0,0,0.15)">
+                ${m.emoji} ${m.badge}
+            </div>`;
+        }
+    }
+    badgesEl.innerHTML = html;
+}
 
 // Onboarding
 function checkOnboarding() {
@@ -321,7 +376,6 @@ function showTab(tab, e) {
     if (e && e.target) e.target.classList.add('active-tab');
 }
 
-// Bottom nav active state
 function setActiveNav(id) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     let el = document.getElementById(id);
@@ -491,6 +545,10 @@ function updateDashboard(cases) {
     if (greetEl) greetEl.textContent = greeting;
     updateProfileDisplay();
 
+    // Check milestones
+    checkMilestones(overallPercent);
+    updateAchievementBadges(overallPercent);
+
     document.getElementById('summaryCards').innerHTML =
         '<div class="summary-card"><div style="font-size:26px;margin-bottom:4px">📋</div><h3>' + totalDone + '</h3><p>Total Cases</p></div>' +
         '<div class="summary-card"><div style="font-size:26px;margin-bottom:4px">📅</div><h3>' + monthCases.length + '</h3><p>This Month</p></div>' +
@@ -645,7 +703,6 @@ function displayCaseList(cases) {
     }
 
     let html = '<div style="display:flex; flex-direction:column; gap:12px">';
-
     for (let c of cases) {
         let color     = procedureColors[c.procedure] || '#2563eb';
         let roleColor = roleColors[c.role] || '#64748b';
@@ -684,7 +741,6 @@ function displayCaseList(cases) {
             </div>
         </div>`;
     }
-
     html += '</div>';
     document.getElementById('caseList').innerHTML = html;
 }

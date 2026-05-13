@@ -14,6 +14,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 
@@ -21,6 +22,18 @@
 
     <div id="loadingSpinner" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.85); z-index:9998; align-items:center; justify-content:center;">
         <div class="spinner"></div>
+    </div>
+
+    <!-- Milestone Modal -->
+    <div id="milestoneModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px)">
+        <div style="background:white; border-radius:24px; padding:40px 32px; width:90%; max-width:400px; text-align:center; box-shadow:0 24px 64px rgba(0,0,0,0.3); animation:bounceIn 0.5s ease">
+            <div id="milestoneEmoji" style="font-size:72px; margin-bottom:16px">🏆</div>
+            <h2 id="milestoneTitle" style="font-size:26px; font-weight:900; color:#0f172a; margin-bottom:8px">Milestone Reached!</h2>
+            <p id="milestoneText" style="font-size:16px; color:#64748b; line-height:1.6; margin-bottom:24px">You've reached 25% of your ACGME requirements!</p>
+            <div id="milestoneBadge" style="display:inline-block; background:linear-gradient(135deg,#2563eb,#7c3aed); color:white; padding:8px 24px; border-radius:50px; font-size:14px; font-weight:700; margin-bottom:24px"></div>
+            <br>
+            <button onclick="closeMilestone()" style="width:auto; padding:14px 40px; border-radius:50px; font-size:16px; font-weight:700; background:linear-gradient(135deg,#2563eb,#7c3aed); box-shadow:0 4px 16px rgba(37,99,235,0.4)">Keep Going! 🚀</button>
+        </div>
     </div>
 
     <!-- Onboarding -->
@@ -74,14 +87,12 @@
     <!-- App -->
     <div id="appSection" style="display:none">
 
-        <!-- Top bar -->
         <div class="top-bar">
             <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSev-87zwv0Ot_7LNJuuNNTBpKpcOvS_vEtSnGbgLGjMVP-iMA/viewform', '_blank')" class="top-btn" style="background:#16a34a">💬 Feedback</button>
             <button id="darkBtn" onclick="toggleDarkMode()" class="top-btn" style="background:#1e293b">🌙 Dark</button>
             <button onclick="signOut()" class="top-btn" style="background:#dc2626">🚪 Sign Out</button>
         </div>
 
-        <!-- Streak banner -->
         <div id="streakBanner" style="display:none; background:linear-gradient(135deg,#f97316,#ef4444); color:white; padding:12px 20px; border-radius:12px; margin-bottom:16px; text-align:center; font-weight:700; font-size:15px"></div>
 
         <!-- Desktop Tabs -->
@@ -107,6 +118,9 @@
                     <button onclick="setupNotifications()" style="background:rgba(255,255,255,0.1); width:auto; padding:9px 18px; margin:0; font-size:13px; border-radius:50px; border:1px solid rgba(255,255,255,0.2)">🔔 Reminders</button>
                 </div>
             </div>
+
+            <!-- Achievement badges -->
+            <div id="achievementBadges" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px"></div>
 
             <div id="summaryCards"></div>
 
@@ -384,7 +398,7 @@
             </div>
         </div>
 
-        <!-- Bottom Navigation (Mobile) -->
+        <!-- Bottom Navigation -->
         <div id="bottomNav">
             <div class="bottom-nav-inner">
                 <button class="nav-item active" id="nav-dashboard" onclick="showTab('dashboard', event); setActiveNav('nav-dashboard')">
