@@ -4,11 +4,11 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let allCases = [];
-let procedureChart = null;
-let monthlyChart   = null;
-let roleChart      = null;
-let dayChart       = null;
+let allCases      = [];
+let monthlyChart  = null;
+let roleChart     = null;
+let dayChart      = null;
+let roleDashChart = null;
 let currentUserRole = 'resident';
 
 const acgme = {
@@ -21,7 +21,7 @@ const acgme = {
     'Laser (LIO / SLT / YAG)': 25
 };
 
-// Toast notifications
+// Toast
 function showToast(message, type = 'success') {
     let toast = document.getElementById('toast');
     toast.textContent = message;
@@ -30,19 +30,13 @@ function showToast(message, type = 'success') {
     setTimeout(() => { toast.style.display = 'none'; }, 3000);
 }
 
-// Loading spinner
-function showLoading() {
-    document.getElementById('loadingSpinner').style.display = 'flex';
-}
-
-function hideLoading() {
-    document.getElementById('loadingSpinner').style.display = 'none';
-}
+// Loading
+function showLoading() { document.getElementById('loadingSpinner').style.display = 'flex'; }
+function hideLoading() { document.getElementById('loadingSpinner').style.display = 'none'; }
 
 // Onboarding
 function checkOnboarding() {
-    let seen = localStorage.getItem('onboardingSeen');
-    if (!seen) {
+    if (!localStorage.getItem('onboardingSeen')) {
         document.getElementById('onboarding').style.display = 'flex';
     }
 }
@@ -68,8 +62,7 @@ function toggleDarkMode() {
 }
 
 function loadDarkMode() {
-    let isDark = localStorage.getItem('darkMode') === 'true';
-    if (isDark) {
+    if (localStorage.getItem('darkMode') === 'true') {
         document.body.classList.add('dark');
         let btn = document.getElementById('darkBtn');
         if (btn) btn.textContent = '☀️ Light';
@@ -81,6 +74,103 @@ window.addEventListener('load', function() {
     loadDarkMode();
 });
 
+// Streak
+function updateStreak(cases) {
+    if (cases.length === 0) return;
+    let dates     = [...new Set(cases.map(c => c.date))].filter(Boolean).sort().reverse();
+    let today     = new Date().toISOString().slice(0, 10);
+    let yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    if (dates[0] !== today && dates[0] !== yesterday) {
+        localStorage.setItem('streak', 0);
+        return;
+    }
+    let streak = 1;
+    for (let i = 0; i < dates.length - 1; i++) {
+        let diff = (new Date(dates[i]) - new Date(dates[i+1])) / 86400000;
+        if (diff === 1) { streak++; } else { break; }
+    }
+    localStorage.setItem('streak', streak);
+    let banner = document.getElementById('streakBanner');
+    if (streak >= 2) {
+        banner.style.display = 'block';
+        banner.textContent = '🔥 ' + streak + ' day streak! Keep logging cases!';
+    } else {
+        banner.style.display = 'none';
+    }
+}
+
+// Profile
+function saveProfile() {
+    let profile = {
+        name:      document.getElementById('profileNameInput').value,
+        pgy:       document.getElementById('profilePgyInput').value,
+        program:   document.getElementById('profileProgramInput').value,
+        startYear: document.getElementById('profileStartYear').value,
+        endYear:   document.getElementById('profileEndYear').value,
+        goals:     document.getElementById('profileGoals').value
+    };
+    localStorage.setItem('userProfile', JSON.stringify(profile));
+    localStorage.setItem('residentName', profile.name);
+    updateProfileDisplay();
+    showToast('✅ Profile saved!');
+}
+
+function loadProfile() {
+    let profile = JSON.parse(localStorage.getItem('userProfile')) || {};
+    if (profile.name)      document.getElementById('profileNameInput').value  = profile.name;
+    if (profile.pgy)       document.getElementById('profilePgyInput').value   = profile.pgy;
+    if (profile.program)   document.getElementById('profileProgramInput').value = profile.program;
+    if (profile.startYear) document.getElementById('profileStartYear').value  = profile.startYear;
+    if (profile.endYear)   document.getElementById('profileEndYear').value    = profile.endYear;
+    if (profile.goals)     document.getElementById('profileGoals').value      = profile.goals;
+    updateProfileDisplay();
+}
+
+function updateProfileDisplay() {
+    let profile = JSON.parse(localStorage.getItem('userProfile')) || {};
+
+    // Header card
+    let nameEl = document.getElementById('profileName');
+    let pgyEl  = document.getElementById('profilePgy');
+    let progEl = document.getElementById('profileProgram');
+    if (nameEl) nameEl.textContent = profile.name ? 'Dr. ' + profile.name : 'Dr. Osama Elaraby';
+    if (pgyEl)  pgyEl.textContent  = profile.pgy  || 'PGY-1';
+    if (progEl) progEl.textContent = (profile.program || 'Stanford University') + ' — Ophthalmology';
+
+    // Goals display
+    let goalsEl = document.getElementById('profileGoalsDisplay');
+    if (goalsEl) {
+        if (profile.goals) {
+            goalsEl.innerHTML = '<p style="color:#1e293b; font-size:14px; line-height:1.7">' + profile.goals + '</p>';
+        } else {
+            goalsEl.innerHTML = '<p style="color:#94a3b8; font-size:14px">No goals set yet — add them above!</p>';
+        }
+    }
+
+    // Residency timeline
+    if (profile.startYear && profile.endYear) {
+        let now     = new Date().getFullYear();
+        let total   = profile.endYear - profile.startYear;
+        let done    = now - profile.startYear;
+        let pct     = Math.min(Math.round((done / total) * 100), 100);
+        let timeEl  = document.getElementById('profileStats');
+        if (timeEl) {
+            timeEl.innerHTML =
+                '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">📅</div><h3>' + profile.startYear + '</h3><p>Start Year</p></div>' +
+                '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">🎓</div><h3>' + profile.endYear + '</h3><p>End Year</p></div>' +
+                '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">⏳</div><h3>' + pct + '%</h3><p>Residency Done</p></div>';
+        }
+    }
+
+    // Welcome card name
+    let welcomeEl = document.getElementById('welcomeName');
+    if (welcomeEl && profile.name) {
+        let parts    = profile.name.trim().split(' ');
+        let lastName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+        welcomeEl.textContent = 'Dr. ' + lastName;
+    }
+}
+
 // Templates
 function loadTemplates() {
     let templates = JSON.parse(localStorage.getItem('caseTemplates')) || [];
@@ -91,35 +181,33 @@ function loadTemplates() {
         html += ' <span onclick="deleteTemplate(event,' + i + ')" style="color:#dc2626; margin-left:6px">✕</span>';
         html += '</button>';
     }
-    document.getElementById('templatesList').innerHTML = html || '<p style="color:#94a3b8; font-size:13px">No templates yet — fill the form and click Save as Template</p>';
+    document.getElementById('templatesList').innerHTML = html || '<p style="color:#94a3b8; font-size:13px">No templates yet</p>';
 }
 
 function saveTemplate() {
     let templates = JSON.parse(localStorage.getItem('caseTemplates')) || [];
-    let template = {
+    templates.push({
         procedure:     document.getElementById('procedure').value,
         role:          document.getElementById('role').value,
         pgy_year:      document.getElementById('pgyYear').value,
         resident_name: document.getElementById('residentName').value,
         attending:     document.getElementById('attending').value,
         hospital:      document.getElementById('hospital').value
-    };
-    templates.push(template);
+    });
     localStorage.setItem('caseTemplates', JSON.stringify(templates));
     loadTemplates();
     showToast('📋 Template saved!');
 }
 
 function applyTemplate(index) {
-    let templates = JSON.parse(localStorage.getItem('caseTemplates')) || [];
-    let t = templates[index];
+    let t = JSON.parse(localStorage.getItem('caseTemplates'))[index];
     document.getElementById('procedure').value    = t.procedure;
     document.getElementById('role').value         = t.role;
     document.getElementById('pgyYear').value      = t.pgy_year;
     document.getElementById('residentName').value = t.resident_name;
     document.getElementById('attending').value    = t.attending;
     document.getElementById('hospital').value     = t.hospital;
-    showToast('⚡ Template applied! Add date and notes.');
+    showToast('⚡ Template applied!');
 }
 
 function deleteTemplate(event, index) {
@@ -131,7 +219,7 @@ function deleteTemplate(event, index) {
     showToast('🗑️ Template deleted', 'warning');
 }
 
-// Edit case modal
+// Edit modal
 function openEditModal(id) {
     let c = allCases.find(c => c.id === id);
     if (!c) return;
@@ -152,7 +240,6 @@ function closeEditModal() {
 }
 
 async function saveEdit() {
-    let id = document.getElementById('editId').value;
     showLoading();
     let { error } = await db.from('cases').update({
         procedure:     document.getElementById('editProcedure').value,
@@ -163,19 +250,43 @@ async function saveEdit() {
         attending:     document.getElementById('editAttending').value,
         hospital:      document.getElementById('editHospital').value,
         notes:         document.getElementById('editNotes').value
-    }).eq('id', id);
+    }).eq('id', document.getElementById('editId').value);
     hideLoading();
     if (error) { showToast('Error: ' + error.message, 'error'); }
     else { closeEditModal(); loadCases(); showToast('✅ Case updated!'); }
 }
 
-function showTab(tab) {
+// Duplicate
+async function duplicateCase(id) {
+    let c = allCases.find(c => c.id === id);
+    if (!c) return;
+    showLoading();
+    let { data: { user } } = await db.auth.getUser();
+    let { error } = await db.from('cases').insert({
+        procedure:     c.procedure,
+        role:          c.role,
+        date:          new Date().toISOString().slice(0, 10),
+        notes:         c.notes,
+        resident_name: c.resident_name,
+        pgy_year:      c.pgy_year,
+        attending:     c.attending,
+        hospital:      c.hospital,
+        user_id:       user.id
+    });
+    hideLoading();
+    if (error) { showToast('Error: ' + error.message, 'error'); }
+    else { loadCases(); showToast('🔄 Case duplicated!'); }
+}
+
+function showTab(tab, e) {
     document.getElementById('dashboard').style.display    = 'none';
     document.getElementById('logCase').style.display      = 'none';
     document.getElementById('caseListTab').style.display  = 'none';
     document.getElementById('analyticsTab').style.display = 'none';
+    document.getElementById('profileTab').style.display   = 'none';
     document.getElementById('adminPanel').style.display   = 'none';
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
+
     if (tab === 'dashboard') {
         document.getElementById('dashboard').style.display = 'block';
     } else if (tab === 'logCase') {
@@ -187,17 +298,45 @@ function showTab(tab) {
     } else if (tab === 'analytics') {
         document.getElementById('analyticsTab').style.display = 'block';
         showAnalytics();
+    } else if (tab === 'profile') {
+        document.getElementById('profileTab').style.display = 'block';
+        loadProfile();
+        loadProfileEmail();
+        loadProfileCaseStats();
     } else if (tab === 'admin') {
         document.getElementById('adminPanel').style.display = 'block';
         loadAdminData();
     }
-    event.target.classList.add('active-tab');
+
+    if (e && e.target) e.target.classList.add('active-tab');
+}
+
+async function loadProfileEmail() {
+    let { data: { user } } = await db.auth.getUser();
+    let el = document.getElementById('profileEmail');
+    if (el && user) el.textContent = '📧 ' + user.email;
+}
+
+function loadProfileCaseStats() {
+    let total      = allCases.length;
+    let totalReq   = Object.values(acgme).reduce((a,b)=>a+b,0);
+    let pct        = Math.min(Math.round((total/totalReq)*100),100);
+    let primary    = allCases.filter(c => c.role === 'Primary Surgeon').length;
+    let streak     = localStorage.getItem('streak') || 0;
+
+    let statsEl = document.getElementById('profileStats');
+    if (statsEl) {
+        statsEl.innerHTML =
+            '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">📋</div><h3>' + total + '</h3><p>Total Cases</p></div>' +
+            '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">🏆</div><h3>' + pct + '%</h3><p>ACGME Done</p></div>' +
+            '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">🔥</div><h3>' + streak + '</h3><p>Day Streak</p></div>';
+    }
 }
 
 async function signUp() {
-    let email    = document.getElementById('email').value;
+    let email = document.getElementById('email').value;
     let password = document.getElementById('password').value;
-    if (!email || !password) { showToast('⚠️ Please enter email and password', 'warning'); return; }
+    if (!email || !password) { showToast('⚠️ Enter email and password', 'warning'); return; }
     showLoading();
     let { error } = await db.auth.signUp({ email, password });
     hideLoading();
@@ -206,9 +345,9 @@ async function signUp() {
 }
 
 async function signIn() {
-    let email    = document.getElementById('email').value;
+    let email = document.getElementById('email').value;
     let password = document.getElementById('password').value;
-    if (!email || !password) { showToast('⚠️ Please enter email and password', 'warning'); return; }
+    if (!email || !password) { showToast('⚠️ Enter email and password', 'warning'); return; }
     showLoading();
     let { error } = await db.auth.signInWithPassword({ email, password });
     hideLoading();
@@ -231,9 +370,9 @@ async function showApp() {
     if (currentUserRole === 'admin') {
         document.getElementById('adminTab').style.display = 'inline-block';
     }
-    // Auto-fill resident name
-    let savedName = localStorage.getItem('residentName');
-    if (savedName) document.getElementById('residentName').value = savedName;
+    let savedProfile = JSON.parse(localStorage.getItem('userProfile')) || {};
+    if (savedProfile.name) document.getElementById('residentName').value = savedProfile.name;
+    updateProfileDisplay();
     loadCases();
 }
 
@@ -264,16 +403,15 @@ document.addEventListener('DOMContentLoaded', function() {
             user_id:       user.id
         });
         hideLoading();
-        if (error) {
-            showToast('Error: ' + error.message, 'error');
-        } else {
+        if (error) { showToast('Error: ' + error.message, 'error'); }
+        else {
             localStorage.setItem('residentName', residentName);
             document.getElementById('attending').value = '';
             document.getElementById('hospital').value  = '';
             document.getElementById('notes').value     = '';
             document.getElementById('date').value      = '';
             loadCases();
-            showToast('✅ Case saved successfully!');
+            showToast('✅ Case saved!');
         }
     });
 });
@@ -284,11 +422,12 @@ async function loadCases() {
     let { data: cases } = await db.from('cases').select('*').eq('user_id', user.id);
     allCases = cases || [];
     updateDashboard(allCases);
+    updateStreak(allCases);
     hideLoading();
 }
 
 async function deleteCase(id) {
-    if (!confirm('Are you sure you want to delete this case?')) return;
+    if (!confirm('Delete this case?')) return;
     showLoading();
     await db.from('cases').delete().eq('id', id);
     hideLoading();
@@ -301,21 +440,21 @@ async function loadAdminData() {
     let { data: cases }    = await db.from('cases').select('*');
     let { data: profiles } = await db.from('profiles').select('*');
     hideLoading();
-    let html = '<h2>👨‍⚕️ Program Director Panel</h2>';
-    html += '<h3>All Residents</h3><table>';
+    let html = '<h2>👨‍⚕️ Program Director Panel</h2><h3>All Residents</h3><table>';
     html += '<tr><th>Name</th><th>Email</th><th>PGY</th><th>Total</th><th>Cataract</th><th>VR</th><th>Glaucoma</th><th>Progress</th></tr>';
     if (profiles) {
         for (let profile of profiles) {
             if (profile.role === 'resident') {
-                let userCases = cases ? cases.filter(c => c.user_id === profile.id) : [];
-                let cataract  = userCases.filter(c => c.procedure === 'Cataract / Phaco').length;
-                let vr        = userCases.filter(c => c.procedure === 'Vitreoretinal (PPV)').length;
-                let glaucoma  = userCases.filter(c => c.procedure === 'Glaucoma').length;
-                let total     = userCases.length;
-                let percent   = Math.min(Math.round((total / Object.values(acgme).reduce((a,b)=>a+b,0)) * 100), 100);
-                let name      = userCases.length > 0 && userCases[0].resident_name ? userCases[0].resident_name : '-';
-                let pgy       = userCases.length > 0 && userCases[0].pgy_year ? userCases[0].pgy_year : '-';
-                html += '<tr><td>' + name + '</td><td>' + profile.email + '</td><td>' + pgy + '</td><td>' + total + '</td><td>' + cataract + '/86</td><td>' + vr + '/25</td><td>' + glaucoma + '/25</td><td>' + percent + '%</td></tr>';
+                let uc      = cases ? cases.filter(c => c.user_id === profile.id) : [];
+                let total   = uc.length;
+                let percent = Math.min(Math.round((total / Object.values(acgme).reduce((a,b)=>a+b,0)) * 100), 100);
+                let name    = uc.length > 0 && uc[0].resident_name ? uc[0].resident_name : '-';
+                let pgy     = uc.length > 0 && uc[0].pgy_year ? uc[0].pgy_year : '-';
+                html += '<tr><td>' + name + '</td><td>' + profile.email + '</td><td>' + pgy + '</td><td>' + total + '</td>';
+                html += '<td>' + uc.filter(c=>c.procedure==='Cataract / Phaco').length + '/86</td>';
+                html += '<td>' + uc.filter(c=>c.procedure==='Vitreoretinal (PPV)').length + '/25</td>';
+                html += '<td>' + uc.filter(c=>c.procedure==='Glaucoma').length + '/25</td>';
+                html += '<td>' + percent + '%</td></tr>';
             }
         }
     }
@@ -329,33 +468,86 @@ function updateDashboard(cases) {
     let totalRequired  = Object.values(acgme).reduce((a, b) => a + b, 0);
     let totalDone      = cases.length;
     let overallPercent = Math.min(Math.round((totalDone / totalRequired) * 100), 100);
+    let streak         = localStorage.getItem('streak') || 0;
+
+    let hour     = new Date().getHours();
+    let greeting = hour < 12 ? 'GOOD MORNING' : hour < 17 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
+    let greetEl  = document.getElementById('greetingText');
+    if (greetEl) greetEl.textContent = greeting;
+    updateProfileDisplay();
+
     document.getElementById('summaryCards').innerHTML =
-        '<div class="summary-card"><h3>' + totalDone + '</h3><p>Total Cases</p></div>' +
-        '<div class="summary-card"><h3>' + monthCases.length + '</h3><p>This Month</p></div>' +
-        '<div class="summary-card"><h3>' + overallPercent + '%</h3><p>Overall ACGME Progress</p></div>' +
-        '<div class="summary-card"><h3>' + Object.keys(acgme).length + '</h3><p>Procedure Types</p></div>';
+        '<div class="summary-card"><div style="font-size:26px;margin-bottom:4px">📋</div><h3>' + totalDone + '</h3><p>Total Cases</p></div>' +
+        '<div class="summary-card"><div style="font-size:26px;margin-bottom:4px">📅</div><h3>' + monthCases.length + '</h3><p>This Month</p></div>' +
+        '<div class="summary-card"><div style="font-size:26px;margin-bottom:4px">🎯</div><h3>' + overallPercent + '%</h3><p>ACGME Progress</p></div>' +
+        '<div class="summary-card"><div style="font-size:26px;margin-bottom:4px">🔥</div><h3>' + streak + '</h3><p>Day Streak</p></div>';
+
+    let badge = document.getElementById('overallBadge');
+    if (badge) badge.textContent = overallPercent + '% Complete';
+
     let counts = {};
     for (let p in acgme) { counts[p] = 0; }
     for (let c of cases) { if (counts[c.procedure] !== undefined) { counts[c.procedure]++; } }
-    if (procedureChart) { procedureChart.destroy(); }
-    procedureChart = new Chart(document.getElementById('procedureChart').getContext('2d'), {
-        type: 'bar',
+
+    let procHtml = '';
+    for (let p in acgme) {
+        let done          = counts[p];
+        let req           = acgme[p];
+        let percent       = Math.min(Math.round((done / req) * 100), 100);
+        let color         = percent >= 100 ? '#16a34a' : percent >= 50 ? '#2563eb' : percent >= 25 ? '#d97706' : '#dc2626';
+        let shortName     = p.split('/')[0].trim().split('(')[0].trim();
+        let circumference = 2 * Math.PI * 28;
+        let dashOffset    = circumference - (percent / 100) * circumference;
+
+        procHtml += `
+        <div style="background:#f8fafc; border-radius:14px; padding:14px 10px; text-align:center; border:1px solid #e2e8f0; transition:transform 0.2s, box-shadow 0.2s; cursor:default"
+             onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(37,99,235,0.12)'"
+             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+            <svg width="72" height="72" viewBox="0 0 72 72" style="transform:rotate(-90deg)">
+                <circle cx="36" cy="36" r="28" fill="none" stroke="#e2e8f0" stroke-width="7"/>
+                <circle cx="36" cy="36" r="28" fill="none" stroke="${color}" stroke-width="7"
+                    stroke-dasharray="${circumference.toFixed(2)}"
+                    stroke-dashoffset="${dashOffset.toFixed(2)}"
+                    stroke-linecap="round"/>
+            </svg>
+            <div style="margin-top:-52px; margin-bottom:36px; font-size:16px; font-weight:900; color:${color}">${percent}%</div>
+            <div style="font-size:11px; font-weight:700; color:#0f172a; margin-bottom:3px; line-height:1.3">${shortName}</div>
+            <div style="font-size:11px; color:#64748b; font-weight:600">${done} / ${req}</div>
+        </div>`;
+    }
+    document.getElementById('procedureCards').innerHTML = procHtml;
+
+    let roleCounts = { 'Primary': 0, 'Assistant': 0, 'Observer': 0 };
+    for (let c of cases) {
+        if (c.role === 'Primary Surgeon') roleCounts['Primary']++;
+        else if (c.role === 'Assistant')  roleCounts['Assistant']++;
+        else if (c.role === 'Observer')   roleCounts['Observer']++;
+    }
+
+    if (roleDashChart) { roleDashChart.destroy(); }
+    roleDashChart = new Chart(document.getElementById('roleDonut').getContext('2d'), {
+        type: 'doughnut',
         data: {
-            labels: Object.keys(counts),
-            datasets: [
-                { label: 'Cases Done', data: Object.values(counts), backgroundColor: '#2563eb' },
-                { label: 'Required',   data: Object.values(acgme),  backgroundColor: '#e2e8f0' }
-            ]
+            labels: Object.keys(roleCounts),
+            datasets: [{ data: Object.values(roleCounts), backgroundColor: ['#2563eb','#16a34a','#d97706'], borderWidth: 0 }]
         },
-        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        options: { responsive: true, cutout: '72%', plugins: { legend: { position: 'bottom' } } }
     });
+
     let statsHtml = '';
     for (let p in acgme) {
         let done    = counts[p];
         let req     = acgme[p];
         let percent = Math.min(Math.round((done / req) * 100), 100);
-        statsHtml += '<div class="stat-row"><p><strong>' + p + '</strong>: ' + done + ' / ' + req + '</p>';
-        statsHtml += '<div class="progress-bar"><div class="progress-fill" style="width:' + percent + '%"></div></div></div>';
+        let color   = percent >= 100 ? '#16a34a' : percent >= 50 ? '#2563eb' : '#d97706';
+        statsHtml += '<div style="margin-bottom:14px">';
+        statsHtml += '<div style="display:flex; justify-content:space-between; margin-bottom:6px">';
+        statsHtml += '<span style="font-size:13px; font-weight:600">' + p + '</span>';
+        statsHtml += '<span style="font-size:13px; color:#64748b">' + done + ' / ' + req + ' <strong style="color:' + color + '">' + percent + '%</strong></span>';
+        statsHtml += '</div>';
+        statsHtml += '<div style="background:#f1f5f9; border-radius:99px; height:8px">';
+        statsHtml += '<div style="background:' + color + '; width:' + percent + '%; height:8px; border-radius:99px; transition:width 0.8s ease"></div>';
+        statsHtml += '</div></div>';
     }
     document.getElementById('stats').innerHTML = statsHtml;
 }
@@ -366,10 +558,12 @@ function showAnalytics() {
     let monthCount = allCases.filter(c => c.date && c.date.startsWith(thisMonth)).length;
     let primary    = allCases.filter(c => c.role === 'Primary Surgeon').length;
     let primaryPct = total > 0 ? Math.round((primary / total) * 100) : 0;
+
     document.getElementById('analyticsSummary').innerHTML =
         '<div class="summary-card"><h3>' + total + '</h3><p>Total Cases</p></div>' +
         '<div class="summary-card"><h3>' + monthCount + '</h3><p>This Month</p></div>' +
         '<div class="summary-card"><h3>' + primaryPct + '%</h3><p>As Primary Surgeon</p></div>';
+
     let months = [], monthlyCounts = [];
     for (let i = 5; i >= 0; i--) {
         let d = new Date();
@@ -377,31 +571,37 @@ function showAnalytics() {
         months.push(d.toLocaleString('default', { month: 'short' }));
         monthlyCounts.push(allCases.filter(c => c.date && c.date.startsWith(d.toISOString().slice(0,7))).length);
     }
+
     if (monthlyChart) { monthlyChart.destroy(); }
     monthlyChart = new Chart(document.getElementById('monthlyChart').getContext('2d'), {
         type: 'line',
         data: {
             labels: months,
-            datasets: [{ label: 'Cases', data: monthlyCounts, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.1)', borderWidth: 3, fill: true, tension: 0.4, pointBackgroundColor: '#2563eb', pointRadius: 5 }]
+            datasets: [{ label: 'Cases', data: monthlyCounts, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.08)', borderWidth: 3, fill: true, tension: 0.4, pointBackgroundColor: '#2563eb', pointRadius: 5 }]
         },
-        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        options: { responsive: true, scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } } }
     });
+
     let roleCounts = { 'Primary Surgeon': 0, 'Assistant': 0, 'Observer': 0 };
     for (let c of allCases) { if (roleCounts[c.role] !== undefined) { roleCounts[c.role]++; } }
+
     if (roleChart) { roleChart.destroy(); }
     roleChart = new Chart(document.getElementById('roleChart').getContext('2d'), {
         type: 'doughnut',
-        data: { labels: Object.keys(roleCounts), datasets: [{ data: Object.values(roleCounts), backgroundColor: ['#2563eb', '#16a34a', '#d97706'] }] },
+        data: { labels: Object.keys(roleCounts), datasets: [{ data: Object.values(roleCounts), backgroundColor: ['#2563eb','#16a34a','#d97706'] }] },
         options: { responsive: true }
     });
+
     let dayCounts = [0,0,0,0,0,0,0];
     for (let c of allCases) { if (c.date) { dayCounts[new Date(c.date).getDay()]++; } }
+
     if (dayChart) { dayChart.destroy(); }
     dayChart = new Chart(document.getElementById('dayChart').getContext('2d'), {
         type: 'bar',
-        data: { labels: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], datasets: [{ label: 'Cases', data: dayCounts, backgroundColor: '#8C1515' }] },
-        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        data: { labels: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], datasets: [{ label: 'Cases', data: dayCounts, backgroundColor: '#8C1515', borderRadius: 6 }] },
+        options: { responsive: true, scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } } }
     });
+
     let monthCases = allCases.filter(c => c.date && c.date.startsWith(thisMonth));
     let procCounts = {};
     for (let c of monthCases) { procCounts[c.procedure] = (procCounts[c.procedure] || 0) + 1; }
@@ -429,8 +629,9 @@ function displayCaseList(cases) {
         html += '<td>' + (cases[i].hospital || '-') + '</td>';
         html += '<td>' + (cases[i].notes || '-') + '</td>';
         html += '<td style="white-space:nowrap">';
-        html += '<button onclick="openEditModal(\'' + cases[i].id + '\')" style="background:#2563eb; padding:6px 10px; font-size:12px; margin:0 4px 0 0; width:auto; border-radius:6px">✏️</button>';
-        html += '<button onclick="deleteCase(\'' + cases[i].id + '\')" style="background:#dc2626; padding:6px 10px; font-size:12px; margin:0; width:auto; border-radius:6px">🗑️</button>';
+        html += '<button onclick="openEditModal(\'' + cases[i].id + '\')" style="background:#2563eb; padding:6px 8px; font-size:12px; margin:0 2px; width:auto; border-radius:6px">✏️</button>';
+        html += '<button onclick="duplicateCase(\'' + cases[i].id + '\')" style="background:#7c3aed; padding:6px 8px; font-size:12px; margin:0 2px; width:auto; border-radius:6px">🔄</button>';
+        html += '<button onclick="deleteCase(\'' + cases[i].id + '\')" style="background:#dc2626; padding:6px 8px; font-size:12px; margin:0 2px; width:auto; border-radius:6px">🗑️</button>';
         html += '</td></tr>';
     }
     html += '</table>';
@@ -496,16 +697,16 @@ function exportMonthlyReport() {
     doc.setTextColor(44,62,80); doc.setFontSize(14); doc.text('Monthly Summary', 14, 50);
     let totalReq = Object.values(acgme).reduce((a,b)=>a+b,0);
     let overallPct = Math.min(Math.round((allCases.length/totalReq)*100),100);
-    doc.autoTable({ startY:55, head:[['Metric','This Month','Last Month','Total to Date']], body:[['Cases Logged',thisMonthCases.length,lastMonthCases.length,allCases.length],['ACGME Progress','-','-',overallPct+'%']], styles:{fontSize:10}, headStyles:{fillColor:[140,21,21]} });
+    doc.autoTable({ startY:55, head:[['Metric','This Month','Last Month','Total']], body:[['Cases Logged',thisMonthCases.length,lastMonthCases.length,allCases.length],['ACGME Progress','-','-',overallPct+'%']], styles:{fontSize:10}, headStyles:{fillColor:[140,21,21]} });
     let finalY = doc.lastAutoTable.finalY + 10;
-    doc.setFontSize(14); doc.text('This Month — Cases by Procedure', 14, finalY);
+    doc.setFontSize(14); doc.text('Cases by Procedure', 14, finalY);
     let counts = {};
     for (let p in acgme) { counts[p] = 0; }
     for (let c of thisMonthCases) { if (counts[c.procedure] !== undefined) { counts[c.procedure]++; } }
     doc.autoTable({ startY:finalY+5, head:[['Procedure','This Month','Required','Overall %']], body:Object.keys(acgme).map(p=>[p,counts[p],acgme[p],Math.min(Math.round((allCases.filter(c=>c.procedure===p).length/acgme[p])*100),100)+'%']), styles:{fontSize:9}, headStyles:{fillColor:[140,21,21]} });
     if (thisMonthCases.length > 0) {
         let y2 = doc.lastAutoTable.finalY + 10;
-        doc.setFontSize(14); doc.text('This Month — Case Details', 14, y2);
+        doc.setFontSize(14); doc.text('Case Details', 14, y2);
         doc.autoTable({ startY:y2+5, head:[['Date','Procedure','Role','Attending','Hospital','Notes']], body:thisMonthCases.map(c=>[c.date,c.procedure,c.role,c.attending||'-',c.hospital||'-',c.notes||'-']), styles:{fontSize:8}, headStyles:{fillColor:[140,21,21]} });
     }
     let pageCount = doc.internal.getNumberOfPages();
@@ -519,7 +720,7 @@ function exportMonthlyReport() {
 async function setupNotifications() {
     if (!('Notification' in window)) { showToast('Notifications not supported', 'error'); return; }
     let permission = await Notification.requestPermission();
-    if (permission === 'granted') { showToast('🔔 Daily reminders enabled at 6 PM!'); scheduleReminder(); }
+    if (permission === 'granted') { showToast('🔔 Daily reminders enabled!'); scheduleReminder(); }
     else { showToast('Notifications blocked', 'warning'); }
 }
 

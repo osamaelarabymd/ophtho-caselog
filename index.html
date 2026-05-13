@@ -17,11 +17,9 @@
 </head>
 <body>
 
-    <!-- Toast -->
     <div id="toast"></div>
 
-    <!-- Loading Spinner -->
-    <div id="loadingSpinner" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9998; align-items:center; justify-content:center;">
+    <div id="loadingSpinner" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.85); z-index:9998; align-items:center; justify-content:center;">
         <div class="spinner"></div>
     </div>
 
@@ -76,91 +74,209 @@
     <!-- App -->
     <div id="appSection" style="display:none">
 
-<button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSev-87zwv0Ot_7LNJuuNNTBpKpcOvS_vEtSnGbgLGjMVP-iMA/viewform', '_blank')" style="float:right; background:#16a34a; width:auto; padding:10px 18px; margin-top:10px; margin-right:10px; font-size:13px">💬 Feedback</button>        <button onclick="signOut()" style="float:right; background:#dc2626; width:auto; padding:10px 18px; margin-top:10px; font-size:13px">Sign Out</button>
+        <!-- Top bar -->
+        <div class="top-bar">
+            <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSev-87zwv0Ot_7LNJuuNNTBpKpcOvS_vEtSnGbgLGjMVP-iMA/viewform', '_blank')" class="top-btn" style="background:#16a34a">💬 Feedback</button>
+            <button id="darkBtn" onclick="toggleDarkMode()" class="top-btn" style="background:#1e293b">🌙 Dark</button>
+            <button onclick="signOut()" class="top-btn" style="background:#dc2626">🚪 Sign Out</button>
+        </div>
 
+        <!-- Streak banner -->
+        <div id="streakBanner" style="display:none; background:linear-gradient(135deg,#f97316,#ef4444); color:white; padding:12px 20px; border-radius:12px; margin-bottom:16px; text-align:center; font-weight:700; font-size:15px"></div>
+
+        <!-- Tabs -->
         <div id="tabs">
-            <button onclick="showTab('dashboard')" class="tab-btn active-tab">📊 Dashboard</button>
-            <button onclick="showTab('logCase')"   class="tab-btn">➕ Log Case</button>
-            <button onclick="showTab('caseList')"  class="tab-btn">📋 Case List</button>
-            <button onclick="showTab('analytics')" class="tab-btn">📈 Analytics</button>
-            <button onclick="showTab('admin')" id="adminTab" class="tab-btn" style="display:none; background:#16a34a; color:white; border-radius:8px; border-bottom:none">👨‍⚕️ PD Panel</button>
+            <button onclick="showTab('dashboard', event)" class="tab-btn active-tab">📊 Dashboard</button>
+            <button onclick="showTab('profile', event)"   class="tab-btn">👤 Profile</button>
+            <button onclick="showTab('logCase', event)"   class="tab-btn">➕ Log Case</button>
+            <button onclick="showTab('caseList', event)"  class="tab-btn">📋 Case List</button>
+            <button onclick="showTab('analytics', event)" class="tab-btn">📈 Analytics</button>
+            <button onclick="showTab('admin', event)" id="adminTab" class="tab-btn" style="display:none; background:linear-gradient(135deg,#16a34a,#15803d); color:white">👨‍⚕️ PD Panel</button>
         </div>
 
         <!-- Dashboard -->
         <div id="dashboard">
-            <h2>Dashboard</h2>
-            <button onclick="setupNotifications()" style="background:#7c3aed; width:auto; padding:10px 20px; margin-bottom:20px; font-size:13px">🔔 Enable Daily Reminders</button>
+            <div style="background:linear-gradient(135deg, #8C1515 0%, #2563eb 100%); border-radius:20px; padding:28px; margin-bottom:20px; color:white; position:relative; overflow:hidden">
+                <div style="position:absolute; top:-20px; right:-20px; width:120px; height:120px; background:rgba(255,255,255,0.05); border-radius:50%"></div>
+                <div style="position:absolute; bottom:-30px; right:60px; width:80px; height:80px; background:rgba(255,255,255,0.05); border-radius:50%"></div>
+                <p id="greetingText" style="font-size:12px; opacity:0.75; margin-bottom:6px; text-transform:uppercase; letter-spacing:1.5px; font-weight:600">GOOD MORNING</p>
+                <h2 id="welcomeName" style="font-size:26px; font-weight:900; margin-bottom:6px; color:white">Dr. Elaraby</h2>
+                <p style="font-size:14px; opacity:0.8; line-height:1.5">Every case logged brings you closer to your ACGME goals 🎯</p>
+                <div style="display:flex; gap:10px; margin-top:18px; flex-wrap:wrap">
+                    <button onclick="showTab('logCase', event)" style="background:rgba(255,255,255,0.2); width:auto; padding:9px 18px; margin:0; font-size:13px; border-radius:50px; border:1px solid rgba(255,255,255,0.4)">➕ Log New Case</button>
+                    <button onclick="setupNotifications()" style="background:rgba(255,255,255,0.1); width:auto; padding:9px 18px; margin:0; font-size:13px; border-radius:50px; border:1px solid rgba(255,255,255,0.2)">🔔 Reminders</button>
+                </div>
+            </div>
+
             <div id="summaryCards"></div>
-            <h3>Cases by Procedure</h3>
-            <canvas id="procedureChart" height="100"></canvas>
-            <h3 style="margin-top:30px">ACGME Progress</h3>
-            <div id="stats"></div>
+
+            <div class="dash-card" style="margin-bottom:16px">
+                <h3>📊 Procedure Progress</h3>
+                <div id="procedureCards" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(110px, 1fr)); gap:12px; margin-top:12px"></div>
+            </div>
+
+            <div class="dash-card" style="margin-bottom:16px">
+                <h3>🎯 Role Breakdown</h3>
+                <canvas id="roleDonut" height="120"></canvas>
+            </div>
+
+            <div class="dash-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px">
+                    <h3 style="margin:0">🏆 ACGME Progress</h3>
+                    <span id="overallBadge" style="background:linear-gradient(135deg,#2563eb,#7c3aed); color:white; padding:5px 14px; border-radius:50px; font-size:12px; font-weight:700"></span>
+                </div>
+                <div id="stats"></div>
+            </div>
+        </div>
+
+        <!-- Profile -->
+        <div id="profileTab" style="display:none">
+
+            <div style="background:linear-gradient(135deg, #8C1515 0%, #2563eb 100%); border-radius:20px; padding:28px; margin-bottom:20px; color:white; text-align:center; position:relative; overflow:hidden">
+                <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:rgba(255,255,255,0.05); border-radius:50%"></div>
+                <div style="width:84px; height:84px; background:rgba(255,255,255,0.2); border-radius:50%; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; font-size:38px; border:3px solid rgba(255,255,255,0.4); box-shadow:0 4px 16px rgba(0,0,0,0.2)">👨‍⚕️</div>
+                <h2 id="profileName" style="color:white; font-size:22px; margin-bottom:6px">Dr. Osama Elaraby</h2>
+                <p id="profilePgy" style="opacity:0.85; font-size:14px; margin-bottom:4px; font-weight:600">PGY-1</p>
+                <p id="profileProgram" style="opacity:0.7; font-size:13px">Stanford University — Ophthalmology</p>
+            </div>
+
+            <div id="profileStats" style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px"></div>
+
+            <div class="dash-card" style="margin-bottom:16px">
+                <h3>✏️ Edit Profile</h3>
+
+                <label>Full Name</label>
+                <input type="text" id="profileNameInput" placeholder="e.g. Osama Elaraby">
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+                    <div>
+                        <label>PGY Year</label>
+                        <select id="profilePgyInput">
+                            <option value="PGY-1">PGY-1</option>
+                            <option value="PGY-2">PGY-2</option>
+                            <option value="PGY-3">PGY-3</option>
+                            <option value="PGY-4">PGY-4</option>
+                            <option value="PGY-5">PGY-5</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Program / Institution</label>
+                        <input type="text" id="profileProgramInput" placeholder="e.g. Stanford">
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+                    <div>
+                        <label>Residency Start Year</label>
+                        <input type="number" id="profileStartYear" placeholder="e.g. 2024" min="2000" max="2030">
+                    </div>
+                    <div>
+                        <label>Residency End Year</label>
+                        <input type="number" id="profileEndYear" placeholder="e.g. 2028" min="2000" max="2035">
+                    </div>
+                </div>
+
+                <label>Goals / Notes</label>
+                <textarea id="profileGoals" rows="3" placeholder="e.g. Focus on vitreoretinal surgery..."></textarea>
+
+                <button onclick="saveProfile()">💾 Save Profile</button>
+            </div>
+
+            <div class="dash-card" style="margin-bottom:16px">
+                <h3>🎯 My Goals</h3>
+                <div id="profileGoalsDisplay" style="margin-top:12px; color:#64748b; font-size:14px; line-height:1.6"></div>
+            </div>
+
+            <div class="dash-card">
+                <h3>🔐 Account</h3>
+                <div id="profileEmail" style="font-size:14px; color:#64748b; margin-top:8px; padding:12px; background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0"></div>
+                <button onclick="signOut()" style="background:#dc2626; margin-top:16px">🚪 Sign Out</button>
+            </div>
+
         </div>
 
         <!-- Log Case -->
         <div id="logCase" style="display:none">
-            <h2>Log a New Case</h2>
-            <div id="templatesSection">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
-                    <label style="margin:0; font-size:13px">QUICK TEMPLATES</label>
-                    <button onclick="saveTemplate()" style="background:#7c3aed; width:auto; padding:6px 14px; font-size:12px; margin:0">+ Save as Template</button>
+            <h2>➕ Log a New Case</h2>
+
+            <div style="background:white; padding:16px; border-radius:12px; margin-bottom:20px; border:1px solid #e2e8f0; box-shadow:0 2px 8px rgba(37,99,235,0.06)">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+                    <label style="margin:0; font-size:11px">⚡ QUICK TEMPLATES</label>
+                    <button onclick="saveTemplate()" style="background:#7c3aed; width:auto; padding:6px 14px; font-size:12px; margin:0; border-radius:8px">+ Save Template</button>
                 </div>
-                <div id="templatesList" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px"></div>
+                <div id="templatesList" style="display:flex; gap:8px; flex-wrap:wrap"></div>
             </div>
 
-            <label>Resident Name</label>
-            <input type="text" id="residentName" placeholder="Your full name">
+            <div style="background:white; padding:24px; border-radius:16px; border:1px solid #e2e8f0; box-shadow:0 4px 24px rgba(37,99,235,0.08)">
+                <label>Resident Name</label>
+                <input type="text" id="residentName" placeholder="Your full name">
 
-            <label>PGY Year</label>
-            <select id="pgyYear">
-                <option value="PGY-1">PGY-1</option>
-                <option value="PGY-2">PGY-2</option>
-                <option value="PGY-3">PGY-3</option>
-                <option value="PGY-4">PGY-4</option>
-                <option value="PGY-5">PGY-5</option>
-            </select>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+                    <div>
+                        <label>PGY Year</label>
+                        <select id="pgyYear">
+                            <option value="PGY-1">PGY-1</option>
+                            <option value="PGY-2">PGY-2</option>
+                            <option value="PGY-3">PGY-3</option>
+                            <option value="PGY-4">PGY-4</option>
+                            <option value="PGY-5">PGY-5</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Date</label>
+                        <input type="date" id="date">
+                    </div>
+                </div>
 
-            <label>Attending Supervisor</label>
-            <input type="text" id="attending" placeholder="Attending physician name">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+                    <div>
+                        <label>Attending Supervisor</label>
+                        <input type="text" id="attending" placeholder="Attending name">
+                    </div>
+                    <div>
+                        <label>Hospital / Institution</label>
+                        <input type="text" id="hospital" placeholder="e.g. Stanford">
+                    </div>
+                </div>
 
-            <label>Hospital / Institution</label>
-            <input type="text" id="hospital" placeholder="e.g. Stanford Medical Center">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+                    <div>
+                        <label>Procedure Type</label>
+                        <select id="procedure">
+                            <option>Cataract / Phaco</option>
+                            <option>Vitreoretinal (PPV)</option>
+                            <option>Glaucoma</option>
+                            <option>Cornea / Keratoplasty</option>
+                            <option>Oculoplastics</option>
+                            <option>Strabismus</option>
+                            <option>Laser (LIO / SLT / YAG)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Your Role</label>
+                        <select id="role">
+                            <option>Primary Surgeon</option>
+                            <option>Assistant</option>
+                            <option>Observer</option>
+                        </select>
+                    </div>
+                </div>
 
-            <label>Procedure Type</label>
-            <select id="procedure">
-                <option>Cataract / Phaco</option>
-                <option>Vitreoretinal (PPV)</option>
-                <option>Glaucoma</option>
-                <option>Cornea / Keratoplasty</option>
-                <option>Oculoplastics</option>
-                <option>Strabismus</option>
-                <option>Laser (LIO / SLT / YAG)</option>
-            </select>
+                <label>Notes</label>
+                <textarea id="notes" rows="3" placeholder="Any relevant notes..."></textarea>
 
-            <label>Your Role</label>
-            <select id="role">
-                <option>Primary Surgeon</option>
-                <option>Assistant</option>
-                <option>Observer</option>
-            </select>
-
-            <label>Date</label>
-            <input type="date" id="date">
-
-            <label>Notes</label>
-            <textarea id="notes" rows="4"></textarea>
-
-            <div class="btn-row">
-                <button id="saveBtn">💾 Save Case</button>
-                <button onclick="exportPDF()" style="background:#16a34a">📄 Export PDF</button>
-                <button onclick="exportMonthlyReport()" style="background:#d97706">📅 Monthly Report</button>
+                <div class="btn-row">
+                    <button id="saveBtn">💾 Save Case</button>
+                    <button onclick="exportPDF()" style="background:#16a34a">📄 Export PDF</button>
+                    <button onclick="exportMonthlyReport()" style="background:#d97706">📅 Monthly Report</button>
+                </div>
             </div>
         </div>
 
         <!-- Case List -->
         <div id="caseListTab" style="display:none">
             <div class="filter-card">
-                <h2>Filter Cases</h2>
+                <h2>🔍 Filter Cases</h2>
                 <div class="filter-grid">
                     <div>
                         <label>Search</label>
@@ -199,7 +315,7 @@
                 </div>
                 <div class="filter-btns">
                     <button onclick="applyFilter()">Apply Filter</button>
-                    <button onclick="clearFilter()" style="background:#64748b">Clear Filter</button>
+                    <button onclick="clearFilter()" style="background:#64748b">Clear</button>
                 </div>
             </div>
             <div id="caseList"></div>
@@ -208,22 +324,22 @@
         <!-- Analytics -->
         <div id="analyticsTab" style="display:none">
             <h2>📈 Analytics</h2>
-            <div id="analyticsSummary" style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px"></div>
-            <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom:24px">
+            <div id="analyticsSummary" style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px"></div>
+            <div class="dash-card" style="margin-bottom:16px">
                 <h3>Cases Per Month</h3>
                 <canvas id="monthlyChart" height="120"></canvas>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px">
-                <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px">
+                <div class="dash-card">
                     <h3>Role Breakdown</h3>
                     <canvas id="roleChart" height="200"></canvas>
                 </div>
-                <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)">
+                <div class="dash-card">
                     <h3>Busiest Days</h3>
                     <canvas id="dayChart" height="200"></canvas>
                 </div>
             </div>
-            <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)">
+            <div class="dash-card">
                 <h3>Top Procedures This Month</h3>
                 <div id="topProcedures"></div>
             </div>
@@ -233,12 +349,12 @@
         <div id="adminPanel" style="display:none"></div>
 
         <!-- Edit Modal -->
-        <div id="editModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center;">
-            <div style="background:white; padding:30px; border-radius:16px; width:90%; max-width:500px; max-height:90vh; overflow-y:auto;">
+        <div id="editModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center; backdrop-filter:blur(4px)">
+            <div style="background:white; padding:30px; border-radius:20px; width:90%; max-width:500px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,0.2)">
                 <h2>✏️ Edit Case</h2>
                 <input type="hidden" id="editId">
                 <label>Resident Name</label>
-                <input type="text" id="editResidentName" placeholder="Resident name">
+                <input type="text" id="editResidentName">
                 <label>PGY Year</label>
                 <select id="editPgyYear">
                     <option value="PGY-1">PGY-1</option>
@@ -248,9 +364,9 @@
                     <option value="PGY-5">PGY-5</option>
                 </select>
                 <label>Attending Supervisor</label>
-                <input type="text" id="editAttending" placeholder="Attending name">
+                <input type="text" id="editAttending">
                 <label>Hospital / Institution</label>
-                <input type="text" id="editHospital" placeholder="Hospital name">
+                <input type="text" id="editHospital">
                 <label>Procedure Type</label>
                 <select id="editProcedure">
                     <option>Cataract / Phaco</option>
@@ -272,7 +388,7 @@
                 <label>Notes</label>
                 <textarea id="editNotes" rows="3"></textarea>
                 <div style="display:flex; gap:10px; margin-top:20px">
-                    <button onclick="saveEdit()" style="flex:1; margin:0">💾 Save Changes</button>
+                    <button onclick="saveEdit()" style="flex:1; margin:0">💾 Save</button>
                     <button onclick="closeEditModal()" style="flex:1; margin:0; background:#64748b">Cancel</button>
                 </div>
             </div>
