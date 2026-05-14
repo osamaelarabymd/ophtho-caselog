@@ -38,10 +38,10 @@ const roleColors = {
 };
 
 const milestones = [
-    { pct: 25,  emoji: '🌱', title: 'Great Start!',        text: "You've completed 25% of your ACGME requirements!",  badge: '25% Pioneer',      color: '#d97706' },
-    { pct: 50,  emoji: '🔥', title: 'Halfway There!',      text: "Amazing! You're halfway through your ACGME goals!", badge: '50% Achiever',     color: '#2563eb' },
-    { pct: 75,  emoji: '⭐', title: 'Almost There!',       text: "75% complete — you're in the home stretch!",        badge: '75% Champion',     color: '#7c3aed' },
-    { pct: 100, emoji: '🏆', title: 'ACGME Complete!',     text: "Outstanding! You've completed ALL ACGME requirements!", badge: '100% Legend',  color: '#16a34a' }
+    { pct: 25,  emoji: '🌱', title: 'Great Start!',     text: "You've completed 25% of your ACGME requirements!",     badge: '25% Pioneer',  color: '#d97706' },
+    { pct: 50,  emoji: '🔥', title: 'Halfway There!',   text: "Amazing! You're halfway through your ACGME goals!",    badge: '50% Achiever', color: '#2563eb' },
+    { pct: 75,  emoji: '⭐', title: 'Almost There!',    text: "75% complete — you're in the home stretch!",           badge: '75% Champion', color: '#7c3aed' },
+    { pct: 100, emoji: '🏆', title: 'ACGME Complete!',  text: "Outstanding! You've completed ALL ACGME requirements!", badge: '100% Legend',  color: '#16a34a' }
 ];
 
 // Toast
@@ -77,7 +77,6 @@ function showMilestone(m) {
     document.getElementById('milestoneBadge').textContent  = '🏅 ' + m.badge;
     document.getElementById('milestoneBadge').style.background = 'linear-gradient(135deg,' + m.color + ',#7c3aed)';
     document.getElementById('milestoneModal').style.display = 'flex';
-
     setTimeout(() => {
         if (typeof confetti !== 'undefined') {
             confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#2563eb','#8C1515','#16a34a','#d97706','#7c3aed'] });
@@ -93,13 +92,10 @@ function updateAchievementBadges(percent) {
     let reached  = JSON.parse(localStorage.getItem('milestonesReached')) || [];
     let badgesEl = document.getElementById('achievementBadges');
     if (!badgesEl || reached.length === 0) return;
-
     let html = '';
     for (let m of milestones) {
         if (reached.includes(m.pct)) {
-            html += `<div style="background:linear-gradient(135deg,${m.color},#7c3aed); color:white; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(0,0,0,0.15)">
-                ${m.emoji} ${m.badge}
-            </div>`;
+            html += `<div style="background:linear-gradient(135deg,${m.color},#7c3aed); color:white; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(0,0,0,0.15)">${m.emoji} ${m.badge}</div>`;
         }
     }
     badgesEl.innerHTML = html;
@@ -205,14 +201,12 @@ function updateProfileDisplay() {
     if (nameEl) nameEl.textContent = profile.name ? 'Dr. ' + profile.name : 'Dr. Osama Elaraby';
     if (pgyEl)  pgyEl.textContent  = profile.pgy  || 'PGY-1';
     if (progEl) progEl.textContent = (profile.program || 'Stanford University') + ' — Ophthalmology';
-
     let goalsEl = document.getElementById('profileGoalsDisplay');
     if (goalsEl) {
         goalsEl.innerHTML = profile.goals
             ? '<p style="color:#1e293b; font-size:14px; line-height:1.7">' + profile.goals + '</p>'
             : '<p style="color:#94a3b8; font-size:14px">No goals set yet — add them above!</p>';
     }
-
     if (profile.startYear && profile.endYear) {
         let now   = new Date().getFullYear();
         let total = profile.endYear - profile.startYear;
@@ -226,7 +220,6 @@ function updateProfileDisplay() {
                 '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">⏳</div><h3>' + pct + '%</h3><p>Residency Done</p></div>';
         }
     }
-
     let welcomeEl = document.getElementById('welcomeName');
     if (welcomeEl && profile.name) {
         let parts    = profile.name.trim().split(' ');
@@ -351,7 +344,6 @@ function showTab(tab, e) {
     document.getElementById('profileTab').style.display   = 'none';
     document.getElementById('adminPanel').style.display   = 'none';
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
-
     if (tab === 'dashboard') {
         document.getElementById('dashboard').style.display = 'block';
     } else if (tab === 'logCase') {
@@ -372,7 +364,6 @@ function showTab(tab, e) {
         document.getElementById('adminPanel').style.display = 'block';
         loadAdminData();
     }
-
     if (e && e.target) e.target.classList.add('active-tab');
 }
 
@@ -544,8 +535,6 @@ function updateDashboard(cases) {
     let greetEl  = document.getElementById('greetingText');
     if (greetEl) greetEl.textContent = greeting;
     updateProfileDisplay();
-
-    // Check milestones
     checkMilestones(overallPercent);
     updateAchievementBadges(overallPercent);
 
@@ -783,55 +772,284 @@ function clearFilter() {
     displayCaseList(allCases);
 }
 
+// Premium Stanford PDF
 function exportPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    doc.setFontSize(20); doc.setTextColor(44,62,80); doc.text('OphthoLog Report', 14, 20);
-    doc.setFontSize(11); doc.setTextColor(100); doc.text('Generated: ' + new Date().toLocaleDateString(), 14, 30);
-    doc.setFontSize(14); doc.setTextColor(44,62,80); doc.text('Case Log', 14, 45);
-    doc.autoTable({ startY:50, head:[['Date','Procedure','Role','Attending','Hospital','Notes']], body:allCases.map(c=>[c.date,c.procedure,c.role,c.attending||'-',c.hospital||'-',c.notes||'-']), styles:{fontSize:9}, headStyles:{fillColor:[37,99,235]} });
-    let finalY = doc.lastAutoTable.finalY + 15;
-    doc.setFontSize(14); doc.setTextColor(44,62,80); doc.text('ACGME Progress Summary', 14, finalY);
+    let profile = JSON.parse(localStorage.getItem('userProfile')) || {};
+    let name    = profile.name    || 'Ophthalmology Resident';
+    let pgy     = profile.pgy     || '';
+    let program = profile.program || 'Stanford University';
+
+    // Cover header
+    doc.setFillColor(140, 21, 21);
+    doc.rect(0, 0, 220, 45, 'F');
+    doc.setFillColor(37, 99, 235);
+    doc.rect(0, 40, 220, 5, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.text('OphthoLog', 14, 18);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Ophthalmology Residency Case Log Report', 14, 30);
+    doc.setFontSize(10);
+    doc.text('Generated: ' + new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' }), 14, 39);
+
+    // Resident info box
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(14, 52, 182, 28, 3, 3, 'F');
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(14, 52, 182, 28, 3, 3, 'S');
+
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Dr. ' + name, 22, 63);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 116, 139);
+    doc.text(program + ' — Ophthalmology' + (pgy ? '   |   ' + pgy : ''), 22, 72);
+
+    // Summary section
+    let totalReq   = Object.values(acgme).reduce((a,b)=>a+b,0);
+    let totalDone  = allCases.length;
+    let overallPct = Math.min(Math.round((totalDone / totalReq) * 100), 100);
+    let thisMonth  = new Date().toISOString().slice(0,7);
+    let monthCount = allCases.filter(c => c.date && c.date.startsWith(thisMonth)).length;
+    let primary    = allCases.filter(c => c.role === 'Primary Surgeon').length;
+
+    // Summary cards row
+    let cardY = 88;
+    let cards = [
+        { label: 'Total Cases',    value: totalDone,  color: [37,99,235] },
+        { label: 'This Month',     value: monthCount, color: [124,58,237] },
+        { label: 'ACGME Progress', value: overallPct + '%', color: [22,163,74] },
+        { label: 'As Primary',     value: primary,    color: [140,21,21] }
+    ];
+
+    let cardW = 42;
+    for (let i = 0; i < cards.length; i++) {
+        let x = 14 + i * (cardW + 3);
+        doc.setFillColor(...cards[i].color);
+        doc.roundedRect(x, cardY, cardW, 20, 3, 3, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text(String(cards[i].value), x + cardW/2, cardY + 11, { align: 'center' });
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.text(cards[i].label, x + cardW/2, cardY + 17, { align: 'center' });
+    }
+
+    // ACGME Progress section
+    let y = 118;
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ACGME Progress Summary', 14, y);
+    y += 6;
+
     let counts = {};
     for (let p in acgme) { counts[p] = 0; }
     for (let c of allCases) { if (counts[c.procedure] !== undefined) { counts[c.procedure]++; } }
-    doc.autoTable({ startY:finalY+5, head:[['Procedure','Done','Required','Progress']], body:Object.keys(acgme).map(p=>[p,counts[p],acgme[p],Math.min(Math.round((counts[p]/acgme[p])*100),100)+'%']), styles:{fontSize:9}, headStyles:{fillColor:[37,99,235]} });
-    doc.save('ophtholog-report.pdf');
+
+    for (let p in acgme) {
+        let done    = counts[p];
+        let req     = acgme[p];
+        let pct     = Math.min(Math.round((done / req) * 100), 100);
+        let barColor = pct >= 100 ? [22,163,74] : pct >= 50 ? [37,99,235] : [217,119,6];
+
+        doc.setTextColor(15, 23, 42);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text(p, 14, y + 6);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(100, 116, 139);
+        doc.text(done + ' / ' + req + '  (' + pct + '%)', 155, y + 6, { align: 'right' });
+
+        // Progress bar background
+        doc.setFillColor(226, 232, 240);
+        doc.roundedRect(14, y + 8, 182, 4, 2, 2, 'F');
+        // Progress bar fill
+        if (pct > 0) {
+            doc.setFillColor(...barColor);
+            doc.roundedRect(14, y + 8, Math.max(182 * pct / 100, 4), 4, 2, 2, 'F');
+        }
+        y += 16;
+    }
+
+    // Case log table
+    y += 4;
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Case Log', 14, y);
+    y += 4;
+
+    doc.autoTable({
+        startY: y,
+        head: [['Date', 'Procedure', 'Role', 'Attending', 'Hospital', 'Notes']],
+        body: allCases.map(c => [
+            c.date || '-',
+            c.procedure || '-',
+            c.role || '-',
+            c.attending || '-',
+            c.hospital || '-',
+            c.notes || '-'
+        ]),
+        styles: { fontSize: 8, cellPadding: 4 },
+        headStyles: { fillColor: [140,21,21], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+        alternateRowStyles: { fillColor: [248,250,252] },
+        columnStyles: { 5: { cellWidth: 40 } }
+    });
+
+    // Footer on every page
+    let pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFillColor(140, 21, 21);
+        doc.rect(0, doc.internal.pageSize.height - 12, 220, 12, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text('OphthoLog  |  ' + program + '  |  Generated ' + new Date().toLocaleDateString(), 14, doc.internal.pageSize.height - 4);
+        doc.text('Page ' + i + ' of ' + pageCount, 196, doc.internal.pageSize.height - 4, { align: 'right' });
+    }
+
+    doc.save('ophtholog-report-' + new Date().toISOString().slice(0,10) + '.pdf');
+    showToast('📄 PDF exported!');
 }
 
+// Premium Stanford Monthly Report
 function exportMonthlyReport() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    let now = new Date();
-    let thisMonth = now.toISOString().slice(0,7);
-    let lastMonth = new Date(now.getFullYear(), now.getMonth()-1, 1).toISOString().slice(0,7);
-    let monthName = now.toLocaleString('default', {month:'long', year:'numeric'});
+    let profile  = JSON.parse(localStorage.getItem('userProfile')) || {};
+    let name     = profile.name    || 'Ophthalmology Resident';
+    let pgy      = profile.pgy     || '';
+    let program  = profile.program || 'Stanford University';
+    let now      = new Date();
+    let thisMonth      = now.toISOString().slice(0,7);
+    let lastMonthDate  = new Date(now.getFullYear(), now.getMonth()-1, 1);
+    let lastMonth      = lastMonthDate.toISOString().slice(0,7);
+    let monthName      = now.toLocaleString('default', { month:'long', year:'numeric' });
     let thisMonthCases = allCases.filter(c => c.date && c.date.startsWith(thisMonth));
     let lastMonthCases = allCases.filter(c => c.date && c.date.startsWith(lastMonth));
-    doc.setFillColor(140,21,21); doc.rect(0,0,220,35,'F');
-    doc.setTextColor(255,255,255); doc.setFontSize(22); doc.text('OphthoLog', 14, 15);
-    doc.setFontSize(14); doc.text('Monthly Progress Report — ' + monthName, 14, 27);
-    doc.setTextColor(44,62,80); doc.setFontSize(14); doc.text('Monthly Summary', 14, 50);
-    let totalReq = Object.values(acgme).reduce((a,b)=>a+b,0);
+
+    // Header
+    doc.setFillColor(140, 21, 21);
+    doc.rect(0, 0, 220, 45, 'F');
+    doc.setFillColor(37, 99, 235);
+    doc.rect(0, 40, 220, 5, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
+    doc.text('OphthoLog', 14, 17);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Monthly Progress Report — ' + monthName, 14, 28);
+    doc.setFontSize(9);
+    doc.text('Generated: ' + now.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' }), 14, 38);
+
+    // Resident info
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(14, 52, 182, 28, 3, 3, 'F');
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(14, 52, 182, 28, 3, 3, 'S');
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Dr. ' + name, 22, 63);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 116, 139);
+    doc.text(program + ' — Ophthalmology' + (pgy ? '   |   ' + pgy : ''), 22, 72);
+
+    // Monthly summary cards
+    let totalReq   = Object.values(acgme).reduce((a,b)=>a+b,0);
     let overallPct = Math.min(Math.round((allCases.length/totalReq)*100),100);
-    doc.autoTable({ startY:55, head:[['Metric','This Month','Last Month','Total']], body:[['Cases Logged',thisMonthCases.length,lastMonthCases.length,allCases.length],['ACGME Progress','-','-',overallPct+'%']], styles:{fontSize:10}, headStyles:{fillColor:[140,21,21]} });
-    let finalY = doc.lastAutoTable.finalY + 10;
-    doc.setFontSize(14); doc.text('Cases by Procedure', 14, finalY);
+    let cardY = 88;
+    let cards = [
+        { label: 'This Month',  value: thisMonthCases.length, color: [37,99,235] },
+        { label: 'Last Month',  value: lastMonthCases.length, color: [124,58,237] },
+        { label: 'Total Cases', value: allCases.length,       color: [140,21,21] },
+        { label: 'ACGME Done',  value: overallPct + '%',      color: [22,163,74] }
+    ];
+    let cardW = 42;
+    for (let i = 0; i < cards.length; i++) {
+        let x = 14 + i * (cardW + 3);
+        doc.setFillColor(...cards[i].color);
+        doc.roundedRect(x, cardY, cardW, 20, 3, 3, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text(String(cards[i].value), x + cardW/2, cardY + 11, { align: 'center' });
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.text(cards[i].label, x + cardW/2, cardY + 17, { align: 'center' });
+    }
+
+    // This month by procedure
+    let y = 118;
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text('This Month — Procedure Breakdown', 14, y);
+    y += 4;
+
     let counts = {};
     for (let p in acgme) { counts[p] = 0; }
     for (let c of thisMonthCases) { if (counts[c.procedure] !== undefined) { counts[c.procedure]++; } }
-    doc.autoTable({ startY:finalY+5, head:[['Procedure','This Month','Required','Overall %']], body:Object.keys(acgme).map(p=>[p,counts[p],acgme[p],Math.min(Math.round((allCases.filter(c=>c.procedure===p).length/acgme[p])*100),100)+'%']), styles:{fontSize:9}, headStyles:{fillColor:[140,21,21]} });
+
+    doc.autoTable({
+        startY: y,
+        head: [['Procedure', 'This Month', 'Required Total', 'Overall %']],
+        body: Object.keys(acgme).map(p => [
+            p,
+            counts[p],
+            acgme[p],
+            Math.min(Math.round((allCases.filter(c=>c.procedure===p).length / acgme[p]) * 100), 100) + '%'
+        ]),
+        styles: { fontSize: 9, cellPadding: 4 },
+        headStyles: { fillColor: [140,21,21], textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [248,250,252] }
+    });
+
+    // This month case details
     if (thisMonthCases.length > 0) {
         let y2 = doc.lastAutoTable.finalY + 10;
-        doc.setFontSize(14); doc.text('Case Details', 14, y2);
-        doc.autoTable({ startY:y2+5, head:[['Date','Procedure','Role','Attending','Hospital','Notes']], body:thisMonthCases.map(c=>[c.date,c.procedure,c.role,c.attending||'-',c.hospital||'-',c.notes||'-']), styles:{fontSize:8}, headStyles:{fillColor:[140,21,21]} });
+        doc.setTextColor(15, 23, 42);
+        doc.setFontSize(13);
+        doc.setFont('helvetica', 'bold');
+        doc.text('This Month — Case Details', 14, y2);
+        doc.autoTable({
+            startY: y2 + 4,
+            head: [['Date', 'Procedure', 'Role', 'Attending', 'Hospital', 'Notes']],
+            body: thisMonthCases.map(c => [c.date, c.procedure, c.role, c.attending||'-', c.hospital||'-', c.notes||'-']),
+            styles: { fontSize: 8, cellPadding: 3 },
+            headStyles: { fillColor: [37,99,235], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+            alternateRowStyles: { fillColor: [248,250,252] },
+            columnStyles: { 5: { cellWidth: 40 } }
+        });
     }
+
+    // Footer
     let pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i); doc.setFontSize(9); doc.setTextColor(150);
-        doc.text('Generated by OphthoLog — ' + new Date().toLocaleDateString(), 14, doc.internal.pageSize.height - 10);
+        doc.setPage(i);
+        doc.setFillColor(140, 21, 21);
+        doc.rect(0, doc.internal.pageSize.height - 12, 220, 12, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text('OphthoLog  |  ' + program + '  |  Monthly Report ' + monthName, 14, doc.internal.pageSize.height - 4);
+        doc.text('Page ' + i + ' of ' + pageCount, 196, doc.internal.pageSize.height - 4, { align: 'right' });
     }
+
     doc.save('ophtholog-monthly-' + thisMonth + '.pdf');
+    showToast('📅 Monthly report exported!');
 }
 
 async function setupNotifications() {
