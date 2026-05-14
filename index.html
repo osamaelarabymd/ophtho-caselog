@@ -117,8 +117,6 @@
         </div>
     </div>
 
-    <h1>👁️ OphthoLog</h1>
-
     <!-- Login -->
     <div id="loginSection">
         <h2>👁️ OphthoLog</h2>
@@ -151,6 +149,7 @@
                 <button onclick="signInForm()">Sign In</button>
                 <button onclick="toggleForm()" style="background:white; color:var(--primary); border:2px solid var(--primary); box-shadow:none">Request Access</button>
             </div>
+            <button onclick="forgotPassword()" style="background:none; color:#64748b; font-size:13px; font-weight:600; margin-top:14px; box-shadow:none; width:auto; padding:4px 0; text-decoration:underline">Forgot password?</button>
         </div>
     </div>
 
@@ -172,8 +171,21 @@
 
         <div class="top-bar">
             <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSev-87zwv0Ot_7LNJuuNNTBpKpcOvS_vEtSnGbgLGjMVP-iMA/viewform', '_blank')" class="top-btn" style="background:#16a34a">💬 Feedback</button>
+            <button onclick="showTab('help', event)" class="top-btn" style="background:#64748b">❓ Help</button>
             <button id="darkBtn" onclick="toggleDarkMode()" class="top-btn" style="background:#1e293b">🌙 Dark</button>
             <button onclick="signOut()" class="top-btn" style="background:#dc2626">🚪 Sign Out</button>
+        </div>
+
+        <!-- PWA Install Banner -->
+        <div id="installBanner" style="display:none; background:linear-gradient(135deg,#2563eb,#7c3aed); color:white; padding:14px 20px; border-radius:14px; margin-bottom:16px; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
+            <div>
+                <div style="font-weight:700; font-size:14px">📱 Add OphthoLog to your home screen</div>
+                <div style="font-size:12px; opacity:0.85; margin-top:2px">Log cases faster — works offline too</div>
+            </div>
+            <div style="display:flex; gap:8px; flex-shrink:0">
+                <button onclick="installPWA()" style="background:white; color:#2563eb; padding:8px 18px; font-size:12px; margin:0; width:auto; border-radius:8px; font-weight:700">Install</button>
+                <button onclick="dismissInstallBanner()" style="background:rgba(255,255,255,0.2); color:white; padding:8px 12px; font-size:12px; margin:0; width:auto; border-radius:8px">✕</button>
+            </div>
         </div>
 
         <div id="streakBanner" style="display:none; background:linear-gradient(135deg,#f97316,#ef4444); color:white; padding:12px 20px; border-radius:12px; margin-bottom:16px; text-align:center; font-weight:700; font-size:15px"></div>
@@ -274,6 +286,16 @@
             <div class="dash-card" style="margin-bottom:16px">
                 <h3>🎯 My Goals</h3>
                 <div id="profileGoalsDisplay" style="margin-top:12px; color:#64748b; font-size:14px; line-height:1.6"></div>
+            </div>
+
+            <div class="dash-card" style="margin-bottom:16px">
+                <h3>🔔 Notifications</h3>
+                <p style="font-size:13px; color:#64748b; margin-bottom:16px; line-height:1.6">Get a daily reminder at 6 PM to log your cases.</p>
+                <div id="notifStatus" style="font-size:13px; color:#64748b; margin-bottom:12px; padding:10px 14px; background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0"></div>
+                <div style="display:flex; gap:10px">
+                    <button onclick="setupNotifications()" style="flex:1; margin:0; background:#2563eb">🔔 Enable</button>
+                    <button onclick="disableNotifications()" style="flex:1; margin:0; background:#64748b">🔕 Disable</button>
+                </div>
             </div>
 
             <div class="dash-card">

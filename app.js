@@ -369,6 +369,8 @@ function showTab(tab, e) {
     } else if (tab === 'logCase') {
         document.getElementById('logCase').style.display = 'block';
         loadTemplates();
+        let dateEl = document.getElementById('date');
+        if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
     } else if (tab === 'caseList') {
         document.getElementById('caseListTab').style.display = 'block';
         displayCaseList(allCases);
@@ -380,6 +382,7 @@ function showTab(tab, e) {
         loadProfile();
         loadProfileEmail();
         loadProfileCaseStats();
+        updateNotifStatus();
     } else if (tab === 'help') {
         document.getElementById('helpTab').style.display = 'block';
     } else if (tab === 'admin') {
@@ -387,7 +390,11 @@ function showTab(tab, e) {
         loadAdminData();
     }
 
-    if (e && e.target) e.target.classList.add('active-tab');
+    if (e && e.target && e.target.classList.contains('tab-btn')) {
+        e.target.classList.add('active-tab');
+    }
+    const navMap = { dashboard: 'nav-dashboard', logCase: 'nav-logCase', caseList: 'nav-caseList', analytics: 'nav-analytics', help: 'nav-help' };
+    if (navMap[tab]) setActiveNav(navMap[tab]);
 }
 
 function setActiveNav(id) {
@@ -414,6 +421,18 @@ function loadProfileCaseStats() {
             '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">🏆</div><h3>' + pct + '%</h3><p>ACGME Done</p></div>' +
             '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">🔥</div><h3>' + streak + '</h3><p>Day Streak</p></div>';
     }
+}
+
+async function forgotPassword() {
+    let email = document.getElementById('emailIn').value;
+    if (!email) { showToast('⚠️ Enter your email address first', 'warning'); return; }
+    showLoading();
+    let { error } = await db.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname
+    });
+    hideLoading();
+    if (error) { showToast(error.message, 'error'); }
+    else { showToast('📧 Password reset email sent to ' + email); }
 }
 
 // Auth
@@ -519,6 +538,7 @@ async function showApp() {
     updateProfileDisplay();
     loadCases();
     checkWelcomeGuide();
+    if (localStorage.getItem('notificationsEnabled') === 'true') scheduleReminder();
 }
 
 db.auth.getSession().then(async ({ data }) => {
@@ -575,7 +595,7 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadCases() {
     showLoading();
     let { data: { user } } = await db.auth.getUser();
-    let { data: cases } = await db.from('cases').select('*').eq('user_id', user.id);
+    let { data: cases } = await db.from('cases').select('*').eq('user_id', user.id).order('date', { ascending: false });
     allCases = cases || [];
     updateDashboard(allCases);
     updateStreak(allCases);
@@ -919,6 +939,8 @@ function clearFilter() {
     document.getElementById('filterRole').value      = '';
     document.getElementById('filterDateFrom').value  = '';
     document.getElementById('filterDateTo').value    = '';
+    let sortEl = document.getElementById('sortOrder');
+    if (sortEl) sortEl.value = 'newest';
     displayCaseList(allCases);
 }
 
@@ -1102,23 +1124,91 @@ function exportMonthlyReport() {
     showToast('📅 Monthly report exported!');
 }
 
+// PWA Install
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (localStorage.getItem('installBannerDismissed') !== 'true') {
+        let banner = document.getElementById('installBanner');
+        if (banner) banner.style.display = 'flex';
+    }
+});
+
+window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    let banner = document.getElementById('installBanner');
+    if (banner) banner.style.display = 'none';
+    showToast('✅ OphthoLog installed!');
+});
+
+async function installPWA() {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    let { outcome } = await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    document.getElementById('installBanner').style.display = 'none';
+    if (outcome === 'accepted') showToast('✅ App installed!');
+}
+
+function dismissInstallBanner() {
+    document.getElementById('installBanner').style.display = 'none';
+    localStorage.setItem('installBannerDismissed', 'true');
+}
+
+// Notifications
+function updateNotifStatus() {
+    let el = document.getElementById('notifStatus');
+    if (!el) return;
+    if (!('Notification' in window)) {
+        el.textContent = '⚠️ Notifications not supported on this browser.';
+    } else if (Notification.permission === 'granted' && localStorage.getItem('notificationsEnabled') === 'true') {
+        el.textContent = '✅ Daily reminders are enabled (6 PM if no case logged).';
+        el.style.color = '#16a34a';
+    } else if (Notification.permission === 'denied') {
+        el.textContent = '🚫 Notifications are blocked. Enable them in your browser settings.';
+        el.style.color = '#dc2626';
+    } else {
+        el.textContent = '🔔 Not enabled — tap Enable to get daily case reminders.';
+        el.style.color = '';
+    }
+}
+
 async function setupNotifications() {
     if (!('Notification' in window)) { showToast('Notifications not supported', 'error'); return; }
     let permission = await Notification.requestPermission();
-    if (permission === 'granted') { showToast('🔔 Daily reminders enabled!'); scheduleReminder(); }
-    else { showToast('Notifications blocked', 'warning'); }
+    if (permission === 'granted') {
+        localStorage.setItem('notificationsEnabled', 'true');
+        showToast('🔔 Daily reminders enabled!');
+        scheduleReminder();
+    } else {
+        showToast('Notifications blocked — check browser settings', 'warning');
+    }
+    updateNotifStatus();
+}
+
+function disableNotifications() {
+    localStorage.setItem('notificationsEnabled', 'false');
+    showToast('🔕 Reminders disabled', 'warning');
+    updateNotifStatus();
+}
+
+function checkDailyReminder() {
+    if (localStorage.getItem('notificationsEnabled') !== 'true') return;
+    if (Notification.permission !== 'granted') return;
+    let now = new Date();
+    let lastReminder = localStorage.getItem('lastReminder');
+    let today = now.toDateString();
+    if (now.getHours() >= 18 && lastReminder !== today) {
+        localStorage.setItem('lastReminder', today);
+        new Notification('OphthoLog Reminder 🏥', { body: "Don't forget to log your cases today!", icon: '/icon.svg' });
+    }
 }
 
 function scheduleReminder() {
-    setInterval(function() {
-        let now = new Date();
-        let lastReminder = localStorage.getItem('lastReminder');
-        let today = now.toDateString();
-        if (now.getHours() >= 18 && lastReminder !== today) {
-            localStorage.setItem('lastReminder', today);
-            new Notification('OphthoLog Reminder 🏥', { body: 'Don\'t forget to log your cases today!', icon: '/icon.svg' });
-        }
-    }, 60 * 60 * 1000);
+    checkDailyReminder();
+    setInterval(checkDailyReminder, 60 * 60 * 1000);
 }
 
 if ('serviceWorker' in navigator) {

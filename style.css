@@ -420,7 +420,13 @@ body.dark .nav-item.active { color: #60a5fa; background: rgba(96,165,250,0.1); }
 
 @media (min-width: 769px) {
     #bottomNav { display: none !important; }
-}@keyframes bounceIn {
+}/* === FAQ === */
+.faq-item { padding: 14px 0; border-bottom: 1px solid var(--border); }
+.faq-item:last-child { border-bottom: none; }
+.faq-q { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.faq-a { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+
+@keyframes bounceIn {
     0%   { transform: scale(0.5); opacity: 0; }
     70%  { transform: scale(1.05); }
     100% { transform: scale(1); opacity: 1; }
