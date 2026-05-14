@@ -36,7 +36,7 @@
         </div>
     </div>
 
-    <!-- Welcome Guide Modal -->
+    <!-- Welcome Guide -->
     <div id="welcomeGuide" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9997; align-items:center; justify-content:center; backdrop-filter:blur(6px)">
         <div style="background:white; border-radius:24px; padding:36px 32px; width:90%; max-width:480px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,0.3)">
             <div style="text-align:center; margin-bottom:28px">
@@ -49,7 +49,7 @@
                     <div style="width:40px; height:40px; background:#2563eb; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0">👤</div>
                     <div>
                         <p style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:14px">Step 1 — Set up your profile</p>
-                        <p style="font-size:13px; color:#64748b; line-height:1.5">Go to Profile tab and enter your name, PGY year, and program. This info appears on your PDF reports.</p>
+                        <p style="font-size:13px; color:#64748b; line-height:1.5">Go to Profile tab and enter your name, PGY year, and program.</p>
                     </div>
                 </div>
                 <div style="display:flex; gap:16px; align-items:flex-start; background:#f0fdf4; padding:16px; border-radius:14px; border:1px solid #bbf7d0">
@@ -70,12 +70,12 @@
                     <div style="width:40px; height:40px; background:#d97706; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0">📄</div>
                     <div>
                         <p style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:14px">Bonus — Export PDF reports</p>
-                        <p style="font-size:13px; color:#64748b; line-height:1.5">Generate beautiful PDF reports anytime from the Log Case tab — perfect for PD meetings.</p>
+                        <p style="font-size:13px; color:#64748b; line-height:1.5">Generate beautiful PDF reports anytime from the Log Case tab.</p>
                     </div>
                 </div>
             </div>
             <div style="background:#f8fafc; border-radius:12px; padding:14px; margin-bottom:24px; border:1px solid #e2e8f0">
-                <p style="font-size:12px; color:#64748b; text-align:center; line-height:1.6">💡 <strong>Pro tip:</strong> Save case templates for procedures you do often — log repeat cases in one tap!</p>
+                <p style="font-size:12px; color:#64748b; text-align:center; line-height:1.6">💡 <strong>Pro tip:</strong> Save case templates for procedures you do often!</p>
             </div>
             <button onclick="closeWelcomeGuide()" style="width:100%; border-radius:50px; font-size:16px; font-weight:700; background:linear-gradient(135deg,#8C1515,#2563eb); margin:0">
                 Let's Get Started! 🚀
@@ -131,13 +131,11 @@
             <input type="email" id="email" placeholder="Email address">
             <label>Password</label>
             <input type="password" id="password" placeholder="Password (min 6 characters)">
-
             <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:10px; padding:12px; margin-top:16px">
                 <p style="font-size:12px; color:#0369a1; line-height:1.6; margin:0">
                     🔒 <strong>Privacy:</strong> Your case data is stored securely and only visible to you and your program director. We never share your data with third parties.
                 </p>
             </div>
-
             <div class="btn-row">
                 <button onclick="signUp()">Request Access</button>
                 <button onclick="toggleForm()" style="background:white; color:var(--primary); border:2px solid var(--primary); box-shadow:none">Sign In Instead</button>
@@ -180,12 +178,14 @@
 
         <div id="streakBanner" style="display:none; background:linear-gradient(135deg,#f97316,#ef4444); color:white; padding:12px 20px; border-radius:12px; margin-bottom:16px; text-align:center; font-weight:700; font-size:15px"></div>
 
+        <!-- Desktop Tabs -->
         <div id="tabs">
             <button onclick="showTab('dashboard', event)" class="tab-btn active-tab">📊 Dashboard</button>
             <button onclick="showTab('profile', event)"   class="tab-btn">👤 Profile</button>
             <button onclick="showTab('logCase', event)"   class="tab-btn">➕ Log Case</button>
             <button onclick="showTab('caseList', event)"  class="tab-btn">📋 Case List</button>
             <button onclick="showTab('analytics', event)" class="tab-btn">📈 Analytics</button>
+            <button onclick="showTab('help', event)"      class="tab-btn">❓ Help</button>
             <button onclick="showTab('admin', event)" id="adminTab" class="tab-btn" style="display:none; background:linear-gradient(135deg,#16a34a,#15803d); color:white">👨‍⚕️ PD Panel</button>
         </div>
 
@@ -298,7 +298,6 @@
             <div style="background:white; padding:24px; border-radius:16px; border:1px solid #e2e8f0; box-shadow:0 4px 24px rgba(37,99,235,0.08)">
                 <label>Resident Name</label>
                 <input type="text" id="residentName" placeholder="Your full name">
-
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
                     <div>
                         <label>PGY Year</label>
@@ -315,7 +314,6 @@
                         <input type="date" id="date">
                     </div>
                 </div>
-
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
                     <div>
                         <label>Attending Supervisor</label>
@@ -326,7 +324,6 @@
                         <input type="text" id="hospital" placeholder="e.g. Stanford">
                     </div>
                 </div>
-
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
                     <div>
                         <label>Procedure Type</label>
@@ -349,10 +346,8 @@
                         </select>
                     </div>
                 </div>
-
                 <label>Notes</label>
                 <textarea id="notes" rows="3" placeholder="Any relevant notes..."></textarea>
-
                 <div class="btn-row">
                     <button id="saveBtn">💾 Save Case</button>
                     <button onclick="exportPDF()" style="background:#16a34a">📄 Export PDF</button>
@@ -369,7 +364,6 @@
                     <input type="text" id="searchNotes" placeholder="Search cases..." oninput="applyFilter()" style="padding-left:44px; margin-top:0; border-radius:10px; font-size:14px">
                 </div>
             </div>
-
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; align-items:center">
                 <span style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px">Filter:</span>
                 <select id="filterProcedure" onchange="applyFilter()" style="width:auto; padding:7px 12px; font-size:12px; border-radius:20px; margin-top:0; border:2px solid #e2e8f0; background:white">
@@ -392,7 +386,6 @@
                 <input type="date" id="filterDateTo" onchange="applyFilter()" style="width:auto; padding:7px 12px; font-size:12px; border-radius:20px; margin-top:0; border:2px solid #e2e8f0">
                 <button onclick="clearFilter()" style="width:auto; padding:7px 14px; font-size:12px; border-radius:20px; margin-top:0; background:#64748b">✕ Clear</button>
             </div>
-
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
                 <span id="caseCount" style="font-size:13px; font-weight:600; color:#64748b"></span>
                 <select id="sortOrder" onchange="applyFilter()" style="width:auto; padding:7px 12px; font-size:12px; border-radius:10px; margin-top:0; border:2px solid #e2e8f0; background:white">
@@ -402,7 +395,6 @@
                     <option value="role">By Role</option>
                 </select>
             </div>
-
             <div id="caseList"></div>
         </div>
 
@@ -428,6 +420,119 @@
                 <h3>Top Procedures This Month</h3>
                 <div id="topProcedures"></div>
             </div>
+        </div>
+
+        <!-- Help -->
+        <div id="helpTab" style="display:none">
+
+            <div style="background:linear-gradient(135deg, #8C1515 0%, #2563eb 100%); border-radius:20px; padding:28px; margin-bottom:20px; color:white; text-align:center">
+                <div style="font-size:48px; margin-bottom:12px">❓</div>
+                <h2 style="color:white; font-size:22px; margin-bottom:8px">How to Use OphthoLog</h2>
+                <p style="opacity:0.8; font-size:14px">Everything you need to know in one place</p>
+            </div>
+
+            <div class="dash-card" style="margin-bottom:16px">
+                <h3>🚀 Quick Start</h3>
+                <div style="display:flex; flex-direction:column; gap:12px; margin-top:12px">
+                    <div style="display:flex; gap:12px; align-items:flex-start">
+                        <div style="width:28px; height:28px; background:#2563eb; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:13px; font-weight:700; flex-shrink:0">1</div>
+                        <div>
+                            <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:2px">Set up your profile</p>
+                            <p style="font-size:13px; color:#64748b">Go to Profile tab → Enter your name, PGY year, and institution</p>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:12px; align-items:flex-start">
+                        <div style="width:28px; height:28px; background:#16a34a; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:13px; font-weight:700; flex-shrink:0">2</div>
+                        <div>
+                            <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:2px">Log a case</p>
+                            <p style="font-size:13px; color:#64748b">Tap ➕ Log Case → Fill in procedure, role, date, attending → Save</p>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:12px; align-items:flex-start">
+                        <div style="width:28px; height:28px; background:#7c3aed; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:13px; font-weight:700; flex-shrink:0">3</div>
+                        <div>
+                            <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:2px">Track your progress</p>
+                            <p style="font-size:13px; color:#64748b">Dashboard shows ACGME progress, charts, and streaks automatically</p>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:12px; align-items:flex-start">
+                        <div style="width:28px; height:28px; background:#d97706; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:13px; font-weight:700; flex-shrink:0">4</div>
+                        <div>
+                            <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:2px">Export a report</p>
+                            <p style="font-size:13px; color:#64748b">Log Case tab → 📄 Export PDF or 📅 Monthly Report</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dash-card" style="margin-bottom:16px">
+                <h3>✨ Features</h3>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px">
+                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
+                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">⚡ Templates</p>
+                        <p style="font-size:12px; color:#64748b">Save common cases as templates for one-tap logging</p>
+                    </div>
+                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
+                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">🔄 Duplicate</p>
+                        <p style="font-size:12px; color:#64748b">Copy a previous case with today's date instantly</p>
+                    </div>
+                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
+                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">🔍 Search & Filter</p>
+                        <p style="font-size:12px; color:#64748b">Find cases by procedure, role, date, or keyword</p>
+                    </div>
+                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
+                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">📊 Analytics</p>
+                        <p style="font-size:12px; color:#64748b">Monthly trends, role breakdown, busiest days</p>
+                    </div>
+                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
+                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">🔥 Streaks</p>
+                        <p style="font-size:12px; color:#64748b">Track consecutive days of logging cases</p>
+                    </div>
+                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
+                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">📱 Mobile App</p>
+                        <p style="font-size:12px; color:#64748b">Add to iPhone home screen for native app feel</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dash-card" style="margin-bottom:16px">
+                <h3>❓ FAQ</h3>
+                <div style="display:flex; flex-direction:column; gap:12px; margin-top:12px">
+                    <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
+                        <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">How do I add OphthoLog to my iPhone?</p>
+                        <p style="font-size:13px; color:#64748b">Open the app in Safari → Tap Share button → Add to Home Screen → Add</p>
+                    </div>
+                    <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
+                        <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">Can I edit a case after saving?</p>
+                        <p style="font-size:13px; color:#64748b">Yes! Go to Case List → tap ✏️ on any case to edit all fields</p>
+                    </div>
+                    <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
+                        <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">How do I create a PDF for my PD?</p>
+                        <p style="font-size:13px; color:#64748b">Go to Log Case tab → tap 📄 Export PDF or 📅 Monthly Report</p>
+                    </div>
+                    <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
+                        <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">Is my data private?</p>
+                        <p style="font-size:13px; color:#64748b">Yes — only you and your program director can see your cases</p>
+                    </div>
+                    <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
+                        <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">How do I enable daily reminders?</p>
+                        <p style="font-size:13px; color:#64748b">Dashboard → tap 🔔 Reminders → allow notifications → get reminded at 6 PM daily</p>
+                    </div>
+                    <div>
+                        <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">How do I use templates?</p>
+                        <p style="font-size:13px; color:#64748b">Log Case → fill form → tap + Save Template. Next time tap the template button to auto-fill</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dash-card">
+                <h3>📬 Contact & Feedback</h3>
+                <p style="font-size:14px; color:#64748b; margin-top:8px; line-height:1.6">Have a suggestion or found a bug? We'd love to hear from you!</p>
+                <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSev-87zwv0Ot_7LNJuuNNTBpKpcOvS_vEtSnGbgLGjMVP-iMA/viewform', '_blank')" style="background:linear-gradient(135deg,#16a34a,#15803d); margin-top:16px; border-radius:50px">
+                    💬 Send Feedback
+                </button>
+            </div>
+
         </div>
 
         <!-- Admin Panel -->
@@ -498,9 +603,9 @@
                     <span class="nav-icon">📈</span>
                     <span>Stats</span>
                 </button>
-                <button class="nav-item" id="nav-profile" onclick="showTab('profile', event); setActiveNav('nav-profile')">
-                    <span class="nav-icon">👤</span>
-                    <span>Profile</span>
+                <button class="nav-item" id="nav-help" onclick="showTab('help', event); setActiveNav('nav-help')">
+                    <span class="nav-icon">❓</span>
+                    <span>Help</span>
                 </button>
             </div>
         </div>
