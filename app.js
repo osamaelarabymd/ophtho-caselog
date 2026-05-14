@@ -9,6 +9,7 @@ let monthlyChart    = null;
 let roleChart       = null;
 let dayChart        = null;
 let roleDashChart   = null;
+let complexityChart = null;
 let currentUserRole = 'resident';
 
 const acgme = {
@@ -306,7 +307,9 @@ function openEditModal(id) {
     document.getElementById('editPgyYear').value       = c.pgy_year || 'PGY-1';
     document.getElementById('editAttending').value     = c.attending || '';
     document.getElementById('editHospital').value      = c.hospital || '';
-    document.getElementById('editNotes').value         = c.notes || '';
+    let compEl = document.getElementById('editComplexity');
+    if (compEl) compEl.value = parseComplexity(c.notes);
+    document.getElementById('editNotes').value         = stripComplexity(c.notes);
     document.getElementById('editModal').style.display = 'flex';
 }
 
@@ -324,7 +327,7 @@ async function saveEdit() {
         pgy_year:      document.getElementById('editPgyYear').value,
         attending:     document.getElementById('editAttending').value,
         hospital:      document.getElementById('editHospital').value,
-        notes:         document.getElementById('editNotes').value
+        notes:         document.getElementById('editNotes').value + ' [COMP:' + (document.getElementById('editComplexity') ? document.getElementById('editComplexity').value : 'Routine') + ']'
     }).eq('id', document.getElementById('editId').value);
     hideLoading();
     if (error) { showToast('Error: ' + error.message, 'error'); }
@@ -570,11 +573,14 @@ document.addEventListener('DOMContentLoaded', function() {
         showLoading();
         let { data: { user } } = await db.auth.getUser();
         let residentName = document.getElementById('residentName').value;
+        let baseNotes  = document.getElementById('notes').value;
+        let complexity = document.getElementById('complexity') ? document.getElementById('complexity').value : 'Routine';
+        let notesWithComp = baseNotes + (baseNotes ? ' ' : '') + '[COMP:' + complexity + ']';
         let { error } = await db.from('cases').insert({
             procedure:     document.getElementById('procedure').value,
             role:          document.getElementById('role').value,
             date:          document.getElementById('date').value,
-            notes:         document.getElementById('notes').value,
+            notes:         notesWithComp,
             resident_name: residentName,
             pgy_year:      document.getElementById('pgyYear').value,
             attending:     document.getElementById('attending').value,
@@ -978,6 +984,9 @@ function showAnalytics() {
     showProjections();
     showAttendingBreakdown();
     showYearComparison();
+    generateInsights();
+    showComplexityChart();
+    showProcedureCalendar();
 }
 
 function showProjections() {
@@ -1191,7 +1200,8 @@ function displayCaseList(cases) {
                 <div style="display:flex; gap:16px; flex-wrap:wrap; border-top:1px solid #f1f5f9; padding-top:10px">
                     ${c.attending ? `<span style="font-size:12px; color:#64748b">👨‍⚕️ <strong>${c.attending}</strong></span>` : ''}
                     ${c.hospital  ? `<span style="font-size:12px; color:#64748b">🏥 <strong>${c.hospital}</strong></span>` : ''}
-                    ${c.notes     ? `<span style="font-size:12px; color:#64748b; flex:1">📝 ${c.notes}</span>` : ''}
+                    ${c.notes     ? `<span style="font-size:12px; color:#64748b; flex:1">📝 ${stripComplexity(c.notes)}</span>` : ''}
+                    ${parseComplexity(c.notes) !== 'Routine' ? `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; background:${parseComplexity(c.notes)==='Challenging'?'#fef2f2':'#fefce8'}; color:${parseComplexity(c.notes)==='Challenging'?'#dc2626':'#ca8a04'}">${parseComplexity(c.notes)==='Challenging'?'🔴':'🟡'} ${parseComplexity(c.notes)}</span>` : ''}
                 </div>
             </div>
         </div>`;
@@ -1505,6 +1515,354 @@ function checkDailyReminder() {
 function scheduleReminder() {
     checkDailyReminder();
     setInterval(checkDailyReminder, 60 * 60 * 1000);
+}
+
+// ── Complexity Helpers ───────────────────────────────────────────────────────
+function parseComplexity(notes) {
+    let m = (notes || '').match(/\[COMP:(Routine|Complex|Challenging)\]/);
+    return m ? m[1] : 'Routine';
+}
+function stripComplexity(notes) {
+    return (notes || '').replace(/\s*\[COMP:(Routine|Complex|Challenging)\]/g, '').trim();
+}
+
+// ── AI Insights Engine ───────────────────────────────────────────────────────
+function generateInsights() {
+    let el = document.getElementById('aiInsights');
+    if (!el) return;
+    if (allCases.length === 0) { el.innerHTML = '<p style="color:#94a3b8; font-size:13px">Log at least 5 cases to unlock AI insights.</p>'; return; }
+
+    let insights = [];
+    let now = new Date();
+    let profile = JSON.parse(localStorage.getItem('userProfile')) || {};
+
+    let procCounts = {};
+    for (let p in acgme) procCounts[p] = allCases.filter(c => c.procedure === p).length;
+    let sorted = Object.entries(procCounts).sort((a,b) => b[1]-a[1]);
+    let strongest = sorted[0], weakest = sorted[sorted.length-1];
+    let strongPct = Math.round((strongest[1]/acgme[strongest[0]])*100);
+    let weakPct   = Math.round((weakest[1]/acgme[weakest[0]])*100);
+    insights.push({ icon:'💪', color:'#16a34a', bg:'#f0fdf4', text:'Your strongest area is <strong>'+strongest[0].split('/')[0].trim()+'</strong> ('+strongPct+'% of ACGME goal). Keep it up!' });
+    if (weakest[1] === 0) {
+        insights.push({ icon:'⚠️', color:'#dc2626', bg:'#fef2f2', text:'You have <strong>zero</strong> '+weakest[0].split('/')[0].trim()+' cases logged. This is your biggest gap — prioritize it next.' });
+    } else {
+        insights.push({ icon:'🎯', color:'#d97706', bg:'#fffbeb', text:'Focus on <strong>'+weakest[0].split('/')[0].trim()+'</strong> — only '+weakPct+'% complete. Consider requesting more of these cases.' });
+    }
+
+    let thisMonth = now.toISOString().slice(0,7);
+    let lastMonth = new Date(now.getFullYear(), now.getMonth()-1, 1).toISOString().slice(0,7);
+    let thisMo = allCases.filter(c => c.date && c.date.startsWith(thisMonth)).length;
+    let lastMo = allCases.filter(c => c.date && c.date.startsWith(lastMonth)).length;
+    if (lastMo > 0) {
+        let trend = thisMo - lastMo;
+        if (trend > 0) insights.push({ icon:'📈', color:'#2563eb', bg:'#eff6ff', text:'You logged <strong>'+trend+' more</strong> case'+(trend>1?'s':'')+' this month than last — great momentum! 🔥' });
+        else if (trend < 0) insights.push({ icon:'📉', color:'#d97706', bg:'#fffbeb', text:'Case volume dropped by <strong>'+Math.abs(trend)+'</strong> this month vs last. Try to schedule more OR time.' });
+        else insights.push({ icon:'〽️', color:'#64748b', bg:'#f8fafc', text:'Consistent pace — same number of cases as last month. Can you push for more?' });
+    }
+
+    let primaryPct = Math.round((allCases.filter(c=>c.role==='Primary Surgeon').length / allCases.length)*100);
+    if (primaryPct < 30) insights.push({ icon:'🏥', color:'#dc2626', bg:'#fef2f2', text:'Only <strong>'+primaryPct+'%</strong> of your cases are as Primary Surgeon. Push to operate more independently.' });
+    else if (primaryPct >= 60) insights.push({ icon:'⭐', color:'#16a34a', bg:'#f0fdf4', text:'<strong>'+primaryPct+'%</strong> of cases as Primary Surgeon — excellent independence!' });
+
+    let challenging = allCases.filter(c=>parseComplexity(c.notes)==='Challenging').length;
+    let complex     = allCases.filter(c=>parseComplexity(c.notes)==='Complex').length;
+    let compPct = Math.round(((challenging+complex)/allCases.length)*100);
+    if (compPct >= 20) insights.push({ icon:'🧠', color:'#7c3aed', bg:'#faf5ff', text:'<strong>'+compPct+'%</strong> of your cases are Complex or Challenging — you\'re taking on high-acuity surgical experience.' });
+
+    if (profile.endYear) {
+        let monthsLeft = Math.max(1,(new Date(parseInt(profile.endYear),5,30)-now)/(1000*60*60*24*30.44));
+        let remaining  = Math.max(0,Object.values(acgme).reduce((a,b)=>a+b,0)-allCases.length);
+        insights.push({ icon:'🗓️', color:'#0891b2', bg:'#f0f9ff', text:'<strong>'+Math.round(monthsLeft)+' months</strong> until graduation. You need ~<strong>'+(remaining/monthsLeft).toFixed(1)+' cases/month</strong> to complete all ACGME requirements.' });
+    }
+
+    el.innerHTML = insights.map(ins =>
+        '<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:'+ins.bg+';border-radius:12px;margin-bottom:10px;border-left:3px solid '+ins.color+'">' +
+        '<span style="font-size:18px;flex-shrink:0">'+ins.icon+'</span>' +
+        '<p style="font-size:13px;color:#0f172a;line-height:1.5;margin:0">'+ins.text+'</p></div>'
+    ).join('');
+}
+
+// ── Peer Benchmarking ────────────────────────────────────────────────────────
+async function showPeerBenchmark() {
+    let el = document.getElementById('peerBenchmark');
+    el.innerHTML = '<p style="color:#64748b; font-size:13px">Loading program data…</p>';
+
+    let { data: allProgramCases, error } = await db.from('cases').select('user_id, procedure, role');
+    if (error || !allProgramCases || allProgramCases.length === 0) {
+        el.innerHTML = '<p style="color:#94a3b8; font-size:13px">⚠️ Program data unavailable — benchmarking requires shared data access.</p>';
+        return;
+    }
+
+    let { data: { user } } = await db.auth.getUser();
+    let myCases    = allProgramCases.filter(c => c.user_id === user.id);
+    let otherCases = allProgramCases.filter(c => c.user_id !== user.id);
+    let peers      = [...new Set(otherCases.map(c => c.user_id))];
+
+    if (peers.length === 0) {
+        el.innerHTML = '<p style="color:#94a3b8; font-size:13px">No peer data yet — you\'re the first in the program! 🏆</p>';
+        return;
+    }
+
+    let peerTotals = peers.map(uid => allProgramCases.filter(c => c.user_id === uid).length);
+    let myTotal    = myCases.length;
+    let rank       = peerTotals.filter(t => t > myTotal).length + 1;
+    let pctile     = Math.round((1-(rank-1)/peers.length)*100);
+
+    let html = '<div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:14px;text-align:center">' +
+        '<div style="font-size:28px;font-weight:900;color:#2563eb">'+pctile+'th</div>' +
+        '<div style="font-size:12px;color:#64748b">Percentile in your program</div>' +
+        '<div style="font-size:12px;color:#94a3b8;margin-top:4px">Ranked #'+rank+' of '+(peers.length+1)+' residents</div></div>';
+
+    for (let p in acgme) {
+        let mine     = myCases.filter(c => c.procedure === p).length;
+        let peerAvgs = peers.map(uid => allProgramCases.filter(c => c.user_id===uid && c.procedure===p).length);
+        let avg      = peerAvgs.length > 0 ? Math.round(peerAvgs.reduce((a,b)=>a+b,0)/peerAvgs.length) : 0;
+        let short    = p.split('/')[0].trim().split('(')[0].trim();
+        let myPct    = Math.min(Math.round((mine/acgme[p])*100),100);
+        let avgPct   = Math.min(Math.round((avg/acgme[p])*100),100);
+        let better   = mine >= avg;
+        html += '<div style="margin-bottom:10px">' +
+            '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">' +
+            '<span style="font-weight:600;color:#0f172a">'+short+'</span>' +
+            '<span style="'+(better?'color:#16a34a':'color:#d97706')+';font-weight:700">You: '+mine+' '+(better?'▲':'▼')+' Avg: '+avg+'</span></div>' +
+            '<div style="position:relative;height:8px;background:#e2e8f0;border-radius:99px">' +
+            '<div style="position:absolute;height:8px;background:#cbd5e1;border-radius:99px;width:'+avgPct+'%"></div>' +
+            '<div style="position:absolute;height:8px;background:'+(better?'#16a34a':'#d97706')+';border-radius:99px;width:'+myPct+'%;opacity:0.9"></div></div></div>';
+    }
+    html += '<p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:8px">Data is anonymous — only counts are compared, never names</p>';
+    el.innerHTML = html;
+}
+
+// ── Complexity Progression Chart ─────────────────────────────────────────────
+function showComplexityChart() {
+    let canvas    = document.getElementById('complexityChart');
+    let summaryEl = document.getElementById('complexitySummary');
+    if (!canvas) return;
+
+    let months = [], routineData = [], complexData = [], challengingData = [];
+    let now = new Date();
+    for (let i = 5; i >= 0; i--) {
+        let d  = new Date(now.getFullYear(), now.getMonth()-i, 1);
+        let mo = d.toISOString().slice(0,7);
+        let moCases = allCases.filter(c => c.date && c.date.startsWith(mo));
+        months.push(d.toLocaleString('default',{month:'short'}));
+        routineData.push(moCases.filter(c=>parseComplexity(c.notes)==='Routine').length);
+        complexData.push(moCases.filter(c=>parseComplexity(c.notes)==='Complex').length);
+        challengingData.push(moCases.filter(c=>parseComplexity(c.notes)==='Challenging').length);
+    }
+
+    if (complexityChart) complexityChart.destroy();
+    complexityChart = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: { labels: months, datasets: [
+            { label:'Routine',     data:routineData,     backgroundColor:'#86efac', borderRadius:4 },
+            { label:'Complex',     data:complexData,     backgroundColor:'#fde68a', borderRadius:4 },
+            { label:'Challenging', data:challengingData, backgroundColor:'#fca5a5', borderRadius:4 }
+        ]},
+        options: { responsive:true, scales:{ x:{stacked:true,grid:{display:false}}, y:{stacked:true,beginAtZero:true,grid:{color:'#f1f5f9'}} }, plugins:{legend:{position:'bottom'}} }
+    });
+
+    let totR  = allCases.filter(c=>parseComplexity(c.notes)==='Routine').length;
+    let totC  = allCases.filter(c=>parseComplexity(c.notes)==='Complex').length;
+    let totCh = allCases.filter(c=>parseComplexity(c.notes)==='Challenging').length;
+    let tot   = allCases.length || 1;
+    if (summaryEl) {
+        summaryEl.innerHTML =
+            '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center">' +
+            '<div style="background:#f0fdf4;border-radius:10px;padding:10px"><div style="font-size:20px;font-weight:900;color:#16a34a">'+totR+'</div><div style="font-size:11px;color:#64748b">Routine ('+Math.round(totR/tot*100)+'%)</div></div>' +
+            '<div style="background:#fffbeb;border-radius:10px;padding:10px"><div style="font-size:20px;font-weight:900;color:#ca8a04">'+totC+'</div><div style="font-size:11px;color:#64748b">Complex ('+Math.round(totC/tot*100)+'%)</div></div>' +
+            '<div style="background:#fef2f2;border-radius:10px;padding:10px"><div style="font-size:20px;font-weight:900;color:#dc2626">'+totCh+'</div><div style="font-size:11px;color:#64748b">Challenging ('+Math.round(totCh/tot*100)+'%)</div></div></div>';
+    }
+}
+
+// ── Smart OR Calendar ────────────────────────────────────────────────────────
+function showProcedureCalendar() {
+    let el = document.getElementById('procedureCalendar');
+    if (!el) return;
+
+    let profile    = JSON.parse(localStorage.getItem('userProfile')) || {};
+    let endYear    = parseInt(profile.endYear);
+    let now        = new Date();
+    let monthsLeft = endYear ? Math.max(1,(new Date(endYear,5,30)-now)/(1000*60*60*24*30.44)) : 24;
+
+    let urgency = {};
+    for (let p in acgme) {
+        let done = allCases.filter(c=>c.procedure===p).length;
+        urgency[p] = Math.max(0, acgme[p]-done) / monthsLeft;
+    }
+    let ranked = Object.entries(urgency).sort((a,b)=>b[1]-a[1]);
+
+    let year  = now.getFullYear(), month = now.getMonth();
+    let firstDay = new Date(year,month,1).getDay();
+    let daysInMonth = new Date(year,month+1,0).getDate();
+    let monthName = now.toLocaleString('default',{month:'long',year:'numeric'});
+    let colors = ['#2563eb','#7c3aed','#16a34a','#d97706','#0891b2','#dc2626','#8C1515'];
+    let procColor = {};
+    Object.keys(acgme).forEach((p,i)=>{ procColor[p]=colors[i%colors.length]; });
+
+    let weeks = [];
+    let d = 1 - firstDay;
+    for (let w = 0; w < 6; w++) {
+        let week = []; let hasDay = false;
+        for (let dow = 0; dow < 7; dow++, d++) {
+            if (d < 1 || d > daysInMonth) { week.push(null); continue; }
+            hasDay = true;
+            let moCases = allCases.filter(c => {
+                if (!c.date) return false;
+                let cd = new Date(c.date);
+                return cd.getFullYear()===year && cd.getMonth()===month && cd.getDate()===d;
+            });
+            week.push({ d, isToday: d===now.getDate(), cases: moCases });
+        }
+        if (hasDay) weeks.push(week);
+    }
+
+    let weekFocus = weeks.map((_,wi) => {
+        let top = ranked.slice(0,4);
+        return [top[wi%top.length][0], top[(wi+1)%top.length][0]].filter(Boolean);
+    });
+
+    let html = '<div style="font-weight:700;color:#0f172a;margin-bottom:12px;text-align:center;font-size:15px">📅 '+monthName+'</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px">';
+    for (let day of ['Su','Mo','Tu','We','Th','Fr','Sa']) {
+        html += '<div style="text-align:center;font-size:10px;font-weight:700;color:#94a3b8;padding:4px 0">'+day+'</div>';
+    }
+    html += '</div>';
+
+    weeks.forEach((week, wi) => {
+        html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px">';
+        week.forEach(day => {
+            if (!day) { html += '<div></div>'; return; }
+            let bg = day.isToday ? '#2563eb' : day.cases.length>0 ? '#dcfce7' : '#f8fafc';
+            let tc = day.isToday ? 'white' : '#0f172a';
+            html += '<div style="background:'+bg+';border-radius:8px;padding:6px 4px;text-align:center;min-height:36px;border:'+(day.isToday?'2px solid #1d4ed8':'1px solid #e2e8f0')+'">' +
+                '<div style="font-size:12px;font-weight:'+(day.isToday?900:600)+';color:'+tc+'">'+day.d+'</div>' +
+                (day.cases.length>0?'<div style="font-size:9px;color:#16a34a;font-weight:700">✓'+day.cases.length+'</div>':'') + '</div>';
+        });
+        html += '</div>';
+        let focus = weekFocus[wi];
+        if (focus.length>0) {
+            let banners = focus.map(p => {
+                let short = p.split('/')[0].trim().split('(')[0].trim();
+                let rem   = Math.max(0, acgme[p]-allCases.filter(c=>c.procedure===p).length);
+                return '<span style="background:'+procColor[p]+'18;color:'+procColor[p]+';font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;border:1px solid '+procColor[p]+'40">'+short+' ('+rem+' left)</span>';
+            }).join(' ');
+            html += '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:6px 4px;margin-bottom:4px"><span style="font-size:10px;color:#94a3b8;font-weight:600">Focus:</span>'+banners+'</div>';
+        }
+    });
+
+    html += '<div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#64748b">' +
+        '<span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:#dcfce7;border-radius:3px;display:inline-block;border:1px solid #e2e8f0"></span> Case logged</span>' +
+        '<span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:#2563eb;border-radius:3px;display:inline-block"></span> Today</span></div>';
+    el.innerHTML = html;
+}
+
+// ── Fellowship Application PDF ───────────────────────────────────────────────
+function exportFellowshipPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let profile   = JSON.parse(localStorage.getItem('userProfile')) || {};
+    let name      = profile.name      || 'Ophthalmology Resident';
+    let pgy       = profile.pgy       || '';
+    let program   = profile.program   || 'Stanford University';
+    let goals     = profile.goals     || '';
+    let startYear = profile.startYear || '';
+    let endYear   = profile.endYear   || '';
+    let now       = new Date();
+    let totalReq  = Object.values(acgme).reduce((a,b)=>a+b,0);
+    let overallPct = Math.min(Math.round((allCases.length/totalReq)*100),100);
+
+    // Cover
+    doc.setFillColor(140,21,21); doc.rect(0,0,210,80,'F');
+    doc.setFillColor(37,99,235); doc.rect(0,75,210,6,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.text('OPHTHALMOLOGY RESIDENCY', 14, 22);
+    doc.setFontSize(26); doc.setFont('helvetica','bold');
+    doc.text('Fellowship Application', 14, 38); doc.text('Case Portfolio', 14, 50);
+    doc.setFontSize(11); doc.setFont('helvetica','normal');
+    doc.text('Prepared by OphthoLog  ·  '+now.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}), 14, 62);
+
+    doc.setFillColor(248,250,252); doc.roundedRect(14,90,182,35,4,4,'F');
+    doc.setDrawColor(226,232,240); doc.roundedRect(14,90,182,35,4,4,'S');
+    doc.setTextColor(15,23,42); doc.setFontSize(15); doc.setFont('helvetica','bold');
+    doc.text('Dr. '+name, 22, 103);
+    doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(100,116,139);
+    doc.text(program+' — Ophthalmology'+(pgy?'   ·   '+pgy:''), 22, 112);
+    if (startYear && endYear) doc.text('Residency '+startYear+' – '+endYear, 22, 120);
+
+    let stats = [
+        {label:'Total Cases',   val:allCases.length},
+        {label:'ACGME Progress',val:overallPct+'%'},
+        {label:'As Primary',    val:allCases.filter(c=>c.role==='Primary Surgeon').length},
+        {label:'Attendings',    val:[...new Set(allCases.map(c=>c.attending).filter(Boolean))].length}
+    ];
+    let sx=14,sy=135,sw=43;
+    for (let s of stats) {
+        doc.setFillColor(37,99,235); doc.roundedRect(sx,sy,sw,22,3,3,'F');
+        doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont('helvetica','bold');
+        doc.text(String(s.val), sx+sw/2, sy+11, {align:'center'});
+        doc.setFontSize(7); doc.setFont('helvetica','normal');
+        doc.text(s.label, sx+sw/2, sy+18, {align:'center'});
+        sx += sw+3;
+    }
+
+    let y = 168;
+    doc.setTextColor(15,23,42); doc.setFontSize(13); doc.setFont('helvetica','bold');
+    doc.text('ACGME Requirement Progress', 14, y); y += 8;
+    let counts = {};
+    for (let p in acgme) { counts[p] = allCases.filter(c=>c.procedure===p).length; }
+    for (let p in acgme) {
+        let done=counts[p], req=acgme[p], pct=Math.min(Math.round((done/req)*100),100);
+        let barC = pct>=100?[22,163,74]:pct>=50?[37,99,235]:[217,119,6];
+        doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(15,23,42); doc.text(p, 14, y+5);
+        doc.setFont('helvetica','normal'); doc.setTextColor(100,116,139);
+        doc.text(done+' / '+req+'  ('+pct+'%)', 165, y+5, {align:'right'});
+        doc.setFillColor(226,232,240); doc.roundedRect(14,y+7,152,4,2,2,'F');
+        if (pct>0){doc.setFillColor(...barC); doc.roundedRect(14,y+7,Math.max(152*pct/100,3),4,2,2,'F');}
+        y+=16; if(y>270){doc.addPage(); y=20;}
+    }
+
+    if (goals) {
+        y += 4;
+        doc.setFontSize(12); doc.setFont('helvetica','bold'); doc.setTextColor(15,23,42);
+        doc.text('Personal Statement & Goals', 14, y); y += 8;
+        doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(100,116,139);
+        let lines = doc.splitTextToSize(goals, 182);
+        doc.text(lines, 14, y);
+    }
+
+    // Case table page
+    doc.addPage();
+    doc.setFillColor(140,21,21); doc.rect(0,0,210,22,'F');
+    doc.setFillColor(37,99,235); doc.rect(0,19,210,3,'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(14); doc.setFont('helvetica','bold');
+    doc.text('Complete Case Log', 14, 14);
+    doc.autoTable({
+        startY: 28,
+        head: [['Date','Procedure','Role','Attending','Institution','Complexity']],
+        body: allCases.slice(0,200).map(c=>[
+            c.date||'-',
+            (c.procedure||'-').split('/')[0].trim().split('(')[0].trim(),
+            c.role==='Primary Surgeon'?'Primary':c.role||'-',
+            c.attending||'-', c.hospital||'-',
+            parseComplexity(c.notes)
+        ]),
+        styles:{fontSize:8,cellPadding:3},
+        headStyles:{fillColor:[37,99,235],textColor:255,fontStyle:'bold',fontSize:8},
+        alternateRowStyles:{fillColor:[248,250,252]},
+        columnStyles:{0:{cellWidth:24},1:{cellWidth:42},2:{cellWidth:26},3:{cellWidth:38},4:{cellWidth:36},5:{cellWidth:22}}
+    });
+
+    let pages = doc.internal.getNumberOfPages();
+    for (let i=1;i<=pages;i++) {
+        doc.setPage(i);
+        doc.setFillColor(140,21,21); doc.rect(0,doc.internal.pageSize.height-12,210,12,'F');
+        doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','normal');
+        doc.text('Dr. '+name+'  ·  '+program+'  ·  Fellowship Application Portfolio', 14, doc.internal.pageSize.height-4);
+        doc.text('Page '+i+' of '+pages, 196, doc.internal.pageSize.height-4, {align:'right'});
+    }
+    doc.save('fellowship-portfolio-'+name.replace(/\s+/g,'-').toLowerCase()+'.pdf');
+    showToast('🎓 Fellowship PDF exported!');
 }
 
 // ── Smart Gap Alerts ────────────────────────────────────────────────────────
