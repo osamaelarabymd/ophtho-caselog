@@ -2131,26 +2131,281 @@ let activeWorkspaceTab = 'journal';
 
 function showWorkspaceTab(tab) {
     activeWorkspaceTab = tab;
-    ['journal','todo','notes','study'].forEach(t => {
+    ['calendar','journal','todo','notes','study'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = t === tab ? 'block' : 'none';
         let btn = document.getElementById('ws-tab-'+t);
         if (btn) {
             if (t === tab) {
-                btn.style.background  = 'white';
-                btn.style.color       = '#2563eb';
-                btn.style.boxShadow   = '0 2px 8px rgba(0,0,0,0.08)';
+                btn.style.background = 'white';
+                btn.style.color      = '#2563eb';
+                btn.style.boxShadow  = '0 2px 8px rgba(0,0,0,0.08)';
             } else {
-                btn.style.background  = 'transparent';
-                btn.style.color       = '#64748b';
-                btn.style.boxShadow   = 'none';
+                btn.style.background = 'transparent';
+                btn.style.color      = '#64748b';
+                btn.style.boxShadow  = 'none';
             }
         }
     });
-    if (tab === 'journal') renderJournalList();
-    if (tab === 'todo')    renderTodos();
-    if (tab === 'notes')   renderNotes();
-    if (tab === 'study')   renderStudyList();
+    if (tab === 'calendar') renderCalendar();
+    if (tab === 'journal')  renderJournalList();
+    if (tab === 'todo')     renderTodos();
+    if (tab === 'notes')    renderNotes();
+    if (tab === 'study')    renderStudyList();
+}
+
+// ── Calendar ──────────────────────────────────────────────────────────────────
+const EVENTS_KEY = 'eyeEvents';
+let calYear, calMonth, selectedCalDate;
+
+function getEvents()         { return JSON.parse(localStorage.getItem(EVENTS_KEY) || '[]'); }
+function saveEvents(events)  { localStorage.setItem(EVENTS_KEY, JSON.stringify(events)); }
+
+function initCal() {
+    let now = new Date();
+    calYear  = now.getFullYear();
+    calMonth = now.getMonth();
+}
+
+function calNav(dir) {
+    calMonth += dir;
+    if (calMonth > 11) { calMonth = 0;  calYear++; }
+    if (calMonth < 0)  { calMonth = 11; calYear--; }
+    let dd = document.getElementById('dayDetail');
+    if (dd) dd.style.display = 'none';
+    selectedCalDate = null;
+    renderCalendar();
+}
+
+function renderCalendar() {
+    if (calYear === undefined) initCal();
+    let now          = new Date();
+    let firstDay     = new Date(calYear, calMonth, 1).getDay();
+    let daysInMonth  = new Date(calYear, calMonth + 1, 0).getDate();
+    let monthLabel   = new Date(calYear, calMonth, 1).toLocaleString('default', { month: 'long', year: 'numeric' });
+
+    let el = document.getElementById('calMonthLabel');
+    if (el) el.textContent = monthLabel;
+
+    let events   = getEvents();
+    let todos    = getTodos();
+    let journal  = getJournalEntries();
+
+    // Build day-data index
+    function pad(d) { return String(d).padStart(2,'0'); }
+    function dayKey(y,m,d) { return `${y}-${pad(m+1)}-${pad(d)}`; }
+
+    let html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px">';
+    for (let d of ['Su','Mo','Tu','We','Th','Fr','Sa']) {
+        html += `<div style="text-align:center;font-size:10px;font-weight:700;color:#94a3b8;padding:4px 0">${d}</div>`;
+    }
+    html += '</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">';
+
+    let day = 1 - firstDay;
+    for (let row = 0; row < 6; row++) {
+        for (let col = 0; col < 7; col++, day++) {
+            if (day < 1 || day > daysInMonth) {
+                html += '<div></div>';
+                continue;
+            }
+            let dk       = dayKey(calYear, calMonth, day);
+            let isToday  = dk === now.toISOString().slice(0,10);
+            let isSel    = dk === selectedCalDate;
+            let hasEv    = events.some(e => e.date === dk);
+            let hasTodo  = todos.some(t => t.due === dk && !t.done);
+            let hasJ     = journal.some(j => j.date === dk);
+            let hasCase  = allCases.some(c => c.date === dk);
+
+            let bg = isSel ? '#2563eb' : isToday ? '#dbeafe' : 'white';
+            let tc = isSel ? 'white' : isToday ? '#1d4ed8' : '#0f172a';
+            let border = isSel ? '2px solid #2563eb' : isToday ? '2px solid #93c5fd' : '1px solid #f1f5f9';
+
+            let dots = '';
+            if (hasEv)   dots += `<span style="width:5px;height:5px;border-radius:50%;background:#2563eb;display:inline-block;margin:0 1px"></span>`;
+            if (hasCase) dots += `<span style="width:5px;height:5px;border-radius:50%;background:#16a34a;display:inline-block;margin:0 1px"></span>`;
+            if (hasTodo) dots += `<span style="width:5px;height:5px;border-radius:50%;background:#d97706;display:inline-block;margin:0 1px"></span>`;
+            if (hasJ)    dots += `<span style="width:5px;height:5px;border-radius:50%;background:#7c3aed;display:inline-block;margin:0 1px"></span>`;
+
+            html += `<div onclick="selectCalDay('${dk}')" style="background:${bg};border:${border};border-radius:10px;padding:6px 4px;text-align:center;min-height:44px;cursor:pointer;transition:all 0.1s"
+                onmouseover="this.style.background='${isSel?'#2563eb':'#f1f5f9'}'"
+                onmouseout="this.style.background='${bg}'">
+                <div style="font-size:13px;font-weight:${isToday||isSel?800:500};color:${tc}">${day}</div>
+                <div style="display:flex;justify-content:center;flex-wrap:wrap;margin-top:3px;min-height:8px">${dots}</div>
+            </div>`;
+        }
+        if (day > daysInMonth) break;
+    }
+    html += '</div>';
+
+    // Legend
+    html += `<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:#64748b">
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#2563eb;display:inline-block"></span>Event</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block"></span>Case logged</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#d97706;display:inline-block"></span>Todo due</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#7c3aed;display:inline-block"></span>Journal</span>
+    </div>`;
+
+    let grid = document.getElementById('calGrid');
+    if (grid) grid.innerHTML = html;
+
+    if (selectedCalDate) renderDayDetail(selectedCalDate);
+}
+
+function selectCalDay(dk) {
+    selectedCalDate = dk;
+    renderCalendar();
+    let dd = document.getElementById('dayDetail');
+    if (dd) { dd.style.display = 'block'; dd.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+}
+
+function renderDayDetail(dk) {
+    let titleEl   = document.getElementById('dayDetailTitle');
+    let contentEl = document.getElementById('dayDetailContent');
+    if (!titleEl || !contentEl) return;
+
+    let d = new Date(dk + 'T12:00:00');
+    titleEl.textContent = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+
+    let events  = getEvents().filter(e => e.date === dk).sort((a,b) => (a.time||'99:99').localeCompare(b.time||'99:99'));
+    let todos   = getTodos().filter(t => t.due === dk);
+    let journal = getJournalEntries().filter(j => j.date === dk);
+    let cases   = allCases.filter(c => c.date === dk);
+
+    let evTypeBg    = { clinic:'#eff6ff', meeting:'#f0fdf4', or:'#faf5ff', education:'#fffbeb', personal:'#fff1f2' };
+    let evTypeColor = { clinic:'#2563eb', meeting:'#16a34a', or:'#7c3aed', education:'#ca8a04', personal:'#e11d48' };
+    let evTypeIcon  = { clinic:'🏥', meeting:'🤝', or:'🔬', education:'📚', personal:'👤' };
+    let priColor    = { high:'#dc2626', medium:'#ca8a04', low:'#16a34a' };
+
+    let html = '';
+
+    // Events
+    if (events.length > 0) {
+        html += '<div style="margin-bottom:16px"><p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">EVENTS</p>';
+        for (let ev of events) {
+            html += `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:${evTypeBg[ev.type]||'#f8fafc'};border-radius:12px;margin-bottom:6px;border-left:3px solid ${evTypeColor[ev.type]||'#64748b'}">
+                <span style="font-size:20px">${evTypeIcon[ev.type]||'📅'}</span>
+                <div style="flex:1">
+                    <p style="font-weight:700;font-size:14px;color:#0f172a;margin-bottom:2px">${ev.title}</p>
+                    ${ev.time?`<p style="font-size:12px;color:#64748b;margin-bottom:2px">🕐 ${formatTime(ev.time)}</p>`:''}
+                    ${ev.notes?`<p style="font-size:12px;color:#64748b">${ev.notes}</p>`:''}
+                </div>
+                <div style="display:flex;gap:4px">
+                    <button onclick="openEventModal('${dk}','${ev.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:12px;box-shadow:none">✏️</button>
+                    <button onclick="deleteEvent('${ev.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#fef2f2;border-radius:8px;font-size:12px;box-shadow:none;color:#dc2626">🗑️</button>
+                </div>
+            </div>`;
+        }
+        html += '</div>';
+    }
+
+    // Cases
+    if (cases.length > 0) {
+        html += '<div style="margin-bottom:16px"><p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">CASES LOGGED</p>';
+        for (let c of cases) {
+            html += `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f0fdf4;border-radius:12px;margin-bottom:6px;border-left:3px solid #16a34a">
+                <span style="font-size:18px">🔬</span>
+                <div>
+                    <p style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:2px">${c.procedure||'Unknown'}</p>
+                    <p style="font-size:12px;color:#64748b">${c.role||''}${c.attending?' · '+c.attending:''}${c.hospital?' · '+c.hospital:''}</p>
+                </div>
+            </div>`;
+        }
+        html += '</div>';
+    }
+
+    // Todos
+    if (todos.length > 0) {
+        html += '<div style="margin-bottom:16px"><p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">TASKS DUE</p>';
+        for (let t of todos) {
+            html += `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fffbeb;border-radius:12px;margin-bottom:6px;border-left:3px solid ${priColor[t.priority]||'#d97706'}">
+                <input type="checkbox" ${t.done?'checked':''} onchange="toggleTodo('${t.id}');renderDayDetail('${dk}')" style="width:16px;height:16px;accent-color:#2563eb;cursor:pointer;flex-shrink:0">
+                <p style="font-size:13px;font-weight:600;color:#0f172a;margin:0;${t.done?'text-decoration:line-through;opacity:0.5':''}">${t.text}</p>
+            </div>`;
+        }
+        html += '</div>';
+    }
+
+    // Journal
+    if (journal.length > 0) {
+        html += '<div style="margin-bottom:16px"><p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">JOURNAL</p>';
+        for (let j of journal) {
+            html += `<div onclick="openJournalModal('${j.id}')" style="padding:12px;background:#faf5ff;border-radius:12px;margin-bottom:6px;border-left:3px solid #7c3aed;cursor:pointer">
+                <p style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:4px">${j.mood} ${j.title||'Journal Entry'}</p>
+                <p style="font-size:12px;color:#64748b;line-height:1.5">${j.body.slice(0,100)}${j.body.length>100?'…':''}</p>
+            </div>`;
+        }
+        html += '</div>';
+    }
+
+    if (!events.length && !cases.length && !todos.length && !journal.length) {
+        html = `<div style="text-align:center;padding:28px;color:#94a3b8">
+            <p style="font-size:14px;font-weight:600;color:#64748b;margin-bottom:6px">Nothing planned</p>
+            <p style="font-size:13px">Tap + Add Event to schedule something</p>
+        </div>`;
+    }
+
+    contentEl.innerHTML = html;
+}
+
+function formatTime(t) {
+    if (!t) return '';
+    let [h, m] = t.split(':').map(Number);
+    let ampm = h >= 12 ? 'PM' : 'AM';
+    return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+
+let selectedEventType = 'clinic';
+
+function openEventModal(date, id) {
+    let ev = id ? getEvents().find(e => e.id === id) : null;
+    document.getElementById('eventId').value    = ev ? ev.id : '';
+    document.getElementById('eventTitle').value = ev ? ev.title : '';
+    document.getElementById('eventDate').value  = ev ? ev.date : (date || (selectedCalDate || new Date().toISOString().slice(0,10)));
+    document.getElementById('eventTime').value  = ev ? (ev.time || '') : '';
+    document.getElementById('eventNotes').value = ev ? (ev.notes || '') : '';
+    selectedEventType = ev ? ev.type : 'clinic';
+    updateEventTypeButtons();
+    document.getElementById('eventModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('eventTitle').focus(), 100);
+}
+function closeEventModal() { document.getElementById('eventModal').style.display = 'none'; }
+
+function selectEventType(t) { selectedEventType = t; updateEventTypeButtons(); }
+function updateEventTypeButtons() {
+    ['clinic','meeting','or','education','personal'].forEach(t => {
+        let btn = document.getElementById('et-'+t);
+        if (!btn) return;
+        btn.style.borderColor = t === selectedEventType ? '#2563eb' : '#e2e8f0';
+        btn.style.transform   = t === selectedEventType ? 'scale(1.05)' : 'scale(1)';
+    });
+}
+
+function saveEvent() {
+    let title = document.getElementById('eventTitle').value.trim();
+    let date  = document.getElementById('eventDate').value;
+    if (!title) { showToast('⚠️ Enter a title', 'warning'); return; }
+    if (!date)  { showToast('⚠️ Pick a date', 'warning'); return; }
+
+    let events = getEvents();
+    let id     = document.getElementById('eventId').value;
+    let ev     = { id: id || crypto.randomUUID(), title, date, time: document.getElementById('eventTime').value || null, type: selectedEventType, notes: document.getElementById('eventNotes').value.trim(), createdAt: new Date().toISOString() };
+
+    if (id) { let idx = events.findIndex(e => e.id === id); if (idx !== -1) events[idx] = ev; else events.push(ev); }
+    else events.push(ev);
+    saveEvents(events);
+    closeEventModal();
+    selectedCalDate = date;
+    renderCalendar();
+    let dd = document.getElementById('dayDetail');
+    if (dd) dd.style.display = 'block';
+    showToast('📅 Event saved!');
+}
+
+function deleteEvent(id) {
+    if (!confirm('Delete this event?')) return;
+    saveEvents(getEvents().filter(e => e.id !== id));
+    renderCalendar();
+    showToast('🗑️ Event deleted', 'warning');
 }
 
 // ── Journal ──────────────────────────────────────────────────────────────────

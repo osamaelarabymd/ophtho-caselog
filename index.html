@@ -601,11 +601,28 @@
                 <h2 style="color:white;font-size:20px;margin-bottom:4px">📓 My Workspace</h2>
                 <p style="opacity:0.8;font-size:13px">Journal · To-Do · Notes · Study List</p>
             </div>
-            <div style="display:flex;gap:4px;margin-bottom:16px;background:#f1f5f9;border-radius:14px;padding:5px">
-                <button id="ws-tab-journal" onclick="showWorkspaceTab('journal')" class="ws-tab active-ws-tab" style="flex:1;margin:0;border-radius:10px;padding:9px 4px;font-size:12px;font-weight:700">📔 Journal</button>
-                <button id="ws-tab-todo"    onclick="showWorkspaceTab('todo')"    class="ws-tab"              style="flex:1;margin:0;border-radius:10px;padding:9px 4px;font-size:12px;font-weight:700;background:transparent;color:#64748b;box-shadow:none">✅ To-Do</button>
-                <button id="ws-tab-notes"   onclick="showWorkspaceTab('notes')"   class="ws-tab"              style="flex:1;margin:0;border-radius:10px;padding:9px 4px;font-size:12px;font-weight:700;background:transparent;color:#64748b;box-shadow:none">📝 Notes</button>
-                <button id="ws-tab-study"   onclick="showWorkspaceTab('study')"   class="ws-tab"              style="flex:1;margin:0;border-radius:10px;padding:9px 4px;font-size:12px;font-weight:700;background:transparent;color:#64748b;box-shadow:none">📚 Study</button>
+            <div style="display:flex;gap:3px;margin-bottom:16px;background:#f1f5f9;border-radius:14px;padding:5px">
+                <button id="ws-tab-calendar" onclick="showWorkspaceTab('calendar')" class="ws-tab" style="flex:1;margin:0;border-radius:10px;padding:8px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none">📅<br>Plan</button>
+                <button id="ws-tab-journal"  onclick="showWorkspaceTab('journal')"  class="ws-tab active-ws-tab" style="flex:1;margin:0;border-radius:10px;padding:8px 2px;font-size:11px;font-weight:700">📔<br>Journal</button>
+                <button id="ws-tab-todo"     onclick="showWorkspaceTab('todo')"     class="ws-tab" style="flex:1;margin:0;border-radius:10px;padding:8px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none">✅<br>To-Do</button>
+                <button id="ws-tab-notes"    onclick="showWorkspaceTab('notes')"    class="ws-tab" style="flex:1;margin:0;border-radius:10px;padding:8px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none">📝<br>Notes</button>
+                <button id="ws-tab-study"    onclick="showWorkspaceTab('study')"    class="ws-tab" style="flex:1;margin:0;border-radius:10px;padding:8px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none">📚<br>Study</button>
+            </div>
+            <!-- Calendar section -->
+            <div id="ws-calendar" style="display:none">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+                    <button onclick="calNav(-1)" style="width:36px;height:36px;margin:0;padding:0;background:#f1f5f9;border-radius:10px;font-size:18px;color:#374151;box-shadow:none">‹</button>
+                    <h3 id="calMonthLabel" style="margin:0;font-size:16px;font-weight:800;color:#0f172a"></h3>
+                    <button onclick="calNav(1)"  style="width:36px;height:36px;margin:0;padding:0;background:#f1f5f9;border-radius:10px;font-size:18px;color:#374151;box-shadow:none">›</button>
+                </div>
+                <div id="calGrid" style="margin-bottom:16px"></div>
+                <div id="dayDetail" style="display:none">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                        <h3 id="dayDetailTitle" style="margin:0;font-size:15px;font-weight:800;color:#0f172a"></h3>
+                        <button onclick="openEventModal()" style="width:auto;margin:0;padding:8px 14px;font-size:13px;border-radius:10px;background:#2563eb">＋ Add Event</button>
+                    </div>
+                    <div id="dayDetailContent"></div>
+                </div>
             </div>
             <!-- Journal section -->
             <div id="ws-journal">
@@ -763,6 +780,44 @@
                 <div style="display:flex;gap:10px;margin-top:16px">
                     <button onclick="saveStudyItem()" style="flex:1;margin:0;background:#7c3aed">💾 Add</button>
                     <button onclick="closeStudyModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Event Modal -->
+        <div id="eventModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+            <div style="background:white;border-radius:20px;padding:28px;width:92%;max-width:460px;box-shadow:0 24px 64px rgba(0,0,0,0.25)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                    <h2 style="margin:0;font-size:20px">📅 Event</h2>
+                    <button onclick="closeEventModal()" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b">✕</button>
+                </div>
+                <input type="hidden" id="eventId">
+                <label>Title</label>
+                <input type="text" id="eventTitle" placeholder="e.g. Glaucoma clinic, Dept meeting, OR day…">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div>
+                        <label>Date</label>
+                        <input type="date" id="eventDate">
+                    </div>
+                    <div>
+                        <label>Time <span style="font-size:11px;color:#94a3b8">(optional)</span></label>
+                        <input type="time" id="eventTime">
+                    </div>
+                </div>
+                <label>Type</label>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+                    <button onclick="selectEventType('clinic')"    id="et-clinic"    class="et-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#eff6ff;color:#2563eb;border:2px solid #e2e8f0;box-shadow:none">🏥 Clinic</button>
+                    <button onclick="selectEventType('meeting')"   id="et-meeting"   class="et-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#f0fdf4;color:#16a34a;border:2px solid #e2e8f0;box-shadow:none">🤝 Meeting</button>
+                    <button onclick="selectEventType('or')"        id="et-or"        class="et-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#faf5ff;color:#7c3aed;border:2px solid #e2e8f0;box-shadow:none">🔬 OR</button>
+                    <button onclick="selectEventType('education')" id="et-education" class="et-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#fffbeb;color:#ca8a04;border:2px solid #e2e8f0;box-shadow:none">📚 Education</button>
+                    <button onclick="selectEventType('personal')"  id="et-personal"  class="et-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#fff1f2;color:#e11d48;border:2px solid #e2e8f0;box-shadow:none">👤 Personal</button>
+                </div>
+                <label>Notes <span style="font-size:11px;color:#94a3b8">(optional)</span></label>
+                <textarea id="eventNotes" rows="3" placeholder="Location, preparation notes, agenda…"></textarea>
+                <div style="display:flex;gap:10px;margin-top:16px">
+                    <button onclick="saveEvent()" style="flex:1;margin:0;background:#2563eb">💾 Save</button>
+                    <button onclick="closeEventModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
                 </div>
             </div>
         </div>
