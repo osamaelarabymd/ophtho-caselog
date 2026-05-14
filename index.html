@@ -28,8 +28,8 @@
     <div id="milestoneModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px)">
         <div style="background:white; border-radius:24px; padding:40px 32px; width:90%; max-width:400px; text-align:center; box-shadow:0 24px 64px rgba(0,0,0,0.3); animation:bounceIn 0.5s ease">
             <div id="milestoneEmoji" style="font-size:72px; margin-bottom:16px">🏆</div>
-            <h2 id="milestoneTitle" style="font-size:26px; font-weight:900; color:#0f172a; margin-bottom:8px">Milestone Reached!</h2>
-            <p id="milestoneText" style="font-size:16px; color:#64748b; line-height:1.6; margin-bottom:24px">You've reached 25% of your ACGME requirements!</p>
+            <h2 id="milestoneTitle" style="font-size:26px; font-weight:900; color:#0f172a; margin-bottom:8px">Milestone!</h2>
+            <p id="milestoneText" style="font-size:16px; color:#64748b; line-height:1.6; margin-bottom:24px">You reached a milestone!</p>
             <div id="milestoneBadge" style="display:inline-block; background:linear-gradient(135deg,#2563eb,#7c3aed); color:white; padding:8px 24px; border-radius:50px; font-size:14px; font-weight:700; margin-bottom:24px"></div>
             <br>
             <button onclick="closeMilestone()" style="width:auto; padding:14px 40px; border-radius:50px; font-size:16px; font-weight:700; background:linear-gradient(135deg,#2563eb,#7c3aed); box-shadow:0 4px 16px rgba(37,99,235,0.4)">Keep Going! 🚀</button>
@@ -76,12 +76,43 @@
     <div id="loginSection">
         <h2>👁️ OphthoLog</h2>
         <p>Ophthalmology Residency Case Tracker</p>
-        <input type="email" id="email" placeholder="Email address">
-        <input type="password" id="password" placeholder="Password">
-        <div class="btn-row">
-            <button onclick="signUp()">Sign Up</button>
-            <button onclick="signIn()">Sign In</button>
+
+        <div id="signUpForm">
+            <label style="margin-top:0">Full Name</label>
+            <input type="text" id="fullName" placeholder="e.g. Osama Elaraby">
+            <label>Email</label>
+            <input type="email" id="email" placeholder="Email address">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="Password">
+            <div class="btn-row">
+                <button onclick="signUp()">Request Access</button>
+                <button onclick="toggleForm()" style="background:white; color:var(--primary); border:2px solid var(--primary); box-shadow:none">Sign In Instead</button>
+            </div>
         </div>
+
+        <div id="signInForm" style="display:none">
+            <label style="margin-top:0">Email</label>
+            <input type="email" id="emailIn" placeholder="Email address">
+            <label>Password</label>
+            <input type="password" id="passwordIn" placeholder="Password">
+            <div class="btn-row">
+                <button onclick="signInForm()">Sign In</button>
+                <button onclick="toggleForm()" style="background:white; color:var(--primary); border:2px solid var(--primary); box-shadow:none">Request Access</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending screen -->
+    <div id="pendingSection" style="display:none; max-width:420px; margin:60px auto; text-align:center; background:white; padding:40px; border-radius:24px; box-shadow:0 20px 60px rgba(37,99,235,0.15); border:1px solid #e2e8f0">
+        <div style="font-size:64px; margin-bottom:16px">⏳</div>
+        <h2 style="font-size:22px; color:#0f172a; margin-bottom:8px">Access Pending</h2>
+        <p id="pendingName" style="font-size:18px; font-weight:700; color:#2563eb; margin-bottom:16px">Dr. Resident</p>
+        <p style="font-size:14px; color:#64748b; line-height:1.6; margin-bottom:24px">Your account request has been submitted. The program director will review and approve your access shortly.</p>
+        <div style="background:#f0fdf4; border:2px solid #16a34a; border-radius:12px; padding:16px; margin-bottom:24px">
+            <p style="font-size:13px; color:#15803d; font-weight:600">✅ Account created successfully</p>
+            <p style="font-size:13px; color:#15803d">You'll be able to log in once approved</p>
+        </div>
+        <button onclick="signOut()" style="background:#64748b; width:auto; padding:10px 24px">Back to Login</button>
     </div>
 
     <!-- App -->
@@ -95,7 +126,6 @@
 
         <div id="streakBanner" style="display:none; background:linear-gradient(135deg,#f97316,#ef4444); color:white; padding:12px 20px; border-radius:12px; margin-bottom:16px; text-align:center; font-weight:700; font-size:15px"></div>
 
-        <!-- Desktop Tabs -->
         <div id="tabs">
             <button onclick="showTab('dashboard', event)" class="tab-btn active-tab">📊 Dashboard</button>
             <button onclick="showTab('profile', event)"   class="tab-btn">👤 Profile</button>
@@ -119,9 +149,7 @@
                 </div>
             </div>
 
-            <!-- Achievement badges -->
             <div id="achievementBadges" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px"></div>
-
             <div id="summaryCards"></div>
 
             <div class="dash-card" style="margin-bottom:16px">
@@ -147,9 +175,9 @@
         <div id="profileTab" style="display:none">
             <div style="background:linear-gradient(135deg, #8C1515 0%, #2563eb 100%); border-radius:20px; padding:28px; margin-bottom:20px; color:white; text-align:center; position:relative; overflow:hidden">
                 <div style="width:84px; height:84px; background:rgba(255,255,255,0.2); border-radius:50%; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; font-size:38px; border:3px solid rgba(255,255,255,0.4)">👨‍⚕️</div>
-                <h2 id="profileName" style="color:white; font-size:22px; margin-bottom:6px">Dr. Osama Elaraby</h2>
+                <h2 id="profileName" style="color:white; font-size:22px; margin-bottom:6px">Dr. Resident</h2>
                 <p id="profilePgy" style="opacity:0.85; font-size:14px; margin-bottom:4px; font-weight:600">PGY-1</p>
-                <p id="profileProgram" style="opacity:0.7; font-size:13px">Stanford University — Ophthalmology</p>
+                <p id="profileProgram" style="opacity:0.7; font-size:13px">Ophthalmology Program</p>
             </div>
 
             <div id="profileStats" style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px"></div>
@@ -284,8 +312,7 @@
             <div style="background:white; padding:16px; border-radius:14px; margin-bottom:16px; box-shadow:0 2px 12px rgba(37,99,235,0.08); border:1px solid #e2e8f0">
                 <div style="position:relative">
                     <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px">🔍</span>
-                    <input type="text" id="searchNotes" placeholder="Search cases..." oninput="applyFilter()"
-                        style="padding-left:44px; margin-top:0; border-radius:10px; font-size:14px">
+                    <input type="text" id="searchNotes" placeholder="Search cases..." oninput="applyFilter()" style="padding-left:44px; margin-top:0; border-radius:10px; font-size:14px">
                 </div>
             </div>
 

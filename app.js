@@ -38,10 +38,10 @@ const roleColors = {
 };
 
 const milestones = [
-    { pct: 25,  emoji: '🌱', title: 'Great Start!',     text: "You've completed 25% of your ACGME requirements!",     badge: '25% Pioneer',  color: '#d97706' },
-    { pct: 50,  emoji: '🔥', title: 'Halfway There!',   text: "Amazing! You're halfway through your ACGME goals!",    badge: '50% Achiever', color: '#2563eb' },
-    { pct: 75,  emoji: '⭐', title: 'Almost There!',    text: "75% complete — you're in the home stretch!",           badge: '75% Champion', color: '#7c3aed' },
-    { pct: 100, emoji: '🏆', title: 'ACGME Complete!',  text: "Outstanding! You've completed ALL ACGME requirements!", badge: '100% Legend',  color: '#16a34a' }
+    { pct: 25,  emoji: '🌱', title: 'Great Start!',    text: "You've completed 25% of your ACGME requirements!",     badge: '25% Pioneer',  color: '#d97706' },
+    { pct: 50,  emoji: '🔥', title: 'Halfway There!',  text: "Amazing! You're halfway through your ACGME goals!",    badge: '50% Achiever', color: '#2563eb' },
+    { pct: 75,  emoji: '⭐', title: 'Almost There!',   text: "75% complete — you're in the home stretch!",           badge: '75% Champion', color: '#7c3aed' },
+    { pct: 100, emoji: '🏆', title: 'ACGME Complete!', text: "Outstanding! You've completed ALL ACGME requirements!", badge: '100% Legend',  color: '#16a34a' }
 ];
 
 // Toast
@@ -198,9 +198,9 @@ function updateProfileDisplay() {
     let nameEl   = document.getElementById('profileName');
     let pgyEl    = document.getElementById('profilePgy');
     let progEl   = document.getElementById('profileProgram');
-    if (nameEl) nameEl.textContent = profile.name ? 'Dr. ' + profile.name : 'Dr. Osama Elaraby';
+    if (nameEl) nameEl.textContent = profile.name ? 'Dr. ' + profile.name : 'Dr. Resident';
     if (pgyEl)  pgyEl.textContent  = profile.pgy  || 'PGY-1';
-    if (progEl) progEl.textContent = (profile.program || 'Stanford University') + ' — Ophthalmology';
+    if (progEl) progEl.textContent = (profile.program || 'Ophthalmology Program') + ' — Ophthalmology';
     let goalsEl = document.getElementById('profileGoalsDisplay');
     if (goalsEl) {
         goalsEl.innerHTML = profile.goals
@@ -393,51 +393,112 @@ function loadProfileCaseStats() {
     }
 }
 
+// Sign Up with pending status
 async function signUp() {
-    let email = document.getElementById('email').value;
-    let password = document.getElementById('password').value;
+    let email     = document.getElementById('email').value;
+    let password  = document.getElementById('password').value;
+    let fullName  = document.getElementById('fullName') ? document.getElementById('fullName').value : '';
     if (!email || !password) { showToast('⚠️ Enter email and password', 'warning'); return; }
+    if (!fullName) { showToast('⚠️ Please enter your full name', 'warning'); return; }
     showLoading();
-    let { error } = await db.auth.signUp({ email, password });
+    let { data, error } = await db.auth.signUp({ email, password });
+    if (error) { hideLoading(); showToast(error.message, 'error'); return; }
+
+    // Create profile with pending status
+    if (data.user) {
+        await db.from('profiles').upsert({
+            id:        data.user.id,
+            email:     email,
+            full_name: fullName,
+            role:      'resident',
+            status:    'pending'
+        });
+    }
+
     hideLoading();
-    if (error) { showToast(error.message, 'error'); }
-    else { showToast('Account created! Please sign in.'); }
+    showPendingScreen(fullName);
 }
 
-async function signIn() {
-    let email = document.getElementById('email').value;
-    let password = document.getElementById('password').value;
+function showPendingScreen(name) {
+    document.getElementById('loginSection').style.display  = 'none';
+    document.getElementById('appSection').style.display    = 'none';
+    document.getElementById('pendingSection').style.display = 'block';
+    let nameEl = document.getElementById('pendingName');
+    if (nameEl && name) nameEl.textContent = 'Dr. ' + name.split(' ').pop();
+}
+
+async function signInForm() {
+    let email    = document.getElementById('emailIn').value;
+    let password = document.getElementById('passwordIn').value;
     if (!email || !password) { showToast('⚠️ Enter email and password', 'warning'); return; }
     showLoading();
     let { error } = await db.auth.signInWithPassword({ email, password });
     hideLoading();
-    if (error) { showToast(error.message, 'error'); }
-    else { showApp(); }
+    if (error) { showToast(error.message, 'error'); return; }
+    let { data: { user } } = await db.auth.getUser();
+    let { data: profile }  = await db.from('profiles').select('status, role, full_name').eq('id', user.id).single();
+    if (!profile || profile.status === 'pending') {
+        showPendingScreen(profile ? profile.full_name : '');
+        await db.auth.signOut();
+        return;
+    }
+    if (profile.status === 'rejected') {
+        showToast('❌ Your access request was declined.', 'error');
+        await db.auth.signOut();
+        return;
+    }
+    showApp();
+}
+
+function toggleForm() {
+    let signUp = document.getElementById('signUpForm');
+    let signIn = document.getElementById('signInForm');
+    if (signUp.style.display === 'none') {
+        signUp.style.display = 'block';
+        signIn.style.display = 'none';
+    } else {
+        signUp.style.display = 'none';
+        signIn.style.display = 'block';
+    }
 }
 
 async function signOut() {
     await db.auth.signOut();
-    document.getElementById('loginSection').style.display = 'block';
-    document.getElementById('appSection').style.display   = 'none';
+    document.getElementById('loginSection').style.display   = 'block';
+    document.getElementById('appSection').style.display     = 'none';
+    document.getElementById('pendingSection').style.display = 'none';
 }
 
 async function showApp() {
-    document.getElementById('loginSection').style.display = 'none';
-    document.getElementById('appSection').style.display   = 'block';
+    document.getElementById('loginSection').style.display   = 'none';
+    document.getElementById('appSection').style.display     = 'block';
+    document.getElementById('pendingSection').style.display = 'none';
     let { data: { user } } = await db.auth.getUser();
-    let { data: profile } = await db.from('profiles').select('role').eq('id', user.id).single();
+    let { data: profile }  = await db.from('profiles').select('role, full_name').eq('id', user.id).single();
     currentUserRole = profile ? profile.role : 'resident';
     if (currentUserRole === 'admin') {
         document.getElementById('adminTab').style.display = 'inline-block';
     }
     let savedProfile = JSON.parse(localStorage.getItem('userProfile')) || {};
     if (savedProfile.name) document.getElementById('residentName').value = savedProfile.name;
+    else if (profile && profile.full_name) document.getElementById('residentName').value = profile.full_name;
     updateProfileDisplay();
     loadCases();
 }
 
-db.auth.getSession().then(({ data }) => {
-    if (data.session) { showApp(); }
+db.auth.getSession().then(async ({ data }) => {
+    if (data.session) {
+        let { data: { user } } = await db.auth.getUser();
+        let { data: profile }  = await db.from('profiles').select('status, role').eq('id', user.id).single();
+        if (!profile || profile.status === 'pending') {
+            showPendingScreen('');
+            await db.auth.signOut();
+        } else if (profile.status === 'rejected') {
+            await db.auth.signOut();
+        } else {
+            showApp();
+        }
+    }
 });
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -495,31 +556,80 @@ async function deleteCase(id) {
     showToast('🗑️ Case deleted', 'warning');
 }
 
+// Admin — approve/reject users
 async function loadAdminData() {
     showLoading();
     let { data: cases }    = await db.from('cases').select('*');
     let { data: profiles } = await db.from('profiles').select('*');
     hideLoading();
-    let html = '<h2>👨‍⚕️ Program Director Panel</h2><h3>All Residents</h3><table>';
-    html += '<tr><th>Name</th><th>Email</th><th>PGY</th><th>Total</th><th>Cataract</th><th>VR</th><th>Glaucoma</th><th>Progress</th></tr>';
+
+    // Pending users section
+    let pending = profiles ? profiles.filter(p => p.status === 'pending') : [];
+    let html = '<h2>👨‍⚕️ Program Director Panel</h2>';
+
+    if (pending.length > 0) {
+        html += '<div style="background:#fff7ed; border:2px solid #f97316; border-radius:14px; padding:16px; margin-bottom:20px">';
+        html += '<h3 style="color:#ea580c; margin-bottom:12px">⏳ Pending Approval (' + pending.length + ')</h3>';
+        for (let p of pending) {
+            html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #fed7aa">';
+            html += '<div><strong>' + (p.full_name || 'Unknown') + '</strong><br><span style="font-size:12px; color:#64748b">' + p.email + '</span></div>';
+            html += '<div style="display:flex; gap:8px">';
+            html += '<button onclick="approveUser(\'' + p.id + '\')" style="background:#16a34a; width:auto; padding:8px 16px; font-size:12px; margin:0; border-radius:8px">✅ Approve</button>';
+            html += '<button onclick="rejectUser(\'' + p.id + '\')" style="background:#dc2626; width:auto; padding:8px 16px; font-size:12px; margin:0; border-radius:8px">❌ Reject</button>';
+            html += '</div></div>';
+        }
+        html += '</div>';
+    } else {
+        html += '<div style="background:#f0fdf4; border:2px solid #16a34a; border-radius:14px; padding:16px; margin-bottom:20px; color:#15803d; font-weight:600">✅ No pending requests</div>';
+    }
+
+    // Approved residents
+    html += '<h3 style="margin-bottom:12px">✅ Approved Residents</h3>';
+    html += '<table>';
+    html += '<tr><th>Name</th><th>Email</th><th>PGY</th><th>Total</th><th>Cataract</th><th>VR</th><th>Glaucoma</th><th>Progress</th><th>Action</th></tr>';
     if (profiles) {
         for (let profile of profiles) {
-            if (profile.role === 'resident') {
+            if (profile.role === 'resident' && profile.status === 'approved') {
                 let uc      = cases ? cases.filter(c => c.user_id === profile.id) : [];
                 let total   = uc.length;
                 let percent = Math.min(Math.round((total / Object.values(acgme).reduce((a,b)=>a+b,0)) * 100), 100);
-                let name    = uc.length > 0 && uc[0].resident_name ? uc[0].resident_name : '-';
+                let name    = profile.full_name || (uc.length > 0 && uc[0].resident_name ? uc[0].resident_name : '-');
                 let pgy     = uc.length > 0 && uc[0].pgy_year ? uc[0].pgy_year : '-';
-                html += '<tr><td>' + name + '</td><td>' + profile.email + '</td><td>' + pgy + '</td><td>' + total + '</td>';
+                html += '<tr>';
+                html += '<td>' + name + '</td>';
+                html += '<td>' + profile.email + '</td>';
+                html += '<td>' + pgy + '</td>';
+                html += '<td>' + total + '</td>';
                 html += '<td>' + uc.filter(c=>c.procedure==='Cataract / Phaco').length + '/86</td>';
                 html += '<td>' + uc.filter(c=>c.procedure==='Vitreoretinal (PPV)').length + '/25</td>';
                 html += '<td>' + uc.filter(c=>c.procedure==='Glaucoma').length + '/25</td>';
-                html += '<td>' + percent + '%</td></tr>';
+                html += '<td>' + percent + '%</td>';
+                html += '<td><button onclick="revokeUser(\'' + profile.id + '\')" style="background:#dc2626; padding:6px 10px; font-size:11px; margin:0; width:auto; border-radius:6px">Revoke</button></td>';
+                html += '</tr>';
             }
         }
     }
     html += '</table>';
     document.getElementById('adminPanel').innerHTML = html;
+}
+
+async function approveUser(userId) {
+    await db.from('profiles').update({ status: 'approved' }).eq('id', userId);
+    showToast('✅ User approved!');
+    loadAdminData();
+}
+
+async function rejectUser(userId) {
+    await db.from('profiles').update({ status: 'rejected' }).eq('id', userId);
+    showToast('❌ User rejected', 'warning');
+    loadAdminData();
+}
+
+async function revokeUser(userId) {
+    if (!confirm('Revoke access for this user?')) return;
+    await db.from('profiles').update({ status: 'pending' }).eq('id', userId);
+    showToast('🔒 Access revoked', 'warning');
+    loadAdminData();
 }
 
 function updateDashboard(cases) {
@@ -772,7 +882,6 @@ function clearFilter() {
     displayCaseList(allCases);
 }
 
-// Premium Stanford PDF
 function exportPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -781,12 +890,10 @@ function exportPDF() {
     let pgy     = profile.pgy     || '';
     let program = profile.program || 'Stanford University';
 
-    // Cover header
     doc.setFillColor(140, 21, 21);
     doc.rect(0, 0, 220, 45, 'F');
     doc.setFillColor(37, 99, 235);
     doc.rect(0, 40, 220, 5, 'F');
-
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
@@ -797,12 +904,10 @@ function exportPDF() {
     doc.setFontSize(10);
     doc.text('Generated: ' + new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' }), 14, 39);
 
-    // Resident info box
     doc.setFillColor(248, 250, 252);
     doc.roundedRect(14, 52, 182, 28, 3, 3, 'F');
     doc.setDrawColor(226, 232, 240);
     doc.roundedRect(14, 52, 182, 28, 3, 3, 'S');
-
     doc.setTextColor(15, 23, 42);
     doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
@@ -812,7 +917,6 @@ function exportPDF() {
     doc.setTextColor(100, 116, 139);
     doc.text(program + ' — Ophthalmology' + (pgy ? '   |   ' + pgy : ''), 22, 72);
 
-    // Summary section
     let totalReq   = Object.values(acgme).reduce((a,b)=>a+b,0);
     let totalDone  = allCases.length;
     let overallPct = Math.min(Math.round((totalDone / totalReq) * 100), 100);
@@ -820,15 +924,13 @@ function exportPDF() {
     let monthCount = allCases.filter(c => c.date && c.date.startsWith(thisMonth)).length;
     let primary    = allCases.filter(c => c.role === 'Primary Surgeon').length;
 
-    // Summary cards row
     let cardY = 88;
     let cards = [
-        { label: 'Total Cases',    value: totalDone,  color: [37,99,235] },
-        { label: 'This Month',     value: monthCount, color: [124,58,237] },
+        { label: 'Total Cases',    value: totalDone,        color: [37,99,235] },
+        { label: 'This Month',     value: monthCount,       color: [124,58,237] },
         { label: 'ACGME Progress', value: overallPct + '%', color: [22,163,74] },
-        { label: 'As Primary',     value: primary,    color: [140,21,21] }
+        { label: 'As Primary',     value: primary,          color: [140,21,21] }
     ];
-
     let cardW = 42;
     for (let i = 0; i < cards.length; i++) {
         let x = 14 + i * (cardW + 3);
@@ -843,7 +945,6 @@ function exportPDF() {
         doc.text(cards[i].label, x + cardW/2, cardY + 17, { align: 'center' });
     }
 
-    // ACGME Progress section
     let y = 118;
     doc.setTextColor(15, 23, 42);
     doc.setFontSize(13);
@@ -860,7 +961,6 @@ function exportPDF() {
         let req     = acgme[p];
         let pct     = Math.min(Math.round((done / req) * 100), 100);
         let barColor = pct >= 100 ? [22,163,74] : pct >= 50 ? [37,99,235] : [217,119,6];
-
         doc.setTextColor(15, 23, 42);
         doc.setFontSize(9);
         doc.setFont('helvetica', 'bold');
@@ -868,11 +968,8 @@ function exportPDF() {
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(100, 116, 139);
         doc.text(done + ' / ' + req + '  (' + pct + '%)', 155, y + 6, { align: 'right' });
-
-        // Progress bar background
         doc.setFillColor(226, 232, 240);
         doc.roundedRect(14, y + 8, 182, 4, 2, 2, 'F');
-        // Progress bar fill
         if (pct > 0) {
             doc.setFillColor(...barColor);
             doc.roundedRect(14, y + 8, Math.max(182 * pct / 100, 4), 4, 2, 2, 'F');
@@ -880,7 +977,6 @@ function exportPDF() {
         y += 16;
     }
 
-    // Case log table
     y += 4;
     doc.setTextColor(15, 23, 42);
     doc.setFontSize(13);
@@ -891,21 +987,13 @@ function exportPDF() {
     doc.autoTable({
         startY: y,
         head: [['Date', 'Procedure', 'Role', 'Attending', 'Hospital', 'Notes']],
-        body: allCases.map(c => [
-            c.date || '-',
-            c.procedure || '-',
-            c.role || '-',
-            c.attending || '-',
-            c.hospital || '-',
-            c.notes || '-'
-        ]),
+        body: allCases.map(c => [c.date||'-', c.procedure||'-', c.role||'-', c.attending||'-', c.hospital||'-', c.notes||'-']),
         styles: { fontSize: 8, cellPadding: 4 },
         headStyles: { fillColor: [140,21,21], textColor: 255, fontStyle: 'bold', fontSize: 8 },
         alternateRowStyles: { fillColor: [248,250,252] },
         columnStyles: { 5: { cellWidth: 40 } }
     });
 
-    // Footer on every page
     let pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
@@ -917,12 +1005,10 @@ function exportPDF() {
         doc.text('OphthoLog  |  ' + program + '  |  Generated ' + new Date().toLocaleDateString(), 14, doc.internal.pageSize.height - 4);
         doc.text('Page ' + i + ' of ' + pageCount, 196, doc.internal.pageSize.height - 4, { align: 'right' });
     }
-
     doc.save('ophtholog-report-' + new Date().toISOString().slice(0,10) + '.pdf');
     showToast('📄 PDF exported!');
 }
 
-// Premium Stanford Monthly Report
 function exportMonthlyReport() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -938,7 +1024,6 @@ function exportMonthlyReport() {
     let thisMonthCases = allCases.filter(c => c.date && c.date.startsWith(thisMonth));
     let lastMonthCases = allCases.filter(c => c.date && c.date.startsWith(lastMonth));
 
-    // Header
     doc.setFillColor(140, 21, 21);
     doc.rect(0, 0, 220, 45, 'F');
     doc.setFillColor(37, 99, 235);
@@ -953,7 +1038,6 @@ function exportMonthlyReport() {
     doc.setFontSize(9);
     doc.text('Generated: ' + now.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' }), 14, 38);
 
-    // Resident info
     doc.setFillColor(248, 250, 252);
     doc.roundedRect(14, 52, 182, 28, 3, 3, 'F');
     doc.setDrawColor(226, 232, 240);
@@ -967,7 +1051,6 @@ function exportMonthlyReport() {
     doc.setTextColor(100, 116, 139);
     doc.text(program + ' — Ophthalmology' + (pgy ? '   |   ' + pgy : ''), 22, 72);
 
-    // Monthly summary cards
     let totalReq   = Object.values(acgme).reduce((a,b)=>a+b,0);
     let overallPct = Math.min(Math.round((allCases.length/totalReq)*100),100);
     let cardY = 88;
@@ -991,7 +1074,6 @@ function exportMonthlyReport() {
         doc.text(cards[i].label, x + cardW/2, cardY + 17, { align: 'center' });
     }
 
-    // This month by procedure
     let y = 118;
     doc.setTextColor(15, 23, 42);
     doc.setFontSize(13);
@@ -1006,18 +1088,12 @@ function exportMonthlyReport() {
     doc.autoTable({
         startY: y,
         head: [['Procedure', 'This Month', 'Required Total', 'Overall %']],
-        body: Object.keys(acgme).map(p => [
-            p,
-            counts[p],
-            acgme[p],
-            Math.min(Math.round((allCases.filter(c=>c.procedure===p).length / acgme[p]) * 100), 100) + '%'
-        ]),
+        body: Object.keys(acgme).map(p => [p, counts[p], acgme[p], Math.min(Math.round((allCases.filter(c=>c.procedure===p).length / acgme[p]) * 100), 100) + '%']),
         styles: { fontSize: 9, cellPadding: 4 },
         headStyles: { fillColor: [140,21,21], textColor: 255, fontStyle: 'bold' },
         alternateRowStyles: { fillColor: [248,250,252] }
     });
 
-    // This month case details
     if (thisMonthCases.length > 0) {
         let y2 = doc.lastAutoTable.finalY + 10;
         doc.setTextColor(15, 23, 42);
@@ -1035,7 +1111,6 @@ function exportMonthlyReport() {
         });
     }
 
-    // Footer
     let pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
@@ -1047,7 +1122,6 @@ function exportMonthlyReport() {
         doc.text('OphthoLog  |  ' + program + '  |  Monthly Report ' + monthName, 14, doc.internal.pageSize.height - 4);
         doc.text('Page ' + i + ' of ' + pageCount, 196, doc.internal.pageSize.height - 4, { align: 'right' });
     }
-
     doc.save('ophtholog-monthly-' + thisMonth + '.pdf');
     showToast('📅 Monthly report exported!');
 }
