@@ -559,6 +559,7 @@ db.auth.getSession().then(async ({ data }) => {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+    checkShareURL();
     document.getElementById('saveBtn').addEventListener('click', async function() {
         if (!document.getElementById('residentName').value) {
             showToast('⚠️ Please enter resident name', 'warning'); return;
@@ -600,6 +601,7 @@ async function loadCases() {
     let { data: cases } = await db.from('cases').select('*').eq('user_id', user.id).order('date', { ascending: false });
     allCases = cases || [];
     updateDashboard(allCases);
+    checkSmartAlerts(allCases);
     updateStreak(allCases);
     hideLoading();
 }
@@ -666,7 +668,15 @@ async function loadAdminData() {
                 html += '<td>' + uc.filter(c=>c.procedure==='Vitreoretinal (PPV)').length + '/25</td>';
                 html += '<td>' + uc.filter(c=>c.procedure==='Glaucoma').length + '/25</td>';
                 html += '<td>' + percent + '%</td>';
-                html += '<td><button onclick="revokeUser(\'' + profile.id + '\')" style="background:#dc2626; padding:6px 10px; font-size:11px; margin:0; width:auto; border-radius:6px">Revoke</button></td>';
+                html += '<td style="display:flex;gap:6px;flex-wrap:wrap">';
+                html += '<button onclick="revokeUser(\'' + profile.id + '\')" style="background:#dc2626; padding:6px 10px; font-size:11px; margin:0; width:auto; border-radius:6px">Revoke</button>';
+                if (uc.length > 0) {
+                    let last = uc[uc.length - 1];
+                    let info = (last.procedure || '') + ' — ' + (last.date || '');
+                    let safeInfo = info.replace(/'/g, "\\'");
+                    html += '<button onclick="openFeedbackModal(\'' + last.id + '\',\'' + safeInfo + '\')" style="background:#7c3aed; padding:6px 10px; font-size:11px; margin:0; width:auto; border-radius:6px">💬 Feedback</button>';
+                }
+                html += '</td>';
                 html += '</tr>';
             }
         }
@@ -1495,6 +1505,263 @@ function checkDailyReminder() {
 function scheduleReminder() {
     checkDailyReminder();
     setInterval(checkDailyReminder, 60 * 60 * 1000);
+}
+
+// ── Smart Gap Alerts ────────────────────────────────────────────────────────
+function checkSmartAlerts(cases) {
+    let banner = document.getElementById('smartAlertsBanner');
+    if (!banner) return;
+
+    let profile = JSON.parse(localStorage.getItem('userProfile')) || {};
+    let endYear = parseInt(profile.endYear);
+    if (!endYear || isNaN(endYear)) { banner.style.display = 'none'; return; }
+
+    let now = new Date();
+    let graduation = new Date(endYear, 5, 30); // June 30 of graduation year
+    let monthsLeft = Math.max(0, (graduation - now) / (1000 * 60 * 60 * 24 * 30.44));
+
+    let threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1).toISOString().slice(0, 7);
+    let recentCases = cases.filter(c => c.date && c.date >= threeMonthsAgo);
+    let alerts = [];
+
+    for (let proc in acgme) {
+        let req = acgme[proc];
+        let done = cases.filter(c => c.procedure === proc).length;
+        let remaining = Math.max(0, req - done);
+        if (remaining === 0) continue;
+
+        let recentRate = recentCases.filter(c => c.procedure === proc).length / 3; // per month
+        if (recentRate <= 0) {
+            if (remaining > 0 && monthsLeft < 12) {
+                alerts.push({ proc, remaining, color: '#dc2626', icon: '🚨', label: 'Critical — no recent cases' });
+            }
+        } else {
+            let monthsNeeded = remaining / recentRate;
+            if (monthsNeeded > monthsLeft * 0.9) {
+                let isRed = monthsNeeded > monthsLeft;
+                alerts.push({ proc, remaining, monthsNeeded: Math.round(monthsNeeded), color: isRed ? '#dc2626' : '#d97706', icon: isRed ? '🚨' : '⚠️', label: isRed ? 'At risk — behind pace' : 'Behind — needs attention' });
+            }
+        }
+    }
+
+    if (alerts.length === 0) { banner.style.display = 'none'; return; }
+
+    let html = '<div style="background:white; border-radius:14px; padding:16px; border:2px solid #fca5a5; box-shadow:0 2px 12px rgba(220,38,38,0.1)">';
+    html += '<div style="display:flex; align-items:center; gap:8px; margin-bottom:12px"><span style="font-size:18px">🎯</span><strong style="color:#dc2626; font-size:14px">ACGME Gap Alerts</strong><span style="font-size:12px; color:#64748b; margin-left:auto">' + Math.round(monthsLeft) + ' months left</span></div>';
+    for (let a of alerts) {
+        let short = a.proc.split('/')[0].trim().split('(')[0].trim();
+        html += '<div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid #f1f5f9">';
+        html += '<span>' + a.icon + '</span>';
+        html += '<div style="flex:1"><strong style="font-size:13px; color:#0f172a">' + short + '</strong><br><span style="font-size:11px; color:#64748b">' + a.label + ' — ' + a.remaining + ' cases needed</span></div>';
+        html += '<span style="font-size:11px; font-weight:700; color:' + a.color + '">' + (a.monthsNeeded ? a.monthsNeeded + 'mo' : '—') + '</span>';
+        html += '</div>';
+    }
+    html += '</div>';
+    banner.innerHTML = html;
+    banner.style.display = 'block';
+}
+
+// ── Voice Logging ────────────────────────────────────────────────────────────
+function startVoiceLog() {
+    if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
+        showToast('⚠️ Voice input not supported on this browser', 'warning');
+        return;
+    }
+    let statusEl = document.getElementById('voiceStatus');
+    let voiceBtn = document.getElementById('voiceBtn');
+    let SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let rec = new SR();
+    rec.lang = 'en-US';
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+
+    statusEl.textContent = '🎤 Listening… say e.g. "Cataract primary surgeon today with Dr. Smith"';
+    statusEl.style.display = 'block';
+    voiceBtn.textContent = '⏹ Stop';
+
+    rec.onresult = (e) => {
+        let transcript = e.results[0][0].transcript;
+        statusEl.textContent = '✅ Heard: "' + transcript + '"';
+        parseVoiceInput(transcript);
+        voiceBtn.innerHTML = '🎤 Voice';
+    };
+    rec.onerror = () => {
+        statusEl.textContent = '⚠️ Could not hear clearly — try again';
+        voiceBtn.innerHTML = '🎤 Voice';
+        setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+    };
+    rec.onend = () => { voiceBtn.innerHTML = '🎤 Voice'; };
+    rec.start();
+}
+
+function parseVoiceInput(text) {
+    let t = text.toLowerCase();
+
+    let procedureMap = {
+        'cataract': 'Cataract / Phaco', 'phaco': 'Cataract / Phaco',
+        'vitreo': 'Vitreoretinal (PPV)', 'retinal': 'Vitreoretinal (PPV)', 'ppv': 'Vitreoretinal (PPV)',
+        'glaucoma': 'Glaucoma',
+        'cornea': 'Cornea / Keratoplasty', 'keratoplasty': 'Cornea / Keratoplasty', 'transplant': 'Cornea / Keratoplasty',
+        'oculoplastic': 'Oculoplastics', 'plastics': 'Oculoplastics', 'eyelid': 'Oculoplastics',
+        'strabismus': 'Strabismus', 'squint': 'Strabismus',
+        'laser': 'Laser (LIO / SLT / YAG)', 'slt': 'Laser (LIO / SLT / YAG)', 'yag': 'Laser (LIO / SLT / YAG)'
+    };
+    let roleMap = {
+        'primary': 'Primary Surgeon', 'surgeon': 'Primary Surgeon',
+        'assist': 'Assistant', 'second': 'Assistant',
+        'observe': 'Observer', 'observer': 'Observer', 'watch': 'Observer'
+    };
+
+    let matched = { procedure: null, role: null, date: null, attending: null };
+    for (let kw in procedureMap) { if (t.includes(kw)) { matched.procedure = procedureMap[kw]; break; } }
+    for (let kw in roleMap)      { if (t.includes(kw)) { matched.role = roleMap[kw]; break; } }
+
+    if (t.includes('today') || t.includes('tonight')) matched.date = new Date().toISOString().slice(0, 10);
+    else if (t.includes('yesterday')) { let d = new Date(); d.setDate(d.getDate()-1); matched.date = d.toISOString().slice(0,10); }
+
+    let drMatch = t.match(/(?:dr\.?|doctor)\s+([a-z]+)/i);
+    if (drMatch) matched.attending = 'Dr. ' + drMatch[1].charAt(0).toUpperCase() + drMatch[1].slice(1);
+
+    if (matched.procedure) {
+        let el = document.getElementById('procedure');
+        if (el) el.value = matched.procedure;
+    }
+    if (matched.role) {
+        let el = document.getElementById('role');
+        if (el) el.value = matched.role;
+    }
+    if (matched.date) {
+        let el = document.getElementById('date');
+        if (el) el.value = matched.date;
+    }
+    if (matched.attending) {
+        let el = document.getElementById('attending');
+        if (el) el.value = matched.attending;
+    }
+    let filled = Object.values(matched).filter(Boolean).length;
+    if (filled > 0) showToast('🎤 Filled ' + filled + ' field' + (filled > 1 ? 's' : '') + ' — review and save!');
+}
+
+// ── QR Shareable Stats Card ──────────────────────────────────────────────────
+function showStatsCard() {
+    let profile = JSON.parse(localStorage.getItem('userProfile')) || {};
+    let name    = profile.name    || 'Resident';
+    let pgy     = profile.pgy     || 'PGY-1';
+    let program = profile.program || 'Ophthalmology';
+
+    let totalReq = Object.values(acgme).reduce((a,b) => a+b, 0);
+    let total    = allCases.length;
+    let pct      = Math.min(Math.round((total / totalReq) * 100), 100);
+
+    let counts = {};
+    for (let p in acgme) { counts[p] = allCases.filter(c => c.procedure === p).length; }
+
+    document.getElementById('scName').textContent    = 'Dr. ' + name;
+    document.getElementById('scProgram').textContent = program + ' Ophthalmology';
+    document.getElementById('scPgy').textContent     = pgy;
+    document.getElementById('scTotal').textContent   = total;
+    document.getElementById('scPct').textContent     = pct + '%';
+
+    let payload = btoa(JSON.stringify({ name, pgy, program, total, pct, counts, ts: Date.now() }));
+    let shareURL = location.origin + location.pathname + '?share=' + payload;
+
+    let canvas = document.getElementById('statsQR');
+    QRCode.toCanvas(canvas, shareURL, { width: 180, margin: 2, color: { dark: '#0f172a', light: '#ffffff' } }, () => {});
+
+    window._shareURL = shareURL;
+    document.getElementById('statsCardModal').style.display = 'flex';
+}
+
+function copyShareLink() {
+    if (!window._shareURL) return;
+    navigator.clipboard.writeText(window._shareURL).then(() => {
+        showToast('🔗 Link copied to clipboard!');
+    }).catch(() => {
+        prompt('Copy this link:', window._shareURL);
+    });
+}
+
+function checkShareURL() {
+    let params = new URLSearchParams(location.search);
+    let share  = params.get('share');
+    if (!share) return;
+
+    try {
+        let data = JSON.parse(atob(share));
+        document.getElementById('shareView').style.display = 'block';
+        document.getElementById('loadingSpinner').style.display = 'none';
+
+        let svName = document.getElementById('svName');
+        let svPgy  = document.getElementById('svPgy');
+        let svProg = document.getElementById('svProgram');
+        if (svName) svName.textContent = 'Dr. ' + (data.name || 'Resident');
+        if (svPgy)  svPgy.textContent  = data.pgy || 'PGY-1';
+        if (svProg) svProg.textContent = (data.program || 'Ophthalmology') + ' Program';
+
+        let stats = [
+            { icon: '📋', val: data.total, label: 'Total Cases' },
+            { icon: '🎯', val: data.pct + '%', label: 'ACGME Done' },
+            { icon: '🏥', val: data.pgy || '—', label: 'Year' }
+        ];
+        document.getElementById('svStats').innerHTML = stats.map(s =>
+            `<div style="background:white;border-radius:14px;padding:16px;text-align:center;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(37,99,235,0.07)">
+                <div style="font-size:24px;margin-bottom:4px">${s.icon}</div>
+                <div style="font-size:22px;font-weight:900;color:#0f172a">${s.val}</div>
+                <div style="font-size:11px;color:#64748b">${s.label}</div>
+            </div>`
+        ).join('');
+
+        let progHtml = '';
+        if (data.counts) {
+            for (let p in acgme) {
+                let done = data.counts[p] || 0;
+                let req  = acgme[p];
+                let pct  = Math.min(Math.round((done / req) * 100), 100);
+                let color = pct >= 100 ? '#16a34a' : pct >= 50 ? '#2563eb' : pct >= 25 ? '#d97706' : '#dc2626';
+                progHtml += `<div style="margin-bottom:12px">
+                    <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:4px">
+                        <span>${p}</span><span style="color:${color}">${done}/${req}</span>
+                    </div>
+                    <div style="background:#e2e8f0;border-radius:99px;height:8px">
+                        <div style="background:${color};width:${pct}%;height:8px;border-radius:99px"></div>
+                    </div>
+                </div>`;
+            }
+        }
+        document.getElementById('svProgress').innerHTML = progHtml;
+
+        document.querySelector('#loginContainer')    && (document.querySelector('#loginContainer').style.display    = 'none');
+        document.querySelector('#appContainer')      && (document.querySelector('#appContainer').style.display      = 'none');
+        document.querySelector('#welcomeGuideModal') && (document.querySelector('#welcomeGuideModal').style.display = 'none');
+        document.getElementById('shareView').style.display = 'block';
+    } catch(e) {
+        console.error('Invalid share URL', e);
+    }
+}
+
+// ── Attending Feedback ───────────────────────────────────────────────────────
+function openFeedbackModal(caseId, caseInfo) {
+    document.getElementById('feedbackCaseId').value      = caseId;
+    document.getElementById('feedbackCaseInfo').textContent = caseInfo;
+    document.getElementById('feedbackText').value        = '';
+    document.getElementById('feedbackModal').style.display = 'flex';
+}
+
+async function submitFeedback() {
+    let caseId = document.getElementById('feedbackCaseId').value;
+    let text   = document.getElementById('feedbackText').value.trim();
+    if (!text) { showToast('⚠️ Enter feedback text', 'warning'); return; }
+
+    let { data: existing } = await db.from('cases').select('notes').eq('id', caseId).single();
+    let oldNotes = existing ? (existing.notes || '') : '';
+    let newNotes = oldNotes + (oldNotes ? '\n' : '') + '[PD Feedback: ' + text + ']';
+
+    let { error } = await db.from('cases').update({ notes: newNotes }).eq('id', caseId);
+    if (error) { showToast('❌ Failed to save feedback', 'error'); return; }
+
+    document.getElementById('feedbackModal').style.display = 'none';
+    showToast('✅ Feedback saved to case!');
+    if (typeof loadAdminData === 'function') loadAdminData();
 }
 
 if ('serviceWorker' in navigator) {
