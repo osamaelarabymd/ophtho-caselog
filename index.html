@@ -36,6 +36,56 @@
         </div>
     </div>
 
+    <!-- Welcome Guide Modal -->
+    <div id="welcomeGuide" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9997; align-items:center; justify-content:center; backdrop-filter:blur(6px)">
+        <div style="background:white; border-radius:24px; padding:36px 32px; width:90%; max-width:480px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,0.3)">
+            <div style="text-align:center; margin-bottom:28px">
+                <div style="font-size:56px; margin-bottom:12px">👋</div>
+                <h2 style="font-size:24px; font-weight:900; color:#0f172a; margin-bottom:8px">Welcome to OphthoLog!</h2>
+                <p style="font-size:14px; color:#64748b; line-height:1.6">Here's how to get started in 3 simple steps</p>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:28px">
+                <div style="display:flex; gap:16px; align-items:flex-start; background:#f0f9ff; padding:16px; border-radius:14px; border:1px solid #bae6fd">
+                    <div style="width:40px; height:40px; background:#2563eb; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0">👤</div>
+                    <div>
+                        <p style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:14px">Step 1 — Set up your profile</p>
+                        <p style="font-size:13px; color:#64748b; line-height:1.5">Go to Profile tab and enter your name, PGY year, and program. This info appears on your PDF reports.</p>
+                    </div>
+                </div>
+                <div style="display:flex; gap:16px; align-items:flex-start; background:#f0fdf4; padding:16px; border-radius:14px; border:1px solid #bbf7d0">
+                    <div style="width:40px; height:40px; background:#16a34a; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0">➕</div>
+                    <div>
+                        <p style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:14px">Step 2 — Log your first case</p>
+                        <p style="font-size:13px; color:#64748b; line-height:1.5">Tap Log Case, fill in procedure details, and hit Save. Takes less than 30 seconds!</p>
+                    </div>
+                </div>
+                <div style="display:flex; gap:16px; align-items:flex-start; background:#faf5ff; padding:16px; border-radius:14px; border:1px solid #e9d5ff">
+                    <div style="width:40px; height:40px; background:#7c3aed; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0">📊</div>
+                    <div>
+                        <p style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:14px">Step 3 — Track your ACGME progress</p>
+                        <p style="font-size:13px; color:#64748b; line-height:1.5">Your dashboard updates automatically showing progress toward all ACGME requirements.</p>
+                    </div>
+                </div>
+                <div style="display:flex; gap:16px; align-items:flex-start; background:#fff7ed; padding:16px; border-radius:14px; border:1px solid #fed7aa">
+                    <div style="width:40px; height:40px; background:#d97706; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0">📄</div>
+                    <div>
+                        <p style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:14px">Bonus — Export PDF reports</p>
+                        <p style="font-size:13px; color:#64748b; line-height:1.5">Generate beautiful PDF reports anytime from the Log Case tab — perfect for PD meetings.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background:#f8fafc; border-radius:12px; padding:14px; margin-bottom:24px; border:1px solid #e2e8f0">
+                <p style="font-size:12px; color:#64748b; text-align:center; line-height:1.6">💡 <strong>Pro tip:</strong> Save case templates for procedures you do often — log repeat cases in one tap!</p>
+            </div>
+
+            <button onclick="closeWelcomeGuide()" style="width:100%; border-radius:50px; font-size:16px; font-weight:700; background:linear-gradient(135deg,#8C1515,#2563eb); margin:0">
+                Let's Get Started! 🚀
+            </button>
+        </div>
+    </div>
+
     <!-- Onboarding -->
     <div id="onboarding" style="display:none">
         <div id="slide1" class="onboard-slide">
@@ -83,7 +133,7 @@
             <label>Email</label>
             <input type="email" id="email" placeholder="Email address">
             <label>Password</label>
-            <input type="password" id="password" placeholder="Password">
+            <input type="password" id="password" placeholder="Password (min 6 characters)">
             <div class="btn-row">
                 <button onclick="signUp()">Request Access</button>
                 <button onclick="toggleForm()" style="background:white; color:var(--primary); border:2px solid var(--primary); box-shadow:none">Sign In Instead</button>
