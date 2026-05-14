@@ -365,6 +365,7 @@ function showTab(tab, e) {
     document.getElementById('profileTab').style.display   = 'none';
     document.getElementById('helpTab').style.display      = 'none';
     document.getElementById('adminPanel').style.display   = 'none';
+    let jt = document.getElementById('journalTab'); if (jt) jt.style.display = 'none';
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
 
     if (tab === 'dashboard') {
@@ -388,6 +389,9 @@ function showTab(tab, e) {
         loadProfileEmail();
         loadProfileCaseStats();
         updateNotifStatus();
+    } else if (tab === 'journal') {
+        document.getElementById('journalTab').style.display = 'block';
+        renderJournalList();
     } else if (tab === 'help') {
         document.getElementById('helpTab').style.display = 'block';
     } else if (tab === 'admin') {
@@ -398,7 +402,7 @@ function showTab(tab, e) {
     if (e && e.target && e.target.classList.contains('tab-btn')) {
         e.target.classList.add('active-tab');
     }
-    const navMap = { dashboard: 'nav-dashboard', logCase: 'nav-logCase', caseList: 'nav-caseList', analytics: 'nav-analytics', help: 'nav-help' };
+    const navMap = { dashboard: 'nav-dashboard', logCase: 'nav-logCase', caseList: 'nav-caseList', analytics: 'nav-analytics', journal: 'nav-journal', help: 'nav-help' };
     if (navMap[tab]) setActiveNav(navMap[tab]);
 }
 
@@ -915,7 +919,7 @@ function downloadCSVTemplate() {
     let blob = new Blob([header + '\n' + example], { type: 'text/csv' });
     let a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'ophtholog-import-template.csv';
+    a.download = 'eyelog-import-template.csv';
     a.click();
 }
 
@@ -1098,7 +1102,7 @@ function exportAnalyticsPDF() {
     doc.setFillColor(140,21,21); doc.rect(0,0,220,40,'F');
     doc.setFillColor(37,99,235); doc.rect(0,36,220,5,'F');
     doc.setTextColor(255,255,255);
-    doc.setFontSize(20); doc.setFont('helvetica','bold'); doc.text('OphthoLog — Analytics Report', 14, 16);
+    doc.setFontSize(20); doc.setFont('helvetica','bold'); doc.text('EyeLog — Analytics Report', 14, 16);
     doc.setFontSize(11); doc.setFont('helvetica','normal');
     doc.text('Dr. ' + name + '  |  ' + program, 14, 27);
     doc.text('Generated: ' + now.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}), 14, 35);
@@ -1145,10 +1149,10 @@ function exportAnalyticsPDF() {
     for (let i=1;i<=pageCount;i++) {
         doc.setPage(i); doc.setFillColor(140,21,21); doc.rect(0,doc.internal.pageSize.height-12,220,12,'F');
         doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','normal');
-        doc.text('OphthoLog Analytics  |  '+program, 14, doc.internal.pageSize.height-4);
+        doc.text('EyeLog Analytics  |  '+program, 14, doc.internal.pageSize.height-4);
         doc.text('Page '+i+' of '+pageCount, 196, doc.internal.pageSize.height-4, {align:'right'});
     }
-    doc.save('ophtholog-analytics-'+now.toISOString().slice(0,10)+'.pdf');
+    doc.save('eyelog-analytics-'+now.toISOString().slice(0,10)+'.pdf');
     showToast('📄 Analytics PDF exported!');
 }
 
@@ -1261,7 +1265,7 @@ function exportPDF() {
     doc.setFillColor(140,21,21); doc.rect(0,0,220,45,'F');
     doc.setFillColor(37,99,235); doc.rect(0,40,220,5,'F');
     doc.setTextColor(255,255,255);
-    doc.setFontSize(24); doc.setFont('helvetica','bold'); doc.text('OphthoLog', 14, 18);
+    doc.setFontSize(24); doc.setFont('helvetica','bold'); doc.text('EyeLog', 14, 18);
     doc.setFontSize(13); doc.setFont('helvetica','normal'); doc.text('Ophthalmology Residency Case Log Report', 14, 30);
     doc.setFontSize(10); doc.text('Generated: ' + new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}), 14, 39);
 
@@ -1334,10 +1338,10 @@ function exportPDF() {
         doc.setPage(i);
         doc.setFillColor(140,21,21); doc.rect(0,doc.internal.pageSize.height-12,220,12,'F');
         doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','normal');
-        doc.text('OphthoLog  |  '+program+'  |  Generated '+new Date().toLocaleDateString(), 14, doc.internal.pageSize.height-4);
+        doc.text('EyeLog  |  '+program+'  |  Generated '+new Date().toLocaleDateString(), 14, doc.internal.pageSize.height-4);
         doc.text('Page '+i+' of '+pageCount, 196, doc.internal.pageSize.height-4, {align:'right'});
     }
-    doc.save('ophtholog-report-'+new Date().toISOString().slice(0,10)+'.pdf');
+    doc.save('eyelog-report-'+new Date().toISOString().slice(0,10)+'.pdf');
     showToast('📄 PDF exported!');
 }
 
@@ -1358,7 +1362,7 @@ function exportMonthlyReport() {
     doc.setFillColor(140,21,21); doc.rect(0,0,220,45,'F');
     doc.setFillColor(37,99,235); doc.rect(0,40,220,5,'F');
     doc.setTextColor(255,255,255);
-    doc.setFontSize(22); doc.setFont('helvetica','bold'); doc.text('OphthoLog', 14, 17);
+    doc.setFontSize(22); doc.setFont('helvetica','bold'); doc.text('EyeLog', 14, 17);
     doc.setFontSize(13); doc.setFont('helvetica','normal'); doc.text('Monthly Progress Report — '+monthName, 14, 28);
     doc.setFontSize(9); doc.text('Generated: '+now.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}), 14, 38);
 
@@ -1423,10 +1427,10 @@ function exportMonthlyReport() {
         doc.setPage(i);
         doc.setFillColor(140,21,21); doc.rect(0,doc.internal.pageSize.height-12,220,12,'F');
         doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','normal');
-        doc.text('OphthoLog  |  '+program+'  |  Monthly Report '+monthName, 14, doc.internal.pageSize.height-4);
+        doc.text('EyeLog  |  '+program+'  |  Monthly Report '+monthName, 14, doc.internal.pageSize.height-4);
         doc.text('Page '+i+' of '+pageCount, 196, doc.internal.pageSize.height-4, {align:'right'});
     }
-    doc.save('ophtholog-monthly-'+thisMonth+'.pdf');
+    doc.save('eyelog-monthly-'+thisMonth+'.pdf');
     showToast('📅 Monthly report exported!');
 }
 
@@ -1446,7 +1450,7 @@ window.addEventListener('appinstalled', () => {
     deferredInstallPrompt = null;
     let banner = document.getElementById('installBanner');
     if (banner) banner.style.display = 'none';
-    showToast('✅ OphthoLog installed!');
+    showToast('✅ EyeLog installed!');
 });
 
 async function installPWA() {
@@ -1508,7 +1512,7 @@ function checkDailyReminder() {
     let today = now.toDateString();
     if (now.getHours() >= 18 && lastReminder !== today) {
         localStorage.setItem('lastReminder', today);
-        new Notification('OphthoLog Reminder 🏥', { body: "Don't forget to log your cases today!", icon: '/icon.svg' });
+        new Notification('EyeLog Reminder 🏥', { body: "Don't forget to log your cases today!", icon: '/icon.svg' });
     }
 }
 
@@ -1780,7 +1784,7 @@ function exportFellowshipPDF() {
     doc.setFontSize(26); doc.setFont('helvetica','bold');
     doc.text('Fellowship Application', 14, 38); doc.text('Case Portfolio', 14, 50);
     doc.setFontSize(11); doc.setFont('helvetica','normal');
-    doc.text('Prepared by OphthoLog  ·  '+now.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}), 14, 62);
+    doc.text('Prepared by EyeLog  ·  '+now.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}), 14, 62);
 
     doc.setFillColor(248,250,252); doc.roundedRect(14,90,182,35,4,4,'F');
     doc.setDrawColor(226,232,240); doc.roundedRect(14,90,182,35,4,4,'S');
@@ -2120,6 +2124,172 @@ async function submitFeedback() {
     document.getElementById('feedbackModal').style.display = 'none';
     showToast('✅ Feedback saved to case!');
     if (typeof loadAdminData === 'function') loadAdminData();
+}
+
+// ── Journal ──────────────────────────────────────────────────────────────────
+const JOURNAL_KEY = 'eyeJournal';
+let selectedMood  = '😊';
+
+function getJournalEntries() {
+    return JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]');
+}
+function saveJournalEntries(entries) {
+    localStorage.setItem(JOURNAL_KEY, JSON.stringify(entries));
+}
+
+function openJournalModal(id) {
+    let entry = id ? getJournalEntries().find(e => e.id === id) : null;
+
+    document.getElementById('journalEntryId').value = entry ? entry.id : '';
+    document.getElementById('journalDate').value    = entry ? entry.date : new Date().toISOString().slice(0,10);
+    document.getElementById('journalTitle').value   = entry ? (entry.title || '') : '';
+    document.getElementById('journalBody').value    = entry ? entry.body : '';
+
+    selectedMood = entry ? entry.mood : '😊';
+    updateMoodButtons();
+
+    // Populate case link dropdown
+    let sel = document.getElementById('journalCaseLink');
+    sel.innerHTML = '<option value="">— No case linked —</option>';
+    allCases.slice(0,50).forEach(c => {
+        let opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = (c.date || '') + ' · ' + (c.procedure || '') + (c.attending ? ' · ' + c.attending : '');
+        if (entry && entry.caseId === c.id) opt.selected = true;
+        sel.appendChild(opt);
+    });
+
+    document.getElementById('journalModal').style.display = 'flex';
+}
+
+function closeJournalModal() {
+    document.getElementById('journalModal').style.display = 'none';
+}
+
+function selectMood(mood) {
+    selectedMood = mood;
+    updateMoodButtons();
+}
+
+function updateMoodButtons() {
+    document.querySelectorAll('.mood-btn').forEach(btn => {
+        btn.style.borderColor = '#e2e8f0';
+        btn.style.transform   = 'scale(1)';
+        btn.style.boxShadow   = 'none';
+    });
+    let active = document.getElementById('mood-' + selectedMood);
+    if (active) {
+        active.style.borderColor = '#7c3aed';
+        active.style.transform   = 'scale(1.12)';
+        active.style.boxShadow   = '0 4px 12px rgba(124,58,237,0.25)';
+    }
+}
+
+function saveJournalEntry() {
+    let body = document.getElementById('journalBody').value.trim();
+    if (!body) { showToast('⚠️ Write something first!', 'warning'); return; }
+
+    let entries = getJournalEntries();
+    let id      = document.getElementById('journalEntryId').value;
+    let entry   = {
+        id:        id || crypto.randomUUID(),
+        date:      document.getElementById('journalDate').value || new Date().toISOString().slice(0,10),
+        mood:      selectedMood,
+        title:     document.getElementById('journalTitle').value.trim(),
+        body,
+        caseId:    document.getElementById('journalCaseLink').value || null,
+        updatedAt: new Date().toISOString()
+    };
+
+    if (id) {
+        let idx = entries.findIndex(e => e.id === id);
+        if (idx !== -1) entries[idx] = entry; else entries.unshift(entry);
+    } else {
+        entries.unshift(entry);
+    }
+
+    saveJournalEntries(entries);
+    closeJournalModal();
+    renderJournalList();
+    showToast('📔 Journal entry saved!');
+}
+
+function deleteJournalEntry(id) {
+    if (!confirm('Delete this journal entry?')) return;
+    let entries = getJournalEntries().filter(e => e.id !== id);
+    saveJournalEntries(entries);
+    renderJournalList();
+    showToast('🗑️ Entry deleted', 'warning');
+}
+
+function renderJournalList() {
+    let el = document.getElementById('journalList');
+    if (!el) return;
+
+    let search    = (document.getElementById('journalSearch')?.value || '').toLowerCase();
+    let moodFilter = document.getElementById('journalMoodFilter')?.value || '';
+    let entries   = getJournalEntries();
+
+    if (search)     entries = entries.filter(e => (e.title+e.body).toLowerCase().includes(search));
+    if (moodFilter) entries = entries.filter(e => e.mood === moodFilter);
+
+    if (entries.length === 0) {
+        el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:#94a3b8">
+            <div style="font-size:48px;margin-bottom:12px">📔</div>
+            <p style="font-size:15px;font-weight:600;color:#64748b;margin-bottom:6px">${search || moodFilter ? 'No entries match' : 'No entries yet'}</p>
+            <p style="font-size:13px">${search || moodFilter ? 'Try a different search' : 'Tap <strong>New Entry</strong> to start journaling'}</p>
+        </div>`;
+        return;
+    }
+
+    // Group by month
+    let grouped = {};
+    entries.forEach(e => {
+        let key = e.date ? e.date.slice(0,7) : 'Unknown';
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(e);
+    });
+
+    let moodColors = { '💪':'#f0fdf4', '😊':'#eff6ff', '😐':'#f8fafc', '😤':'#fff7ed', '🤔':'#faf5ff' };
+    let moodBorder = { '💪':'#16a34a', '😊':'#2563eb', '😐':'#94a3b8', '😤':'#ea580c', '🤔':'#7c3aed' };
+
+    let html = '';
+    for (let month of Object.keys(grouped).sort().reverse()) {
+        let label = new Date(month+'-02').toLocaleString('default',{month:'long',year:'numeric'});
+        html += `<div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px">${label}</div>`;
+        for (let e of grouped[month]) {
+            let preview = e.body.length > 120 ? e.body.slice(0,120)+'…' : e.body;
+            let dateStr = e.date ? new Date(e.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) : '';
+            let linkedCase = e.caseId ? allCases.find(c => c.id === e.caseId) : null;
+            html += `<div style="background:${moodColors[e.mood]||'#f8fafc'};border:1.5px solid ${moodBorder[e.mood]||'#e2e8f0'};border-radius:16px;padding:16px;margin-bottom:10px;cursor:pointer;transition:box-shadow 0.15s"
+                onclick="openJournalModal('${e.id}')"
+                onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,0.09)'"
+                onmouseout="this.style.boxShadow='none'">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <span style="font-size:22px">${e.mood}</span>
+                        <div>
+                            ${e.title ? `<div style="font-weight:700;font-size:14px;color:#0f172a">${e.title}</div>` : ''}
+                            <div style="font-size:12px;color:#64748b">${dateStr}</div>
+                        </div>
+                    </div>
+                    <button onclick="event.stopPropagation();deleteJournalEntry('${e.id}')"
+                        style="background:transparent;border:none;color:#94a3b8;font-size:16px;padding:4px;margin:0;width:auto;min-width:0;cursor:pointer;line-height:1">🗑️</button>
+                </div>
+                <p style="font-size:13px;color:#374151;line-height:1.6;margin:0 0 ${linkedCase?'8px':'0'}">${preview}</p>
+                ${linkedCase ? `<div style="font-size:11px;color:#7c3aed;font-weight:600;margin-top:6px">🔗 ${linkedCase.procedure} · ${linkedCase.date}</div>` : ''}
+            </div>`;
+        }
+    }
+
+    // Word count footer
+    let total = getJournalEntries().length;
+    let words = getJournalEntries().reduce((sum,e)=>sum+(e.body||'').split(/\s+/).filter(Boolean).length,0);
+    html += `<div style="text-align:center;padding:16px;color:#94a3b8;font-size:12px;margin-top:8px">
+        ${total} entr${total===1?'y':'ies'} · ${words.toLocaleString()} words written
+    </div>`;
+
+    el.innerHTML = html;
 }
 
 if ('serviceWorker' in navigator) {

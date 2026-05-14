@@ -1,6 +1,6 @@
 {
-    "name": "OphthoLog",
-    "short_name": "OphthoLog",
+    "name": "EyeLog",
+    "short_name": "EyeLog",
     "description": "Ophthalmology Residency Case Tracker",
     "start_url": "/",
     "display": "standalone",

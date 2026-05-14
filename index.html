@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>OphthoLog</title>
+    <title>EyeLog</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#8C1515">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="OphthoLog">
+    <meta name="apple-mobile-web-app-title" content="EyeLog">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -40,7 +40,7 @@
             <div id="svProgress" style="margin-top:12px"></div>
         </div>
         <div style="text-align:center;padding:16px;color:#94a3b8;font-size:13px">
-            <p>👁️ <strong>OphthoLog</strong> — Ophthalmology Residency Case Tracker</p>
+            <p>👁️ <strong>EyeLog</strong> — Ophthalmology Residency Case Tracker</p>
         </div>
     </div>
 
@@ -101,7 +101,7 @@
         <div style="background:white; border-radius:24px; padding:36px 32px; width:90%; max-width:480px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,0.3)">
             <div style="text-align:center; margin-bottom:28px">
                 <div style="font-size:56px; margin-bottom:12px">👋</div>
-                <h2 style="font-size:24px; font-weight:900; color:#0f172a; margin-bottom:8px">Welcome to OphthoLog!</h2>
+                <h2 style="font-size:24px; font-weight:900; color:#0f172a; margin-bottom:8px">Welcome to EyeLog!</h2>
                 <p style="font-size:14px; color:#64748b; line-height:1.6">Here's how to get started in 3 simple steps</p>
             </div>
             <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:28px">
@@ -147,7 +147,7 @@
     <div id="onboarding" style="display:none">
         <div id="slide1" class="onboard-slide">
             <div class="onboard-icon">👁️</div>
-            <h1 class="onboard-title">Welcome to<br>OphthoLog</h1>
+            <h1 class="onboard-title">Welcome to<br>EyeLog</h1>
             <p class="onboard-text">The smart case logging app built for ophthalmology residents</p>
             <button class="onboard-btn" onclick="nextSlide(2)">Get Started →</button>
         </div>
@@ -179,7 +179,7 @@
 
     <!-- Login -->
     <div id="loginSection">
-        <h2>👁️ OphthoLog</h2>
+        <h2>👁️ EyeLog</h2>
         <p>Ophthalmology Residency Case Tracker</p>
 
         <div id="signUpForm">
@@ -239,7 +239,7 @@
         <!-- PWA Install Banner -->
         <div id="installBanner" style="display:none; background:linear-gradient(135deg,#2563eb,#7c3aed); color:white; padding:14px 20px; border-radius:14px; margin-bottom:16px; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
             <div>
-                <div style="font-weight:700; font-size:14px">📱 Add OphthoLog to your home screen</div>
+                <div style="font-weight:700; font-size:14px">📱 Add EyeLog to your home screen</div>
                 <div style="font-size:12px; opacity:0.85; margin-top:2px">Log cases faster — works offline too</div>
             </div>
             <div style="display:flex; gap:8px; flex-shrink:0">
@@ -258,6 +258,7 @@
             <button onclick="showTab('logCase', event)"   class="tab-btn">➕ Log Case</button>
             <button onclick="showTab('caseList', event)"  class="tab-btn">📋 Case List</button>
             <button onclick="showTab('analytics', event)" class="tab-btn">📈 Analytics</button>
+            <button onclick="showTab('journal', event)"   class="tab-btn">📔 Journal</button>
             <button onclick="showTab('help', event)"      class="tab-btn">❓ Help</button>
             <button onclick="showTab('admin', event)" id="adminTab" class="tab-btn" style="display:none; background:linear-gradient(135deg,#16a34a,#15803d); color:white">👨‍⚕️ PD Panel</button>
         </div>
@@ -593,12 +594,70 @@
             </div>
         </div>
 
+        <!-- Journal -->
+        <div id="journalTab" style="display:none">
+            <div style="background:linear-gradient(135deg,#7c3aed,#2563eb); border-radius:20px; padding:28px; margin-bottom:20px; color:white; position:relative; overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:rgba(255,255,255,0.06);border-radius:50%"></div>
+                <div style="font-size:36px;margin-bottom:10px">📔</div>
+                <h2 style="color:white;font-size:22px;margin-bottom:6px">Surgical Journal</h2>
+                <p style="opacity:0.8;font-size:14px;line-height:1.5">Reflect on your training. Document insights, lessons, and milestones.</p>
+                <button onclick="openJournalModal()" style="background:rgba(255,255,255,0.2);width:auto;padding:10px 22px;margin-top:14px;font-size:13px;border-radius:50px;border:1px solid rgba(255,255,255,0.4)">✏️ New Entry</button>
+            </div>
+
+            <div style="display:flex; gap:8px; margin-bottom:16px; align-items:center; flex-wrap:wrap">
+                <input type="text" id="journalSearch" placeholder="🔍 Search entries…" oninput="renderJournalList()" style="flex:1; margin:0; padding:10px 14px; border-radius:12px; font-size:13px; min-width:160px">
+                <select id="journalMoodFilter" onchange="renderJournalList()" style="width:auto; margin:0; padding:10px 12px; border-radius:12px; font-size:13px">
+                    <option value="">All Moods</option>
+                    <option value="💪">💪 Great</option>
+                    <option value="😊">😊 Good</option>
+                    <option value="😐">😐 Neutral</option>
+                    <option value="😤">😤 Tough Day</option>
+                    <option value="🤔">🤔 Reflective</option>
+                </select>
+            </div>
+
+            <div id="journalList"></div>
+        </div>
+
+        <!-- Journal Entry Modal -->
+        <div id="journalModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+            <div style="background:white;border-radius:20px;padding:28px;width:92%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.25)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                    <h2 style="margin:0;font-size:20px">📔 Journal Entry</h2>
+                    <button onclick="closeJournalModal()" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b">✕</button>
+                </div>
+                <input type="hidden" id="journalEntryId">
+                <label>Date</label>
+                <input type="date" id="journalDate">
+                <label>How did it go?</label>
+                <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+                    <button onclick="selectMood('💪')" id="mood-💪" class="mood-btn" style="flex:1;min-width:70px;margin:0;background:#f0fdf4;color:#15803d;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">💪</button>
+                    <button onclick="selectMood('😊')" id="mood-😊" class="mood-btn" style="flex:1;min-width:70px;margin:0;background:#eff6ff;color:#1d4ed8;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">😊</button>
+                    <button onclick="selectMood('😐')" id="mood-😐" class="mood-btn" style="flex:1;min-width:70px;margin:0;background:#f8fafc;color:#64748b;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">😐</button>
+                    <button onclick="selectMood('😤')" id="mood-😤" class="mood-btn" style="flex:1;min-width:70px;margin:0;background:#fff7ed;color:#c2410c;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">😤</button>
+                    <button onclick="selectMood('🤔')" id="mood-🤔" class="mood-btn" style="flex:1;min-width:70px;margin:0;background:#faf5ff;color:#7c3aed;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">🤔</button>
+                </div>
+                <label>Title <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
+                <input type="text" id="journalTitle" placeholder="e.g. First solo cataract, Tough VR case…">
+                <label>Entry</label>
+                <textarea id="journalBody" rows="7" placeholder="What happened today? What did you learn? What would you do differently?&#10;&#10;This is your space — write freely."></textarea>
+                <label>Link to a case <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
+                <select id="journalCaseLink" style="margin-bottom:20px">
+                    <option value="">— No case linked —</option>
+                </select>
+                <div style="display:flex;gap:10px">
+                    <button onclick="saveJournalEntry()" style="flex:1;margin:0;background:linear-gradient(135deg,#7c3aed,#2563eb)">💾 Save Entry</button>
+                    <button onclick="closeJournalModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Help -->
         <div id="helpTab" style="display:none">
 
             <div style="background:linear-gradient(135deg, #8C1515 0%, #2563eb 100%); border-radius:20px; padding:28px; margin-bottom:20px; color:white; text-align:center">
                 <div style="font-size:48px; margin-bottom:12px">❓</div>
-                <h2 style="color:white; font-size:22px; margin-bottom:8px">How to Use OphthoLog</h2>
+                <h2 style="color:white; font-size:22px; margin-bottom:8px">How to Use EyeLog</h2>
                 <p style="opacity:0.8; font-size:14px">Everything you need to know in one place</p>
             </div>
 
@@ -670,7 +729,7 @@
                 <h3>❓ FAQ</h3>
                 <div style="display:flex; flex-direction:column; gap:12px; margin-top:12px">
                     <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
-                        <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">How do I add OphthoLog to my iPhone?</p>
+                        <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">How do I add EyeLog to my iPhone?</p>
                         <p style="font-size:13px; color:#64748b">Open the app in Safari → Tap Share button → Add to Home Screen → Add</p>
                     </div>
                     <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
@@ -780,9 +839,9 @@
                     <span class="nav-icon">📈</span>
                     <span>Stats</span>
                 </button>
-                <button class="nav-item" id="nav-help" onclick="showTab('help', event); setActiveNav('nav-help')">
-                    <span class="nav-icon">❓</span>
-                    <span>Help</span>
+                <button class="nav-item" id="nav-journal" onclick="showTab('journal', event); setActiveNav('nav-journal')">
+                    <span class="nav-icon">📔</span>
+                    <span>Journal</span>
                 </button>
             </div>
         </div>
@@ -791,7 +850,7 @@
 
     <!-- Footer -->
     <div style="text-align:center; padding:20px; color:#94a3b8; font-size:12px; margin-top:40px">
-        <p>👁️ <strong>OphthoLog</strong> — Built for ophthalmology residents</p>
+        <p>👁️ <strong>EyeLog</strong> — Built for ophthalmology residents</p>
         <p style="margin-top:4px">Your data is private and secure 🔒 | <a href="https://docs.google.com/forms/d/e/1FAIpQLSev-87zwv0Ot_7LNJuuNNTBpKpcOvS_vEtSnGbgLGjMVP-iMA/viewform" target="_blank" style="color:#2563eb">Contact & Feedback</a></p>
     </div>
 
