@@ -2126,6 +2126,33 @@ async function submitFeedback() {
     if (typeof loadAdminData === 'function') loadAdminData();
 }
 
+// ── Workspace Sub-Tabs ───────────────────────────────────────────────────────
+let activeWorkspaceTab = 'journal';
+
+function showWorkspaceTab(tab) {
+    activeWorkspaceTab = tab;
+    ['journal','todo','notes','study'].forEach(t => {
+        let el = document.getElementById('ws-'+t);
+        if (el) el.style.display = t === tab ? 'block' : 'none';
+        let btn = document.getElementById('ws-tab-'+t);
+        if (btn) {
+            if (t === tab) {
+                btn.style.background  = 'white';
+                btn.style.color       = '#2563eb';
+                btn.style.boxShadow   = '0 2px 8px rgba(0,0,0,0.08)';
+            } else {
+                btn.style.background  = 'transparent';
+                btn.style.color       = '#64748b';
+                btn.style.boxShadow   = 'none';
+            }
+        }
+    });
+    if (tab === 'journal') renderJournalList();
+    if (tab === 'todo')    renderTodos();
+    if (tab === 'notes')   renderNotes();
+    if (tab === 'study')   renderStudyList();
+}
+
 // ── Journal ──────────────────────────────────────────────────────────────────
 const JOURNAL_KEY = 'eyeJournal';
 let selectedMood  = '😊';
@@ -2290,6 +2317,324 @@ function renderJournalList() {
     </div>`;
 
     el.innerHTML = html;
+}
+
+// ── To-Do ─────────────────────────────────────────────────────────────────────
+const TODO_KEY = 'eyeTodos';
+let selectedPriority = 'medium';
+let todoFilter = 'all';
+
+function getTodos()        { return JSON.parse(localStorage.getItem(TODO_KEY) || '[]'); }
+function saveTodos(todos)  { localStorage.setItem(TODO_KEY, JSON.stringify(todos)); }
+
+function openTodoModal(id) {
+    let todo = id ? getTodos().find(t => t.id === id) : null;
+    document.getElementById('todoId').value   = todo ? todo.id : '';
+    document.getElementById('todoText').value = todo ? todo.text : '';
+    document.getElementById('todoDue').value  = todo ? (todo.due || '') : '';
+    selectedPriority = todo ? todo.priority : 'medium';
+    updatePriorityButtons();
+    document.getElementById('todoModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('todoText').focus(), 100);
+}
+function closeTodoModal() { document.getElementById('todoModal').style.display = 'none'; }
+
+function selectPriority(p) { selectedPriority = p; updatePriorityButtons(); }
+function updatePriorityButtons() {
+    ['low','medium','high'].forEach(p => {
+        let btn = document.getElementById('pri-'+p);
+        if (!btn) return;
+        btn.style.borderColor = p === selectedPriority ? '#7c3aed' : '#e2e8f0';
+        btn.style.transform   = p === selectedPriority ? 'scale(1.05)' : 'scale(1)';
+    });
+}
+
+function saveTodo() {
+    let text = document.getElementById('todoText').value.trim();
+    if (!text) { showToast('⚠️ Enter a task', 'warning'); return; }
+    let todos = getTodos();
+    let id    = document.getElementById('todoId').value;
+    let todo  = { id: id || crypto.randomUUID(), text, priority: selectedPriority, due: document.getElementById('todoDue').value || null, done: false, createdAt: new Date().toISOString() };
+    if (id) { let idx = todos.findIndex(t => t.id === id); if (idx !== -1) { todo.done = todos[idx].done; todos[idx] = todo; } else todos.unshift(todo); }
+    else todos.unshift(todo);
+    saveTodos(todos);
+    closeTodoModal();
+    renderTodos();
+    showToast('✅ Task saved!');
+}
+
+function toggleTodo(id) {
+    let todos = getTodos();
+    let todo  = todos.find(t => t.id === id);
+    if (todo) { todo.done = !todo.done; saveTodos(todos); renderTodos(); }
+}
+
+function deleteTodo(id) {
+    if (!confirm('Delete this task?')) return;
+    saveTodos(getTodos().filter(t => t.id !== id));
+    renderTodos();
+    showToast('🗑️ Task deleted', 'warning');
+}
+
+function filterTodos(f) {
+    todoFilter = f;
+    ['all','open','done'].forEach(x => {
+        let btn = document.getElementById('tf-'+x);
+        if (!btn) return;
+        btn.style.background = x === f ? '#2563eb' : '#f1f5f9';
+        btn.style.color      = x === f ? 'white' : '#64748b';
+    });
+    renderTodos();
+}
+
+function renderTodos() {
+    let el = document.getElementById('todoList');
+    if (!el) return;
+    let todos = getTodos();
+    if (todoFilter === 'open') todos = todos.filter(t => !t.done);
+    if (todoFilter === 'done') todos = todos.filter(t => t.done);
+
+    let priColors = { high:'#dc2626', medium:'#ca8a04', low:'#16a34a' };
+    let priBg     = { high:'#fef2f2', medium:'#fffbeb', low:'#f0fdf4' };
+    let priIcon   = { high:'🔴', medium:'🟡', low:'🟢' };
+
+    let open = getTodos().filter(t=>!t.done).length;
+    let total = getTodos().length;
+
+    if (todos.length === 0) {
+        el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#94a3b8">
+            <div style="font-size:40px;margin-bottom:12px">✅</div>
+            <p style="font-size:14px;font-weight:600;color:#64748b">${todoFilter==='done'?'No completed tasks yet':'All clear!'}</p>
+        </div>`;
+    } else {
+        el.innerHTML = todos.map(t => {
+            let overdue = t.due && !t.done && new Date(t.due) < new Date();
+            return `<div style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:${t.done?'#f8fafc':priBg[t.priority]};border:1.5px solid ${t.done?'#e2e8f0':priColors[t.priority]+'33'};border-radius:14px;margin-bottom:8px;opacity:${t.done?0.6:1}">
+                <input type="checkbox" ${t.done?'checked':''} onchange="toggleTodo('${t.id}')" style="width:18px;height:18px;margin-top:2px;accent-color:#2563eb;flex-shrink:0;cursor:pointer">
+                <div style="flex:1;min-width:0">
+                    <p style="font-size:14px;font-weight:600;color:#0f172a;margin-bottom:4px;${t.done?'text-decoration:line-through;color:#94a3b8':''}">${t.text}</p>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                        <span style="font-size:11px;font-weight:700;color:${priColors[t.priority]}">${priIcon[t.priority]} ${t.priority.charAt(0).toUpperCase()+t.priority.slice(1)}</span>
+                        ${t.due?`<span style="font-size:11px;color:${overdue?'#dc2626':'#64748b'};font-weight:${overdue?700:400}">${overdue?'⚠️ Overdue · ':'📅 '}${new Date(t.due+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>`:''}
+                    </div>
+                </div>
+                <div style="display:flex;gap:4px;flex-shrink:0">
+                    <button onclick="openTodoModal('${t.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:12px;color:#64748b;box-shadow:none">✏️</button>
+                    <button onclick="deleteTodo('${t.id}')"    style="width:28px;height:28px;padding:0;margin:0;background:#fef2f2;border-radius:8px;font-size:12px;color:#dc2626;box-shadow:none">🗑️</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // Stats bar
+    let statsEl = document.getElementById('todoStats');
+    if (!statsEl) {
+        let bar = document.createElement('div');
+        bar.id = 'todoStats';
+        bar.style.cssText = 'margin-bottom:12px;font-size:12px;color:#64748b;display:flex;justify-content:space-between';
+        el.parentNode.insertBefore(bar, el);
+    }
+    let s = document.getElementById('todoStats');
+    if (s) s.innerHTML = `<span>${open} open task${open!==1?'s':''}</span><span>${total-open} completed</span>`;
+}
+
+// ── Notes ─────────────────────────────────────────────────────────────────────
+const NOTES_KEY = 'eyeNotes';
+
+function getNotes()        { return JSON.parse(localStorage.getItem(NOTES_KEY) || '[]'); }
+function saveNotes(notes)  { localStorage.setItem(NOTES_KEY, JSON.stringify(notes)); }
+
+function openNoteModal(id) {
+    let note = id ? getNotes().find(n => n.id === id) : null;
+    document.getElementById('noteId').value    = note ? note.id : '';
+    document.getElementById('noteTitle').value = note ? note.title : '';
+    document.getElementById('noteTag').value   = note ? (note.tag || '') : '';
+    document.getElementById('noteBody').value  = note ? note.body : '';
+    document.getElementById('noteModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('noteTitle').focus(), 100);
+}
+function closeNoteModal() { document.getElementById('noteModal').style.display = 'none'; }
+
+function saveNote() {
+    let title = document.getElementById('noteTitle').value.trim();
+    let body  = document.getElementById('noteBody').value.trim();
+    if (!title && !body) { showToast('⚠️ Write something first!', 'warning'); return; }
+    let notes = getNotes();
+    let id    = document.getElementById('noteId').value;
+    let note  = { id: id || crypto.randomUUID(), title: title || 'Untitled', tag: document.getElementById('noteTag').value, body, updatedAt: new Date().toISOString() };
+    if (id) { let idx = notes.findIndex(n => n.id === id); if (idx !== -1) notes[idx] = note; else notes.unshift(note); }
+    else notes.unshift(note);
+    saveNotes(notes);
+    closeNoteModal();
+    renderNotes();
+    showToast('📝 Note saved!');
+}
+
+function deleteNote(id) {
+    if (!confirm('Delete this note?')) return;
+    saveNotes(getNotes().filter(n => n.id !== id));
+    renderNotes();
+    showToast('🗑️ Note deleted', 'warning');
+}
+
+function renderNotes() {
+    let el = document.getElementById('notesList');
+    if (!el) return;
+    let search = (document.getElementById('notesSearch')?.value || '').toLowerCase();
+    let notes  = getNotes();
+    if (search) notes = notes.filter(n => (n.title+n.body+n.tag).toLowerCase().includes(search));
+
+    if (notes.length === 0) {
+        el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#94a3b8">
+            <div style="font-size:40px;margin-bottom:12px">📝</div>
+            <p style="font-size:14px;font-weight:600;color:#64748b">${search?'No notes match':'No notes yet'}</p>
+            <p style="font-size:13px">Save clinical pearls, drug doses, technique tips</p>
+        </div>`;
+        return;
+    }
+
+    let tagColors = { 'Clinical Pearl':'#d97706','Technique':'#2563eb','Drug / Dosing':'#16a34a','Anatomy':'#7c3aed','Board Prep':'#dc2626','Reminder':'#0891b2' };
+    let tagBg     = { 'Clinical Pearl':'#fffbeb','Technique':'#eff6ff','Drug / Dosing':'#f0fdf4','Anatomy':'#faf5ff','Board Prep':'#fef2f2','Reminder':'#f0f9ff' };
+
+    el.innerHTML = notes.map(n => `
+        <div style="background:${n.tag&&tagBg[n.tag]?tagBg[n.tag]:'white'};border:1.5px solid ${n.tag&&tagColors[n.tag]?tagColors[n.tag]+'33':'#e2e8f0'};border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;transition:box-shadow 0.15s"
+             onclick="openNoteModal('${n.id}')"
+             onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'"
+             onmouseout="this.style.boxShadow='none'">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+                <div>
+                    <p style="font-weight:700;font-size:14px;color:#0f172a;margin-bottom:4px">${n.title}</p>
+                    ${n.tag?`<span style="font-size:11px;font-weight:700;color:${tagColors[n.tag]||'#64748b'};background:${tagColors[n.tag]||'#94a3b8'}18;padding:2px 8px;border-radius:20px">${n.tag}</span>`:''}
+                </div>
+                <button onclick="event.stopPropagation();deleteNote('${n.id}')"
+                    style="background:transparent;border:none;color:#94a3b8;font-size:14px;padding:4px;margin:0;width:auto;min-width:0;cursor:pointer">🗑️</button>
+            </div>
+            ${n.body?`<p style="font-size:13px;color:#374151;line-height:1.6;margin:0">${n.body.length>160?n.body.slice(0,160)+'…':n.body}</p>`:''}
+        </div>`).join('');
+}
+
+// ── Study List ────────────────────────────────────────────────────────────────
+const STUDY_KEY = 'eyeStudy';
+let studyFilter = 'all';
+
+function getStudyItems()       { return JSON.parse(localStorage.getItem(STUDY_KEY) || '[]'); }
+function saveStudyItems(items) { localStorage.setItem(STUDY_KEY, JSON.stringify(items)); }
+
+function openStudyModal(id) {
+    let item = id ? getStudyItems().find(s => s.id === id) : null;
+    document.getElementById('studyId').value    = item ? item.id : '';
+    document.getElementById('studyTopic').value = item ? item.topic : '';
+    document.getElementById('studyType').value  = item ? item.type : 'Textbook';
+    document.getElementById('studyNotes').value = item ? (item.notes || '') : '';
+    document.getElementById('studyModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('studyTopic').focus(), 100);
+}
+function closeStudyModal() { document.getElementById('studyModal').style.display = 'none'; }
+
+function saveStudyItem() {
+    let topic = document.getElementById('studyTopic').value.trim();
+    if (!topic) { showToast('⚠️ Enter a topic', 'warning'); return; }
+    let items = getStudyItems();
+    let id    = document.getElementById('studyId').value;
+    let item  = { id: id || crypto.randomUUID(), topic, type: document.getElementById('studyType').value, notes: document.getElementById('studyNotes').value.trim(), status: 'to-read', createdAt: new Date().toISOString() };
+    if (id) { let idx = items.findIndex(s => s.id === id); if (idx !== -1) { item.status = items[idx].status; items[idx] = item; } else items.unshift(item); }
+    else items.unshift(item);
+    saveStudyItems(items);
+    closeStudyModal();
+    renderStudyList();
+    showToast('📚 Added to study list!');
+}
+
+function cycleStudyStatus(id) {
+    let items  = getStudyItems();
+    let item   = items.find(s => s.id === id);
+    if (!item) return;
+    let cycle  = { 'to-read':'reading', 'reading':'done', 'done':'to-read' };
+    item.status = cycle[item.status] || 'to-read';
+    saveStudyItems(items);
+    renderStudyList();
+}
+
+function deleteStudyItem(id) {
+    if (!confirm('Remove from study list?')) return;
+    saveStudyItems(getStudyItems().filter(s => s.id !== id));
+    renderStudyList();
+    showToast('🗑️ Removed', 'warning');
+}
+
+function filterStudy(f) {
+    studyFilter = f;
+    ['all','to-read','reading','done'].forEach(x => {
+        let btn = document.getElementById('sf-'+x);
+        if (!btn) return;
+        btn.style.background = x === f ? '#7c3aed' : '#f1f5f9';
+        btn.style.color      = x === f ? 'white' : '#64748b';
+    });
+    renderStudyList();
+}
+
+function renderStudyList() {
+    let el = document.getElementById('studyList');
+    let progressEl = document.getElementById('studyProgress');
+    if (!el) return;
+
+    let all     = getStudyItems();
+    let done    = all.filter(s => s.status === 'done').length;
+    let reading = all.filter(s => s.status === 'reading').length;
+    let toRead  = all.filter(s => s.status === 'to-read').length;
+
+    if (progressEl && all.length > 0) {
+        let pct = Math.round((done / all.length) * 100);
+        progressEl.innerHTML = `<div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:6px">
+            <span>📚 ${all.length} items total</span><span style="font-weight:700;color:#7c3aed">${pct}% complete</span>
+        </div>
+        <div style="background:#e2e8f0;border-radius:99px;height:8px">
+            <div style="background:linear-gradient(90deg,#7c3aed,#2563eb);width:${pct}%;height:8px;border-radius:99px;transition:width 0.5s"></div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:8px;font-size:11px;color:#64748b">
+            <span>📖 ${toRead} to read</span><span>⏳ ${reading} reading</span><span>✅ ${done} done</span>
+        </div>`;
+    } else if (progressEl) { progressEl.innerHTML = ''; }
+
+    let items = studyFilter === 'all' ? all : all.filter(s => s.status === studyFilter);
+
+    if (items.length === 0) {
+        el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#94a3b8">
+            <div style="font-size:40px;margin-bottom:12px">📚</div>
+            <p style="font-size:14px;font-weight:600;color:#64748b">${studyFilter!=='all'?'Nothing in this category':'Study list empty'}</p>
+            <p style="font-size:13px">Add textbooks, articles, or videos to study</p>
+        </div>`;
+        return;
+    }
+
+    let statusLabel = { 'to-read':'📖 To Read', 'reading':'⏳ Reading', 'done':'✅ Done' };
+    let statusBg    = { 'to-read':'#eff6ff', 'reading':'#fffbeb', 'done':'#f0fdf4' };
+    let statusColor = { 'to-read':'#2563eb', 'reading':'#ca8a04', 'done':'#16a34a' };
+    let typeIcon    = { 'Textbook':'📖','Article':'📄','Video':'🎥','Question Bank':'❓','Other':'📌' };
+
+    el.innerHTML = items.map(s => `
+        <div style="background:white;border:1.5px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:8px">
+            <div style="display:flex;align-items:flex-start;gap:10px">
+                <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+                        <span style="font-size:16px">${typeIcon[s.type]||'📌'}</span>
+                        <p style="font-weight:700;font-size:14px;color:#0f172a;margin:0">${s.topic}</p>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                        <span style="font-size:11px;color:#64748b">${s.type}</span>
+                        <button onclick="cycleStudyStatus('${s.id}')"
+                            style="font-size:11px;font-weight:700;color:${statusColor[s.status]};background:${statusBg[s.status]};border:none;padding:3px 10px;border-radius:20px;cursor:pointer;margin:0;width:auto;min-width:0;box-shadow:none">
+                            ${statusLabel[s.status]}
+                        </button>
+                    </div>
+                    ${s.notes?`<p style="font-size:12px;color:#64748b;margin-top:6px;line-height:1.5">${s.notes}</p>`:''}
+                </div>
+                <div style="display:flex;gap:4px;flex-shrink:0">
+                    <button onclick="openStudyModal('${s.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:12px;color:#64748b;box-shadow:none">✏️</button>
+                    <button onclick="deleteStudyItem('${s.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#fef2f2;border-radius:8px;font-size:12px;color:#dc2626;box-shadow:none">🗑️</button>
+                </div>
+            </div>
+        </div>`).join('');
 }
 
 if ('serviceWorker' in navigator) {

@@ -594,29 +594,66 @@
             </div>
         </div>
 
-        <!-- Journal -->
+        <!-- Journal / Workspace -->
         <div id="journalTab" style="display:none">
-            <div style="background:linear-gradient(135deg,#7c3aed,#2563eb); border-radius:20px; padding:28px; margin-bottom:20px; color:white; position:relative; overflow:hidden">
+            <div style="background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:20px;padding:22px 24px;margin-bottom:14px;color:white;position:relative;overflow:hidden">
                 <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:rgba(255,255,255,0.06);border-radius:50%"></div>
-                <div style="font-size:36px;margin-bottom:10px">📔</div>
-                <h2 style="color:white;font-size:22px;margin-bottom:6px">Surgical Journal</h2>
-                <p style="opacity:0.8;font-size:14px;line-height:1.5">Reflect on your training. Document insights, lessons, and milestones.</p>
-                <button onclick="openJournalModal()" style="background:rgba(255,255,255,0.2);width:auto;padding:10px 22px;margin-top:14px;font-size:13px;border-radius:50px;border:1px solid rgba(255,255,255,0.4)">✏️ New Entry</button>
+                <h2 style="color:white;font-size:20px;margin-bottom:4px">📓 My Workspace</h2>
+                <p style="opacity:0.8;font-size:13px">Journal · To-Do · Notes · Study List</p>
             </div>
-
-            <div style="display:flex; gap:8px; margin-bottom:16px; align-items:center; flex-wrap:wrap">
-                <input type="text" id="journalSearch" placeholder="🔍 Search entries…" oninput="renderJournalList()" style="flex:1; margin:0; padding:10px 14px; border-radius:12px; font-size:13px; min-width:160px">
-                <select id="journalMoodFilter" onchange="renderJournalList()" style="width:auto; margin:0; padding:10px 12px; border-radius:12px; font-size:13px">
-                    <option value="">All Moods</option>
-                    <option value="💪">💪 Great</option>
-                    <option value="😊">😊 Good</option>
-                    <option value="😐">😐 Neutral</option>
-                    <option value="😤">😤 Tough Day</option>
-                    <option value="🤔">🤔 Reflective</option>
-                </select>
+            <div style="display:flex;gap:4px;margin-bottom:16px;background:#f1f5f9;border-radius:14px;padding:5px">
+                <button id="ws-tab-journal" onclick="showWorkspaceTab('journal')" class="ws-tab active-ws-tab" style="flex:1;margin:0;border-radius:10px;padding:9px 4px;font-size:12px;font-weight:700">📔 Journal</button>
+                <button id="ws-tab-todo"    onclick="showWorkspaceTab('todo')"    class="ws-tab"              style="flex:1;margin:0;border-radius:10px;padding:9px 4px;font-size:12px;font-weight:700;background:transparent;color:#64748b;box-shadow:none">✅ To-Do</button>
+                <button id="ws-tab-notes"   onclick="showWorkspaceTab('notes')"   class="ws-tab"              style="flex:1;margin:0;border-radius:10px;padding:9px 4px;font-size:12px;font-weight:700;background:transparent;color:#64748b;box-shadow:none">📝 Notes</button>
+                <button id="ws-tab-study"   onclick="showWorkspaceTab('study')"   class="ws-tab"              style="flex:1;margin:0;border-radius:10px;padding:9px 4px;font-size:12px;font-weight:700;background:transparent;color:#64748b;box-shadow:none">📚 Study</button>
             </div>
-
-            <div id="journalList"></div>
+            <!-- Journal section -->
+            <div id="ws-journal">
+                <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap">
+                    <input type="text" id="journalSearch" placeholder="🔍 Search…" oninput="renderJournalList()" style="flex:1;margin:0;padding:10px 14px;border-radius:12px;font-size:13px;min-width:100px">
+                    <select id="journalMoodFilter" onchange="renderJournalList()" style="width:auto;margin:0;padding:10px 10px;border-radius:12px;font-size:12px">
+                        <option value="">All Moods</option>
+                        <option value="💪">💪</option><option value="😊">😊</option>
+                        <option value="😐">😐</option><option value="😤">😤</option><option value="🤔">🤔</option>
+                    </select>
+                    <button onclick="openJournalModal()" style="width:auto;margin:0;padding:10px 14px;font-size:13px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#2563eb)">✏️ New</button>
+                </div>
+                <div id="journalList"></div>
+            </div>
+            <!-- To-Do section -->
+            <div id="ws-todo" style="display:none">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                    <div style="display:flex;gap:6px">
+                        <button onclick="filterTodos('all')"  id="tf-all"  class="todo-filter active-tf" style="width:auto;margin:0;padding:7px 12px;font-size:12px;border-radius:20px;background:#2563eb;color:white">All</button>
+                        <button onclick="filterTodos('open')" id="tf-open" class="todo-filter"           style="width:auto;margin:0;padding:7px 12px;font-size:12px;border-radius:20px;background:#f1f5f9;color:#64748b;box-shadow:none">Open</button>
+                        <button onclick="filterTodos('done')" id="tf-done" class="todo-filter"           style="width:auto;margin:0;padding:7px 12px;font-size:12px;border-radius:20px;background:#f1f5f9;color:#64748b;box-shadow:none">Done</button>
+                    </div>
+                    <button onclick="openTodoModal()" style="width:auto;margin:0;padding:10px 14px;font-size:13px;border-radius:12px;background:#16a34a">➕ Add Task</button>
+                </div>
+                <div id="todoList"></div>
+            </div>
+            <!-- Notes section -->
+            <div id="ws-notes" style="display:none">
+                <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+                    <input type="text" id="notesSearch" placeholder="🔍 Search notes…" oninput="renderNotes()" style="flex:1;margin:0;padding:10px 14px;border-radius:12px;font-size:13px">
+                    <button onclick="openNoteModal()" style="width:auto;margin:0;padding:10px 14px;font-size:13px;border-radius:12px;background:#0891b2">📝 New</button>
+                </div>
+                <div id="notesList"></div>
+            </div>
+            <!-- Study section -->
+            <div id="ws-study" style="display:none">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                    <div style="display:flex;gap:4px;flex-wrap:wrap">
+                        <button onclick="filterStudy('all')"     id="sf-all"     class="study-filter active-sf" style="width:auto;margin:0;padding:7px 10px;font-size:12px;border-radius:20px;background:#7c3aed;color:white">All</button>
+                        <button onclick="filterStudy('to-read')" id="sf-to-read" class="study-filter"           style="width:auto;margin:0;padding:7px 10px;font-size:12px;border-radius:20px;background:#f1f5f9;color:#64748b;box-shadow:none">📖 To Read</button>
+                        <button onclick="filterStudy('reading')" id="sf-reading" class="study-filter"           style="width:auto;margin:0;padding:7px 10px;font-size:12px;border-radius:20px;background:#f1f5f9;color:#64748b;box-shadow:none">⏳ Reading</button>
+                        <button onclick="filterStudy('done')"    id="sf-done"    class="study-filter"           style="width:auto;margin:0;padding:7px 10px;font-size:12px;border-radius:20px;background:#f1f5f9;color:#64748b;box-shadow:none">✅ Done</button>
+                    </div>
+                    <button onclick="openStudyModal()" style="width:auto;margin:0;padding:10px 14px;font-size:13px;border-radius:12px;background:#7c3aed">➕ Add</button>
+                </div>
+                <div id="studyProgress" style="margin-bottom:14px"></div>
+                <div id="studyList"></div>
+            </div>
         </div>
 
         <!-- Journal Entry Modal -->
@@ -627,27 +664,105 @@
                     <button onclick="closeJournalModal()" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b">✕</button>
                 </div>
                 <input type="hidden" id="journalEntryId">
-                <label>Date</label>
-                <input type="date" id="journalDate">
+                <label>Date</label><input type="date" id="journalDate">
                 <label>How did it go?</label>
-                <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-                    <button onclick="selectMood('💪')" id="mood-💪" class="mood-btn" style="flex:1;min-width:70px;margin:0;background:#f0fdf4;color:#15803d;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">💪</button>
-                    <button onclick="selectMood('😊')" id="mood-😊" class="mood-btn" style="flex:1;min-width:70px;margin:0;background:#eff6ff;color:#1d4ed8;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">😊</button>
-                    <button onclick="selectMood('😐')" id="mood-😐" class="mood-btn" style="flex:1;min-width:70px;margin:0;background:#f8fafc;color:#64748b;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">😐</button>
-                    <button onclick="selectMood('😤')" id="mood-😤" class="mood-btn" style="flex:1;min-width:70px;margin:0;background:#fff7ed;color:#c2410c;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">😤</button>
-                    <button onclick="selectMood('🤔')" id="mood-🤔" class="mood-btn" style="flex:1;min-width:70px;margin:0;background:#faf5ff;color:#7c3aed;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">🤔</button>
+                <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+                    <button onclick="selectMood('💪')" id="mood-💪" class="mood-btn" style="flex:1;min-width:52px;margin:0;background:#f0fdf4;color:#15803d;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">💪</button>
+                    <button onclick="selectMood('😊')" id="mood-😊" class="mood-btn" style="flex:1;min-width:52px;margin:0;background:#eff6ff;color:#1d4ed8;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">😊</button>
+                    <button onclick="selectMood('😐')" id="mood-😐" class="mood-btn" style="flex:1;min-width:52px;margin:0;background:#f8fafc;color:#64748b;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">😐</button>
+                    <button onclick="selectMood('😤')" id="mood-😤" class="mood-btn" style="flex:1;min-width:52px;margin:0;background:#fff7ed;color:#c2410c;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">😤</button>
+                    <button onclick="selectMood('🤔')" id="mood-🤔" class="mood-btn" style="flex:1;min-width:52px;margin:0;background:#faf5ff;color:#7c3aed;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">🤔</button>
                 </div>
                 <label>Title <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
                 <input type="text" id="journalTitle" placeholder="e.g. First solo cataract, Tough VR case…">
                 <label>Entry</label>
-                <textarea id="journalBody" rows="7" placeholder="What happened today? What did you learn? What would you do differently?&#10;&#10;This is your space — write freely."></textarea>
+                <textarea id="journalBody" rows="6" placeholder="What happened today? What did you learn? What would you do differently?"></textarea>
                 <label>Link to a case <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
-                <select id="journalCaseLink" style="margin-bottom:20px">
-                    <option value="">— No case linked —</option>
-                </select>
+                <select id="journalCaseLink" style="margin-bottom:20px"><option value="">— No case linked —</option></select>
                 <div style="display:flex;gap:10px">
-                    <button onclick="saveJournalEntry()" style="flex:1;margin:0;background:linear-gradient(135deg,#7c3aed,#2563eb)">💾 Save Entry</button>
+                    <button onclick="saveJournalEntry()" style="flex:1;margin:0;background:linear-gradient(135deg,#7c3aed,#2563eb)">💾 Save</button>
                     <button onclick="closeJournalModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- To-Do Modal -->
+        <div id="todoModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+            <div style="background:white;border-radius:20px;padding:28px;width:92%;max-width:460px;box-shadow:0 24px 64px rgba(0,0,0,0.25)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                    <h2 style="margin:0;font-size:20px">✅ Task</h2>
+                    <button onclick="closeTodoModal()" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b">✕</button>
+                </div>
+                <input type="hidden" id="todoId">
+                <label>Task</label>
+                <input type="text" id="todoText" placeholder="e.g. Review cornea anatomy before grand rounds">
+                <label>Due Date <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
+                <input type="date" id="todoDue">
+                <label>Priority</label>
+                <div style="display:flex;gap:8px;margin-bottom:20px">
+                    <button onclick="selectPriority('low')"    id="pri-low"    class="pri-btn" style="flex:1;margin:0;padding:10px;font-size:12px;font-weight:700;border-radius:10px;background:#f0fdf4;color:#16a34a;border:2px solid #e2e8f0;box-shadow:none">🟢 Low</button>
+                    <button onclick="selectPriority('medium')" id="pri-medium" class="pri-btn" style="flex:1;margin:0;padding:10px;font-size:12px;font-weight:700;border-radius:10px;background:#fffbeb;color:#ca8a04;border:2px solid #e2e8f0;box-shadow:none">🟡 Medium</button>
+                    <button onclick="selectPriority('high')"   id="pri-high"   class="pri-btn" style="flex:1;margin:0;padding:10px;font-size:12px;font-weight:700;border-radius:10px;background:#fef2f2;color:#dc2626;border:2px solid #e2e8f0;box-shadow:none">🔴 High</button>
+                </div>
+                <div style="display:flex;gap:10px">
+                    <button onclick="saveTodo()" style="flex:1;margin:0;background:#16a34a">💾 Save</button>
+                    <button onclick="closeTodoModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Note Modal -->
+        <div id="noteModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+            <div style="background:white;border-radius:20px;padding:28px;width:92%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.25)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                    <h2 style="margin:0;font-size:20px">📝 Note</h2>
+                    <button onclick="closeNoteModal()" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b">✕</button>
+                </div>
+                <input type="hidden" id="noteId">
+                <label>Title</label>
+                <input type="text" id="noteTitle" placeholder="e.g. Glaucoma Pearl, IOL Formula…">
+                <label>Tag</label>
+                <select id="noteTag">
+                    <option value="">No tag</option>
+                    <option value="Clinical Pearl">🌟 Clinical Pearl</option>
+                    <option value="Technique">🔧 Technique</option>
+                    <option value="Drug / Dosing">💊 Drug / Dosing</option>
+                    <option value="Anatomy">🧬 Anatomy</option>
+                    <option value="Board Prep">📋 Board Prep</option>
+                    <option value="Reminder">🔔 Reminder</option>
+                </select>
+                <label style="margin-top:12px">Note</label>
+                <textarea id="noteBody" rows="6" placeholder="Clinical pearl, drug dose, technique tip, anatomy note…"></textarea>
+                <div style="display:flex;gap:10px;margin-top:16px">
+                    <button onclick="saveNote()" style="flex:1;margin:0;background:#0891b2">💾 Save</button>
+                    <button onclick="closeNoteModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Study Modal -->
+        <div id="studyModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+            <div style="background:white;border-radius:20px;padding:28px;width:92%;max-width:460px;box-shadow:0 24px 64px rgba(0,0,0,0.25)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                    <h2 style="margin:0;font-size:20px">📚 Study Item</h2>
+                    <button onclick="closeStudyModal()" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b">✕</button>
+                </div>
+                <input type="hidden" id="studyId">
+                <label>Topic / Resource</label>
+                <input type="text" id="studyTopic" placeholder="e.g. Wills Eye Ch. 4, AAO Glaucoma, OKAP prep…">
+                <label>Type</label>
+                <select id="studyType">
+                    <option value="Textbook">📖 Textbook</option>
+                    <option value="Article">📄 Article / Paper</option>
+                    <option value="Video">🎥 Video / Lecture</option>
+                    <option value="Question Bank">❓ Question Bank</option>
+                    <option value="Other">📌 Other</option>
+                </select>
+                <label style="margin-top:12px">Notes <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
+                <textarea id="studyNotes" rows="3" placeholder="Why you're studying this, key points to focus on…"></textarea>
+                <div style="display:flex;gap:10px;margin-top:16px">
+                    <button onclick="saveStudyItem()" style="flex:1;margin:0;background:#7c3aed">💾 Add</button>
+                    <button onclick="closeStudyModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
                 </div>
             </div>
         </div>
