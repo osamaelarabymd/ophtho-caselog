@@ -27,13 +27,13 @@ self.addEventListener('fetch', function(event) {
 self.addEventListener('push', function(event) {
     const options = {
         body: event.data ? event.data.text() : 'Don\'t forget to log your cases today!',
-        icon: '/icon.png',
-        badge: '/icon.png',
+        icon: '/icon.svg',
+        badge: '/icon.svg',
         vibrate: [200, 100, 200],
         data: { url: '/' }
     };
     event.waitUntil(
-        self.registration.showNotification('Ophtho CaseLog Reminder', options)
+        self.registration.showNotification('EyeLog Reminder 🏥', options)
     );
 });
 
