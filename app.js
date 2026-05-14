@@ -369,6 +369,8 @@ function showTab(tab, e) {
     } else if (tab === 'logCase') {
         document.getElementById('logCase').style.display = 'block';
         loadTemplates();
+        loadCustomProcList();
+        refreshProcedureDropdowns();
         let dateEl = document.getElementById('date');
         if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
     } else if (tab === 'caseList') {
@@ -784,6 +786,123 @@ function updateDashboard(cases) {
     document.getElementById('stats').innerHTML = statsHtml;
 }
 
+// Custom procedure categories
+function getCustomProcedures() {
+    return JSON.parse(localStorage.getItem('customProcedures')) || [];
+}
+
+function getAllProcedures() {
+    let custom = getCustomProcedures();
+    let all = { ...acgme };
+    for (let p of custom) all[p.name] = p.required;
+    return all;
+}
+
+function toggleCustomProc() {
+    let form = document.getElementById('customProcForm');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+function addCustomProcedure() {
+    let name = document.getElementById('customProcInput').value.trim();
+    let req  = parseInt(document.getElementById('customProcReq').value) || 10;
+    if (!name) { showToast('⚠️ Enter a procedure name', 'warning'); return; }
+    let custom = getCustomProcedures();
+    if (custom.find(p => p.name === name) || acgme[name]) { showToast('⚠️ Procedure already exists', 'warning'); return; }
+    custom.push({ name, required: req });
+    localStorage.setItem('customProcedures', JSON.stringify(custom));
+    document.getElementById('customProcInput').value = '';
+    document.getElementById('customProcReq').value   = '';
+    refreshProcedureDropdowns();
+    loadCustomProcList();
+    showToast('✅ Procedure added!');
+}
+
+function deleteCustomProcedure(name) {
+    let custom = getCustomProcedures().filter(p => p.name !== name);
+    localStorage.setItem('customProcedures', JSON.stringify(custom));
+    refreshProcedureDropdowns();
+    loadCustomProcList();
+    showToast('🗑️ Procedure removed', 'warning');
+}
+
+function loadCustomProcList() {
+    let custom = getCustomProcedures();
+    let el = document.getElementById('customProcList');
+    if (!el) return;
+    el.innerHTML = custom.length === 0
+        ? '<p style="font-size:12px; color:#94a3b8">No custom procedures yet</p>'
+        : custom.map(p =>
+            `<div style="background:#f1f5f9; border:2px solid #e2e8f0; padding:6px 12px; border-radius:8px; font-size:12px; display:flex; align-items:center; gap:8px">
+                <span style="font-weight:700; color:#0f172a">${p.name}</span>
+                <span style="color:#94a3b8">req: ${p.required}</span>
+                <span onclick="deleteCustomProcedure('${p.name}')" style="color:#dc2626; cursor:pointer; font-weight:700">✕</span>
+            </div>`
+          ).join('');
+}
+
+function refreshProcedureDropdowns() {
+    let custom   = getCustomProcedures();
+    let baseOpts = ['Cataract / Phaco','Vitreoretinal (PPV)','Glaucoma','Cornea / Keratoplasty','Oculoplastics','Strabismus','Laser (LIO / SLT / YAG)'];
+    let all      = [...baseOpts, ...custom.map(p => p.name)];
+    ['procedure','editProcedure','filterProcedure'].forEach(id => {
+        let el = document.getElementById(id);
+        if (!el) return;
+        let cur = el.value;
+        let hasAll = id === 'filterProcedure';
+        el.innerHTML = (hasAll ? '<option value="">All Procedures</option>' : '') +
+            all.map(p => `<option${p === cur ? ' selected' : ''}>${p}</option>`).join('');
+    });
+}
+
+// CSV Import
+function importCSV() {
+    let input = document.createElement('input');
+    input.type   = 'file';
+    input.accept = '.csv';
+    input.onchange = async (e) => {
+        let file = e.target.files[0];
+        if (!file) return;
+        let text  = await file.text();
+        let lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+        if (lines.length < 2) { showToast('⚠️ CSV has no data rows', 'warning'); return; }
+        showLoading();
+        let { data: { user } } = await db.auth.getUser();
+        let profile  = JSON.parse(localStorage.getItem('userProfile')) || {};
+        let saved = 0, errors = 0;
+        for (let i = 1; i < lines.length; i++) {
+            let cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+            let row  = {
+                date:          cols[0] || new Date().toISOString().slice(0,10),
+                procedure:     cols[1] || 'Cataract / Phaco',
+                role:          cols[2] || 'Primary Surgeon',
+                attending:     cols[3] || '',
+                hospital:      cols[4] || '',
+                notes:         cols[5] || '',
+                resident_name: cols[6] || profile.name || '',
+                pgy_year:      cols[7] || profile.pgy  || 'PGY-1',
+                user_id:       user.id
+            };
+            let { error } = await db.from('cases').insert(row);
+            if (error) errors++; else saved++;
+        }
+        hideLoading();
+        loadCases();
+        showToast(`✅ Imported ${saved} case${saved !== 1 ? 's' : ''}${errors > 0 ? ', ' + errors + ' failed' : ''}!`);
+    };
+    input.click();
+}
+
+function downloadCSVTemplate() {
+    let header = 'date,procedure,role,attending,hospital,notes,resident_name,pgy_year';
+    let example = '2026-05-14,Cataract / Phaco,Primary Surgeon,Dr. Smith,Stanford Hospital,Right eye uncomplicated,John Doe,PGY-2';
+    let blob = new Blob([header + '\n' + example], { type: 'text/csv' });
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ophtholog-import-template.csv';
+    a.click();
+}
+
 function showAnalytics() {
     let total      = allCases.length;
     let thisMonth  = new Date().toISOString().slice(0, 7);
@@ -845,6 +964,173 @@ function showAnalytics() {
         html += '<div style="background:#e2e8f0; border-radius:99px; height:8px"><div style="background:#2563eb; width:' + pct + '%; height:8px; border-radius:99px"></div></div></div>';
     }
     document.getElementById('topProcedures').innerHTML = html;
+
+    showProjections();
+    showAttendingBreakdown();
+    showYearComparison();
+}
+
+function showProjections() {
+    let now           = new Date();
+    let threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1).toISOString().slice(0,7);
+    let recentCases   = allCases.filter(c => c.date && c.date >= threeMonthsAgo);
+    let allProcs      = getAllProcedures();
+
+    let html = '';
+    for (let p in allProcs) {
+        let req       = allProcs[p];
+        let done      = allCases.filter(c => c.procedure === p).length;
+        let remaining = Math.max(0, req - done);
+        let recentCount = recentCases.filter(c => c.procedure === p).length;
+        let monthlyRate = recentCount / 3;
+
+        let statusColor, statusText, barColor;
+        if (remaining === 0) {
+            statusColor = '#16a34a'; barColor = '#16a34a';
+            statusText  = '✅ Complete!';
+        } else if (monthlyRate === 0) {
+            statusColor = '#94a3b8'; barColor = '#e2e8f0';
+            statusText  = remaining + ' remaining — no recent cases';
+        } else {
+            let monthsNeeded    = remaining / monthlyRate;
+            let completionDate  = new Date(now.getFullYear(), now.getMonth() + Math.ceil(monthsNeeded), 1);
+            let monthsFromNow   = Math.ceil(monthsNeeded);
+            statusColor = monthsNeeded <= 6 ? '#16a34a' : monthsNeeded <= 18 ? '#2563eb' : '#d97706';
+            barColor    = statusColor;
+            statusText  = remaining + ' left · ~' + monthsFromNow + ' mo · ' + completionDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        }
+        let pct = Math.min(Math.round((done / req) * 100), 100);
+
+        html += `<div style="margin-bottom:14px">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px">
+                <span style="font-size:13px; font-weight:700; color:#0f172a">${p}</span>
+                <span style="font-size:12px; color:${statusColor}; font-weight:600">${statusText}</span>
+            </div>
+            <div style="background:#f1f5f9; border-radius:99px; height:7px">
+                <div style="background:${barColor}; width:${pct}%; height:7px; border-radius:99px; transition:width 0.8s ease"></div>
+            </div>
+        </div>`;
+    }
+    document.getElementById('projections').innerHTML = html || '<p style="color:#94a3b8">Log some cases to see projections.</p>';
+}
+
+function showAttendingBreakdown() {
+    let counts = {};
+    for (let c of allCases) {
+        if (c.attending) counts[c.attending] = (counts[c.attending] || 0) + 1;
+    }
+    let sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 10);
+    if (sorted.length === 0) {
+        document.getElementById('attendingBreakdown').innerHTML = '<p style="color:#94a3b8">No attending data yet.</p>';
+        return;
+    }
+    let max  = sorted[0][1];
+    let html = '';
+    for (let [name, count] of sorted) {
+        let pct = Math.round((count / max) * 100);
+        html += `<div style="margin-bottom:12px">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px">
+                <span style="font-size:13px; font-weight:600; color:#0f172a">👨‍⚕️ ${name}</span>
+                <span style="font-size:13px; color:#64748b; font-weight:600">${count} case${count !== 1 ? 's' : ''}</span>
+            </div>
+            <div style="background:#f1f5f9; border-radius:99px; height:7px">
+                <div style="background:#7c3aed; width:${pct}%; height:7px; border-radius:99px"></div>
+            </div>
+        </div>`;
+    }
+    document.getElementById('attendingBreakdown').innerHTML = html;
+}
+
+function showYearComparison() {
+    let now      = new Date();
+    let thisYear = now.getFullYear();
+    let years    = [thisYear - 1, thisYear];
+    let allProcs = getAllProcedures();
+
+    let html = '<table style="width:100%; border-collapse:collapse; font-size:13px">';
+    html += '<tr><th style="text-align:left; padding:8px 4px; color:#64748b; font-size:11px; text-transform:uppercase">Procedure</th>';
+    for (let y of years) html += `<th style="text-align:center; padding:8px 4px; color:#64748b; font-size:11px; text-transform:uppercase">${y}</th>`;
+    html += '<th style="text-align:center; padding:8px 4px; color:#64748b; font-size:11px; text-transform:uppercase">Change</th></tr>';
+
+    for (let p in allProcs) {
+        let counts = years.map(y => allCases.filter(c => c.procedure === p && c.date && c.date.startsWith(y)).length);
+        let change = counts[1] - counts[0];
+        let changeStr = change > 0 ? `<span style="color:#16a34a">+${change}</span>` : change < 0 ? `<span style="color:#dc2626">${change}</span>` : '<span style="color:#94a3b8">—</span>';
+        let shortName = p.split('/')[0].trim().split('(')[0].trim();
+        html += `<tr style="border-bottom:1px solid #f1f5f9">
+            <td style="padding:10px 4px; font-weight:600; color:#0f172a">${shortName}</td>
+            ${counts.map(c => `<td style="text-align:center; padding:10px 4px; color:#64748b">${c}</td>`).join('')}
+            <td style="text-align:center; padding:10px 4px; font-weight:700">${changeStr}</td>
+        </tr>`;
+    }
+    html += '</table>';
+    document.getElementById('yearComparison').innerHTML = html;
+}
+
+function exportAnalyticsPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let profile  = JSON.parse(localStorage.getItem('userProfile')) || {};
+    let name     = profile.name    || 'Ophthalmology Resident';
+    let program  = profile.program || 'Ophthalmology Program';
+    let now      = new Date();
+    let allProcs = getAllProcedures();
+
+    doc.setFillColor(140,21,21); doc.rect(0,0,220,40,'F');
+    doc.setFillColor(37,99,235); doc.rect(0,36,220,5,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(20); doc.setFont('helvetica','bold'); doc.text('OphthoLog — Analytics Report', 14, 16);
+    doc.setFontSize(11); doc.setFont('helvetica','normal');
+    doc.text('Dr. ' + name + '  |  ' + program, 14, 27);
+    doc.text('Generated: ' + now.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}), 14, 35);
+
+    let y = 52;
+    doc.setTextColor(15,23,42); doc.setFontSize(13); doc.setFont('helvetica','bold');
+    doc.text('ACGME Progress & Projections', 14, y); y += 6;
+
+    let threeMonthsAgo = new Date(now.getFullYear(), now.getMonth()-3, 1).toISOString().slice(0,7);
+    let recentCases    = allCases.filter(c => c.date && c.date >= threeMonthsAgo);
+    let rows = [];
+    for (let p in allProcs) {
+        let req   = allProcs[p];
+        let done  = allCases.filter(c => c.procedure === p).length;
+        let rem   = Math.max(0, req - done);
+        let rate  = recentCases.filter(c => c.procedure === p).length / 3;
+        let proj  = rem === 0 ? '✅ Done' : rate === 0 ? 'No recent cases' :
+            new Date(now.getFullYear(), now.getMonth() + Math.ceil(rem/rate), 1)
+                .toLocaleDateString('en-US',{month:'short',year:'numeric'});
+        rows.push([p, done, req, Math.min(Math.round((done/req)*100),100)+'%', rem, proj]);
+    }
+    doc.autoTable({ startY:y, head:[['Procedure','Done','Req','%','Remaining','Projected']], body:rows, styles:{fontSize:8,cellPadding:3}, headStyles:{fillColor:[140,21,21],textColor:255,fontStyle:'bold'}, alternateRowStyles:{fillColor:[248,250,252]} });
+
+    y = doc.lastAutoTable.finalY + 14;
+    doc.setTextColor(15,23,42); doc.setFontSize(13); doc.setFont('helvetica','bold');
+    doc.text('Top Attendings', 14, y); y += 4;
+    let counts = {};
+    for (let c of allCases) { if (c.attending) counts[c.attending] = (counts[c.attending]||0)+1; }
+    let attRows = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([n,c])=>[n,c]);
+    doc.autoTable({ startY:y, head:[['Attending','Cases']], body:attRows, styles:{fontSize:9,cellPadding:3}, headStyles:{fillColor:[37,99,235],textColor:255,fontStyle:'bold'}, alternateRowStyles:{fillColor:[248,250,252]} });
+
+    y = doc.lastAutoTable.finalY + 14;
+    let thisYear = now.getFullYear();
+    doc.setTextColor(15,23,42); doc.setFontSize(13); doc.setFont('helvetica','bold');
+    doc.text('Year-over-Year', 14, y); y += 4;
+    let yrRows = Object.keys(allProcs).map(p => {
+        let prev = allCases.filter(c=>c.procedure===p&&c.date&&c.date.startsWith(thisYear-1)).length;
+        let cur  = allCases.filter(c=>c.procedure===p&&c.date&&c.date.startsWith(thisYear)).length;
+        return [p.split('/')[0].trim(), prev, cur, (cur-prev>0?'+':'')+(cur-prev)];
+    });
+    doc.autoTable({ startY:y, head:[['Procedure',String(thisYear-1),String(thisYear),'Change']], body:yrRows, styles:{fontSize:9,cellPadding:3}, headStyles:{fillColor:[124,58,237],textColor:255,fontStyle:'bold'}, alternateRowStyles:{fillColor:[248,250,252]} });
+
+    let pageCount = doc.internal.getNumberOfPages();
+    for (let i=1;i<=pageCount;i++) {
+        doc.setPage(i); doc.setFillColor(140,21,21); doc.rect(0,doc.internal.pageSize.height-12,220,12,'F');
+        doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','normal');
+        doc.text('OphthoLog Analytics  |  '+program, 14, doc.internal.pageSize.height-4);
+        doc.text('Page '+i+' of '+pageCount, 196, doc.internal.pageSize.height-4, {align:'right'});
+    }
+    doc.save('ophtholog-analytics-'+now.toISOString().slice(0,10)+'.pdf');
+    showToast('📄 Analytics PDF exported!');
 }
 
 function displayCaseList(cases) {
