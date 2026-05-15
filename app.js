@@ -646,6 +646,7 @@ async function signUp() {
 }
 
 async function completeSignUp() {
+    document.getElementById('roleModal').style.display = 'none';
     let completeBtn = document.getElementById('completeSignUpBtn');
     if (completeBtn) { completeBtn.textContent = 'Submitting…'; completeBtn.disabled = true; }
 
