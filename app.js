@@ -348,9 +348,11 @@ function _drName(profile) {
 }
 
 function saveProfile() {
+    let pronounsVal = (document.getElementById('profilePronounsInput')?.value || '').trim();
     let profile = {
         name:          document.getElementById('profileNameInput').value,
         preferredName: (document.getElementById('profilePreferredName')?.value || '').trim(),
+        pronouns:      pronounsVal,
         pgy:           document.getElementById('profilePgyInput').value,
         program:       document.getElementById('profileProgramInput').value,
         startYear:     document.getElementById('profileStartYear').value,
@@ -361,58 +363,146 @@ function saveProfile() {
     localStorage.setItem('userProfile', JSON.stringify(profile));
     localStorage.setItem('residentName', profile.name);
     updateProfileDisplay();
+    updateSettingsAvatarPreview();
     showToast('✅ Profile saved!');
 }
 
 function loadProfile() {
     let profile = JSON.parse(localStorage.getItem('userProfile')) || {};
-    if (profile.name)          document.getElementById('profileNameInput').value    = profile.name;
-    let prefEl = document.getElementById('profilePreferredName');
-    if (prefEl) prefEl.value = profile.preferredName || (profile.name ? profile.name.split(' ')[0] : '');
-    if (profile.pgy)       document.getElementById('profilePgyInput').value     = profile.pgy;
-    if (profile.program)   document.getElementById('profileProgramInput').value = profile.program;
-    if (profile.startYear) document.getElementById('profileStartYear').value    = profile.startYear;
-    if (profile.endYear)   document.getElementById('profileEndYear').value      = profile.endYear;
-    if (profile.goals)     document.getElementById('profileGoals').value        = profile.goals;
+    let _set = (id, val) => { let el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
+    _set('profileNameInput',    profile.name || '');
+    _set('profilePreferredName', profile.preferredName || (profile.name ? profile.name.split(' ')[0] : ''));
+    _set('profilePgyInput',     profile.pgy || 'PGY-1');
+    _set('profileProgramInput', profile.program || '');
+    _set('profileStartYear',    profile.startYear || '');
+    _set('profileEndYear',      profile.endYear || '');
+    _set('profileGoals',        profile.goals || '');
+    // Pronouns
+    let pron = profile.pronouns || '';
+    _set('profilePronounsInput', pron);
+    updatePronounLabels(pron);
+    updateSettingsAvatarPreview();
     updateProfileDisplay();
+}
+
+// ── Pronouns radio helper ────────────────────────────────────────────────────
+function updatePronounLabels(val) {
+    if (val === undefined) val = (document.getElementById('profilePronounsInput')?.value || '').trim();
+    let presets = { 'he/him': 'pron-lbl-him', 'she/her': 'pron-lbl-her', 'they/them': 'pron-lbl-they' };
+    let isPreset = Object.keys(presets).includes(val);
+    Object.entries(presets).forEach(([v, id]) => {
+        let el = document.getElementById(id);
+        if (!el) return;
+        let active = v === val;
+        el.style.borderColor = active ? '#2563eb' : '#E5E7EB';
+        el.style.background  = active ? '#eff6ff'  : 'white';
+        el.style.color       = active ? '#2563eb'  : '#374151';
+        let radio = el.querySelector('input');
+        if (radio) radio.checked = active;
+    });
+    let customEl = document.getElementById('pron-lbl-custom');
+    if (customEl) {
+        let customActive = !isPreset && val !== '';
+        customEl.style.borderColor = customActive ? '#2563eb' : '#E5E7EB';
+        customEl.style.background  = customActive ? '#eff6ff'  : 'white';
+        customEl.style.color       = customActive ? '#2563eb'  : '#374151';
+    }
+}
+
+// ── Profile picture ──────────────────────────────────────────────────────────
+function handleProfilePic(input) {
+    let file = input.files[0];
+    if (!file) return;
+    let reader = new FileReader();
+    reader.onload = e => {
+        localStorage.setItem('profilePicture', e.target.result);
+        updateProfileDisplay();
+        updateSettingsAvatarPreview();
+        showToast('Photo updated!');
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeProfilePic() {
+    localStorage.removeItem('profilePicture');
+    updateProfileDisplay();
+    updateSettingsAvatarPreview();
+    showToast('Photo removed');
+}
+
+function updateSettingsAvatarPreview() {
+    let el = document.getElementById('settingsAvatarPreview');
+    if (!el) return;
+    let pic = localStorage.getItem('profilePicture');
+    let profile = JSON.parse(localStorage.getItem('userProfile')) || {};
+    if (pic) {
+        el.innerHTML = `<img src="${pic}" style="width:100%;height:100%;object-fit:cover;border-radius:20px">`;
+    } else {
+        let parts = (profile.name || '').trim().split(' ');
+        let initials = parts.length >= 2 ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase() : (parts[0]||'DR').slice(0,2).toUpperCase();
+        el.style.background = 'linear-gradient(135deg,#2563eb,#7c3aed)';
+        el.innerHTML = initials;
+    }
 }
 
 function updateProfileDisplay() {
     let profile = JSON.parse(localStorage.getItem('userProfile')) || {};
-    let nameEl  = document.getElementById('profileName');
-    let pgyEl   = document.getElementById('profilePgy');
-    let progEl  = document.getElementById('profileProgram');
+    let pic     = localStorage.getItem('profilePicture');
+
+    let nameEl = document.getElementById('profileName');
+    let pgyEl  = document.getElementById('profilePgy');
+    let progEl = document.getElementById('profileProgram');
+    let pronEl = document.getElementById('profilePronouns');
     if (nameEl) nameEl.textContent = _drName(profile);
-    if (pgyEl)  pgyEl.textContent  = profile.pgy  || 'PGY-1';
+    if (pgyEl)  pgyEl.textContent  = profile.pgy || 'PGY-1';
     if (progEl) progEl.textContent = (profile.program || 'Ophthalmology Program') + ' — Ophthalmology';
+    if (pronEl) pronEl.textContent = profile.pronouns ? '(' + profile.pronouns + ')' : '';
+
+    // Avatar — photo or initials
+    let avatarEl = document.getElementById('profileAvatar');
+    if (avatarEl) {
+        if (pic) {
+            avatarEl.innerHTML = `<img src="${pic}" style="width:100%;height:100%;object-fit:cover;border-radius:20px">`;
+            avatarEl.style.background = 'none';
+        } else {
+            let parts = (profile.name || '').trim().split(' ');
+            let initials = parts.length >= 2
+                ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase()
+                : (parts[0] || 'DR').slice(0,2).toUpperCase();
+            avatarEl.innerHTML = initials;
+            avatarEl.style.background = 'linear-gradient(135deg,#2563eb,#7c3aed)';
+        }
+    }
+
+    // Goals
     let goalsEl = document.getElementById('profileGoalsDisplay');
     if (goalsEl) {
         goalsEl.innerHTML = profile.goals
-            ? '<p style="color:#1e293b; font-size:14px; line-height:1.7">' + profile.goals + '</p>'
-            : '<p style="color:#94a3b8; font-size:14px">No goals set yet — add them above!</p>';
+            ? `<p style="color:#374151;font-size:13px;line-height:1.7;margin:0">${profile.goals}</p>`
+            : `<p style="color:#9CA3AF;font-size:13px;font-style:italic;margin:0">No goals set — <button onclick="showTab('settings',event)" style="background:none;border:none;color:#2563eb;font-size:13px;font-weight:600;padding:0;margin:0;cursor:pointer;box-shadow:none;width:auto;min-width:0">add in Settings</button></p>`;
     }
+
+    // Residency timeline
     if (profile.startYear && profile.endYear) {
         let now   = new Date().getFullYear();
-        let total = profile.endYear - profile.startYear;
+        let total = Math.max(profile.endYear - profile.startYear, 1);
         let done  = now - profile.startYear;
-        let pct   = Math.min(Math.round((done / total) * 100), 100);
+        let pct   = Math.min(Math.max(Math.round((done / total) * 100), 0), 100);
         let statsEl = document.getElementById('profileStats');
         if (statsEl) {
-            const _ps = (val, label, color) =>
-                `<div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 8px;gap:3px;border-right:1px solid #F3F4F6">
-                    <span style="font-size:18px;font-weight:800;color:${color};letter-spacing:-0.5px">${val}</span>
-                    <span style="font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px">${label}</span>
+            const _ps = (val, label, color, last) =>
+                `<div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 8px;gap:3px;${last?'':'border-right:1px solid #F3F4F6'}">
+                    <span style="font-size:17px;font-weight:800;color:${color};letter-spacing:-0.5px">${val}</span>
+                    <span style="font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.4px">${label}</span>
                 </div>`;
             statsEl.style.display = 'flex';
             statsEl.innerHTML =
                 _ps(profile.startYear, 'Started', '#2563eb') +
                 _ps(profile.endYear,   'Ends',    '#7c3aed') +
-                `<div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 8px;gap:3px">
-                    <span style="font-size:18px;font-weight:800;color:#16a34a;letter-spacing:-0.5px">${pct}%</span>
-                    <span style="font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px">Complete</span>
-                </div>`;
+                _ps(pct+'%', 'Done',   '#16a34a', true);
         }
     }
+
     let welcomeEl = document.getElementById('welcomeName');
     if (welcomeEl) welcomeEl.textContent = _drName(profile);
 }
@@ -565,6 +655,7 @@ function showTab(tab, e) {
     document.getElementById('caseListTab').style.display  = 'none';
     document.getElementById('analyticsTab').style.display = 'none';
     document.getElementById('profileTab').style.display   = 'none';
+    let st = document.getElementById('settingsTab'); if (st) st.style.display = 'none';
     document.getElementById('helpTab').style.display      = 'none';
     document.getElementById('adminPanel').style.display    = 'none';
     let ap = document.getElementById('attendingPanel'); if (ap) ap.style.display = 'none';
@@ -593,9 +684,13 @@ function showTab(tab, e) {
         showAnalytics();
     } else if (tab === 'profile') {
         document.getElementById('profileTab').style.display = 'block';
-        loadProfile();
+        updateProfileDisplay();
         loadProfileEmail();
         loadProfileCaseStats();
+    } else if (tab === 'settings') {
+        document.getElementById('settingsTab').style.display = 'block';
+        loadProfile();
+        loadProfileEmail();
         updateNotifStatus();
     } else if (tab === 'journal') {
         document.getElementById('journalTab').style.display = 'block';
@@ -651,23 +746,18 @@ async function loadProfileEmail() {
 }
 
 function loadProfileCaseStats() {
-    let total    = allCases.length;
-    let totalReq = Object.values(acgme).reduce((a,b)=>a+b,0);
-    let pct      = Math.min(Math.round((total/totalReq)*100),100);
-    let streak   = localStorage.getItem('streak') || 0;
-    // Profile avatar initials
-    let avatarEl = document.getElementById('profileAvatar');
-    if (avatarEl && profile.name) {
-        let parts = profile.name.trim().split(' ');
-        avatarEl.textContent = parts.length >= 2 ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase() : parts[0].slice(0,2).toUpperCase();
-    }
-    let statsEl  = document.getElementById('profileStats');
-    if (statsEl) {
-        statsEl.innerHTML =
-            '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">📋</div><h3>' + total + '</h3><p>Total Cases</p></div>' +
-            '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">🏆</div><h3>' + pct + '%</h3><p>ACGME Done</p></div>' +
-            '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">🔥</div><h3>' + streak + '</h3><p>Day Streak</p></div>';
-    }
+    let total   = allCases.length;
+    let primary = allCases.filter(c => c.role === 'Primary Surgeon').length;
+    let thisMonth = new Date().toISOString().slice(0,7);
+    let monthly = allCases.filter(c => c.date && c.date.startsWith(thisMonth)).length;
+    let el = document.getElementById('profileCaseStats');
+    if (!el) return;
+    const _sc = (val, label, color) =>
+        `<div style="background:white;border:1px solid #E5E7EB;border-radius:14px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.04)">
+            <div style="font-size:22px;font-weight:800;color:${color};letter-spacing:-1px;line-height:1;margin-bottom:4px">${val}</div>
+            <div style="font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px">${label}</div>
+        </div>`;
+    el.innerHTML = _sc(total, 'Total Cases', '#2563eb') + _sc(monthly, 'This Month', '#0891b2') + _sc(primary, 'As Primary', '#16a34a');
 }
 
 async function forgotPassword() {
