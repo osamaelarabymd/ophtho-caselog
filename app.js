@@ -546,6 +546,7 @@ async function showApp() {
     }
     updateProfileDisplay();
     loadCases();
+    syncWorkspaceFromCloud();
     checkWelcomeGuide();
     if (localStorage.getItem('notificationsEnabled') === 'true') scheduleReminder();
 }
@@ -2154,6 +2155,77 @@ function showWorkspaceTab(tab) {
     if (tab === 'study')    renderStudyList();
 }
 
+// ── Workspace Cloud Sync ──────────────────────────────────────────────────────
+async function _getUid() {
+    let { data: { user } } = await db.auth.getUser();
+    return user?.id;
+}
+
+// Maps between app objects (camelCase) and Supabase rows (snake_case)
+const _wsMap = {
+    events: {
+        toCloud:   e => ({ id:e.id, title:e.title, date:e.date, time:e.time||null, type:e.type||null, notes:e.notes||null, created_at:e.createdAt||new Date().toISOString() }),
+        fromCloud: r => ({ id:r.id, title:r.title, date:r.date, time:r.time, type:r.type, notes:r.notes, createdAt:r.created_at })
+    },
+    journal: {
+        toCloud:   e => ({ id:e.id, date:e.date, mood:e.mood||null, title:e.title||null, body:e.body||null, case_id:e.caseId||null, updated_at:e.updatedAt||new Date().toISOString() }),
+        fromCloud: r => ({ id:r.id, date:r.date, mood:r.mood, title:r.title, body:r.body, caseId:r.case_id, updatedAt:r.updated_at })
+    },
+    todos: {
+        toCloud:   e => ({ id:e.id, text:e.text, priority:e.priority||'medium', due:e.due||null, done:e.done||false, created_at:e.createdAt||new Date().toISOString() }),
+        fromCloud: r => ({ id:r.id, text:r.text, priority:r.priority, due:r.due, done:r.done, createdAt:r.created_at })
+    },
+    notes: {
+        toCloud:   e => ({ id:e.id, title:e.title||null, tag:e.tag||null, body:e.body||null, updated_at:e.updatedAt||new Date().toISOString() }),
+        fromCloud: r => ({ id:r.id, title:r.title, tag:r.tag, body:r.body, updatedAt:r.updated_at })
+    },
+    study: {
+        toCloud:   e => ({ id:e.id, topic:e.topic, type:e.type||'Textbook', notes:e.notes||null, status:e.status||'to-read', created_at:e.createdAt||new Date().toISOString() }),
+        fromCloud: r => ({ id:r.id, topic:r.topic, type:r.type, notes:r.notes, status:r.status, createdAt:r.created_at })
+    }
+};
+
+async function syncWorkspaceFromCloud() {
+    let uid = await _getUid();
+    if (!uid) return;
+    try {
+        let tables = [
+            { table:'workspace_events',  key:EVENTS_KEY,  map:_wsMap.events  },
+            { table:'workspace_journal', key:JOURNAL_KEY, map:_wsMap.journal },
+            { table:'workspace_todos',   key:TODO_KEY,    map:_wsMap.todos   },
+            { table:'workspace_notes',   key:NOTES_KEY,   map:_wsMap.notes   },
+            { table:'workspace_study',   key:STUDY_KEY,   map:_wsMap.study   },
+        ];
+        for (let { table, key, map } of tables) {
+            let { data } = await db.from(table).select('*').eq('user_id', uid);
+            if (data && data.length > 0) {
+                // Cloud has data → use it
+                localStorage.setItem(key, JSON.stringify(data.map(map.fromCloud)));
+            } else {
+                // Cloud empty → migrate local data up
+                let local = JSON.parse(localStorage.getItem(key) || '[]');
+                if (local.length > 0) {
+                    await db.from(table).upsert(local.map(item => ({ ...map.toCloud(item), user_id: uid })));
+                }
+            }
+        }
+    } catch(e) { console.warn('Workspace cloud sync failed:', e); }
+}
+
+async function _cloudUpsert(table, appObj, map) {
+    let uid = await _getUid();
+    if (!uid) return;
+    try { await db.from(table).upsert({ ...map.toCloud(appObj), user_id: uid }); }
+    catch(e) { console.warn('Cloud upsert failed:', e); }
+}
+
+async function _cloudDelete(table, id) {
+    let uid = await _getUid();
+    if (!uid) return;
+    try { await db.from(table).delete().eq('id', id).eq('user_id', uid); }
+    catch(e) { console.warn('Cloud delete failed:', e); }
+}
+
 // ── Calendar ──────────────────────────────────────────────────────────────────
 const EVENTS_KEY = 'eyeEvents';
 let calYear, calMonth, selectedCalDate;
@@ -2393,6 +2465,7 @@ function saveEvent() {
     if (id) { let idx = events.findIndex(e => e.id === id); if (idx !== -1) events[idx] = ev; else events.push(ev); }
     else events.push(ev);
     saveEvents(events);
+    _cloudUpsert('workspace_events', ev, _wsMap.events);
     closeEventModal();
     selectedCalDate = date;
     renderCalendar();
@@ -2404,6 +2477,7 @@ function saveEvent() {
 function deleteEvent(id) {
     if (!confirm('Delete this event?')) return;
     saveEvents(getEvents().filter(e => e.id !== id));
+    _cloudDelete('workspace_events', id);
     renderCalendar();
     showToast('🗑️ Event deleted', 'warning');
 }
@@ -2491,6 +2565,7 @@ function saveJournalEntry() {
     }
 
     saveJournalEntries(entries);
+    _cloudUpsert('workspace_journal', entry, _wsMap.journal);
     closeJournalModal();
     renderJournalList();
     showToast('📔 Journal entry saved!');
@@ -2500,6 +2575,7 @@ function deleteJournalEntry(id) {
     if (!confirm('Delete this journal entry?')) return;
     let entries = getJournalEntries().filter(e => e.id !== id);
     saveJournalEntries(entries);
+    _cloudDelete('workspace_journal', id);
     renderJournalList();
     showToast('🗑️ Entry deleted', 'warning');
 }
@@ -2613,6 +2689,7 @@ function saveTodo() {
     if (id) { let idx = todos.findIndex(t => t.id === id); if (idx !== -1) { todo.done = todos[idx].done; todos[idx] = todo; } else todos.unshift(todo); }
     else todos.unshift(todo);
     saveTodos(todos);
+    _cloudUpsert('workspace_todos', todo, _wsMap.todos);
     closeTodoModal();
     renderTodos();
     showToast('✅ Task saved!');
@@ -2621,12 +2698,13 @@ function saveTodo() {
 function toggleTodo(id) {
     let todos = getTodos();
     let todo  = todos.find(t => t.id === id);
-    if (todo) { todo.done = !todo.done; saveTodos(todos); renderTodos(); }
+    if (todo) { todo.done = !todo.done; saveTodos(todos); renderTodos(); _cloudUpsert('workspace_todos', todo, _wsMap.todos); }
 }
 
 function deleteTodo(id) {
     if (!confirm('Delete this task?')) return;
     saveTodos(getTodos().filter(t => t.id !== id));
+    _cloudDelete('workspace_todos', id);
     renderTodos();
     showToast('🗑️ Task deleted', 'warning');
 }
@@ -2720,6 +2798,7 @@ function saveNote() {
     if (id) { let idx = notes.findIndex(n => n.id === id); if (idx !== -1) notes[idx] = note; else notes.unshift(note); }
     else notes.unshift(note);
     saveNotes(notes);
+    _cloudUpsert('workspace_notes', note, _wsMap.notes);
     closeNoteModal();
     renderNotes();
     showToast('📝 Note saved!');
@@ -2728,6 +2807,7 @@ function saveNote() {
 function deleteNote(id) {
     if (!confirm('Delete this note?')) return;
     saveNotes(getNotes().filter(n => n.id !== id));
+    _cloudDelete('workspace_notes', id);
     renderNotes();
     showToast('🗑️ Note deleted', 'warning');
 }
@@ -2795,6 +2875,7 @@ function saveStudyItem() {
     if (id) { let idx = items.findIndex(s => s.id === id); if (idx !== -1) { item.status = items[idx].status; items[idx] = item; } else items.unshift(item); }
     else items.unshift(item);
     saveStudyItems(items);
+    _cloudUpsert('workspace_study', item, _wsMap.study);
     closeStudyModal();
     renderStudyList();
     showToast('📚 Added to study list!');
@@ -2808,11 +2889,13 @@ function cycleStudyStatus(id) {
     item.status = cycle[item.status] || 'to-read';
     saveStudyItems(items);
     renderStudyList();
+    _cloudUpsert('workspace_study', item, _wsMap.study);
 }
 
 function deleteStudyItem(id) {
     if (!confirm('Remove from study list?')) return;
     saveStudyItems(getStudyItems().filter(s => s.id !== id));
+    _cloudDelete('workspace_study', id);
     renderStudyList();
     showToast('🗑️ Removed', 'warning');
 }
