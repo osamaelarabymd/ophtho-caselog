@@ -782,22 +782,27 @@ async function showApp() {
     document.getElementById('loginSection').style.display   = 'none';
     document.getElementById('appSection').style.display     = 'block';
     document.getElementById('pendingSection').style.display = 'none';
-    let { data: { user } } = await db.auth.getUser();
-    let { data: profile }  = await db.from('profiles').select('*').eq('id', user.id).single();
+
     const adminEmails = ['elarabyo@stanford.edu'];
-    if (!profile && adminEmails.includes(user.email)) {
-        // Restore admin profile if missing
-        await db.from('profiles').upsert({ id: user.id, email: user.email, full_name: 'Dr. Elaraby', role: 'admin', status: 'approved' });
-        profile = { role: 'admin', status: 'approved', full_name: 'Dr. Elaraby', preferred_name: 'Osama' };
-    }
-    currentUserRole = profile ? profile.role : 'resident';
+    let user, profile;
+    try {
+        let r = await db.auth.getUser();
+        user  = r.data?.user;
+        let p = await db.from('profiles').select('*').eq('id', user.id).single();
+        profile = p.data;
+        if (!profile && adminEmails.includes(user.email)) {
+            await db.from('profiles').upsert({ id: user.id, email: user.email, full_name: 'Dr. Elaraby', role: 'admin', status: 'approved' });
+            profile = { role: 'admin', status: 'approved', full_name: 'Dr. Elaraby', preferred_name: 'Osama' };
+        }
+    } catch(e) { console.error('showApp profile fetch:', e); }
+
+    currentUserRole = profile?.role || 'resident';
     if (currentUserRole === 'admin' || adminEmails.includes(user?.email)) {
         currentUserRole = 'admin';
         document.getElementById('adminTab').style.display = 'inline-block';
         checkPendingUsers();
     }
     if (currentUserRole === 'attending') {
-        // Hide resident-only tabs
         ['tabBtnDashboard','tabBtnLogCase','tabBtnAnalytics','nav-dashboard','nav-logCase','nav-analytics'].forEach(id => {
             let el = document.getElementById(id);
             if (el) el.style.display = 'none';
