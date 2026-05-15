@@ -815,7 +815,9 @@ db.auth.getSession().then(async ({ data }) => {
     if (data.session) {
         let { data: { user } } = await db.auth.getUser();
         let { data: profile }  = await db.from('profiles').select('*').eq('id', user.id).single();
-        if (!profile || profile.status === 'pending') {
+        if (profile?.role === 'admin') {
+            showApp();
+        } else if (!profile || profile.status === 'pending') {
             showPendingScreen('');
             await db.auth.signOut();
         } else if (profile.status === 'rejected') {

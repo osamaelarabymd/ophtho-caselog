@@ -1,4 +1,4 @@
-const CACHE_NAME = 'eye-log-v2';
+const CACHE_NAME = 'eye-log-v3';
 const urlsToCache = [
     '/',
     '/index.html',
