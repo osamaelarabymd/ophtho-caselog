@@ -658,14 +658,14 @@ async function completeSignUp() {
     if (error) { hideLoading(); showToast(error.message, 'error'); document.getElementById('roleModal').style.display = 'flex'; return; }
 
     if (data.user) {
-        await db.from('profiles').upsert({
-            id:             data.user.id,
-            email,
-            full_name:      fullName,
-            preferred_name: preferredName,
-            role:           _signupRole,
-            status:         'pending'
-        });
+        // Try with preferred_name column first; if column missing, fall back without it
+        let profileRow = { id: data.user.id, email, full_name: fullName, preferred_name: preferredName, role: _signupRole, status: 'pending' };
+        let { error: upsertErr } = await db.from('profiles').upsert(profileRow);
+        if (upsertErr) {
+            // Column may not exist yet — retry without preferred_name
+            let { error: fallbackErr } = await db.from('profiles').upsert({ id: data.user.id, email, full_name: fullName, role: _signupRole, status: 'pending' });
+            if (fallbackErr) { hideLoading(); showToast('⚠️ Profile save failed: ' + fallbackErr.message, 'error'); return; }
+        }
         // Seed localStorage so the app is personalised from first login
         let p = JSON.parse(localStorage.getItem('userProfile')) || {};
         p.name = fullName; p.preferredName = preferredName;
@@ -696,7 +696,7 @@ async function signInForm() {
     hideLoading();
     if (error) { showToast(error.message, 'error'); return; }
     let { data: { user } } = await db.auth.getUser();
-    let { data: profile }  = await db.from('profiles').select('status, role, full_name').eq('id', user.id).single();
+    let { data: profile }  = await db.from('profiles').select('*').eq('id', user.id).single();
     if (!profile || profile.status === 'pending') {
         showPendingScreen(profile ? profile.full_name : '');
         await db.auth.signOut();
@@ -736,7 +736,7 @@ async function showApp() {
     document.getElementById('appSection').style.display     = 'block';
     document.getElementById('pendingSection').style.display = 'none';
     let { data: { user } } = await db.auth.getUser();
-    let { data: profile }  = await db.from('profiles').select('role, full_name, preferred_name, status').eq('id', user.id).single();
+    let { data: profile }  = await db.from('profiles').select('*').eq('id', user.id).single();
     currentUserRole = profile ? profile.role : 'resident';
     if (currentUserRole === 'admin') {
         document.getElementById('adminTab').style.display = 'inline-block';
@@ -768,7 +768,7 @@ async function showApp() {
 db.auth.getSession().then(async ({ data }) => {
     if (data.session) {
         let { data: { user } } = await db.auth.getUser();
-        let { data: profile }  = await db.from('profiles').select('status, role').eq('id', user.id).single();
+        let { data: profile }  = await db.from('profiles').select('*').eq('id', user.id).single();
         if (!profile || profile.status === 'pending') {
             showPendingScreen('');
             await db.auth.signOut();
@@ -2382,7 +2382,7 @@ let _attendingCases = [];
 
 async function loadAttendingDashboard() {
     let { data: { user } } = await db.auth.getUser();
-    let { data: profile }  = await db.from('profiles').select('full_name, preferred_name, role').eq('id', user.id).single();
+    let { data: profile }  = await db.from('profiles').select('*').eq('id', user.id).single();
     let name     = profile?.full_name || '';
     let dispName = profile?.preferred_name || name.split(' ')[0] || name;
 
