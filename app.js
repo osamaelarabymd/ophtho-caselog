@@ -45,6 +45,160 @@ const milestones = [
     { pct: 100, emoji: '🏆', title: 'ACGME Complete!', text: "Outstanding! You've completed ALL ACGME requirements!", badge: '100% Legend',  color: '#16a34a' }
 ];
 
+// ── Global Search ─────────────────────────────────────────────────────────────
+function openGlobalSearch() {
+    let modal = document.getElementById('globalSearchModal');
+    if (!modal) return;
+    modal.style.display = 'block';
+    setTimeout(() => { let inp = document.getElementById('globalSearchInput'); if (inp) inp.focus(); }, 100);
+}
+
+function closeGlobalSearch() {
+    let modal = document.getElementById('globalSearchModal');
+    if (modal) modal.style.display = 'none';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGlobalSearch(); });
+
+function runGlobalSearch() {
+    let q   = (document.getElementById('globalSearchInput')?.value || '').trim().toLowerCase();
+    let out = document.getElementById('globalSearchResults');
+    if (!out) return;
+
+    if (q.length < 2) {
+        out.innerHTML = '<div style="text-align:center;padding:40px 20px;color:#94a3b8"><div style="font-size:40px;margin-bottom:12px">🔍</div><p style="font-size:14px;font-weight:600;color:#64748b">Start typing to search everything</p><p style="font-size:12px">Cases · Journal · Notes · Tasks · Study List</p></div>';
+        return;
+    }
+
+    let html = '';
+
+    // Cases
+    let caseHits = allCases.filter(c =>
+        (c.procedure||'').toLowerCase().includes(q) ||
+        (c.attending||'').toLowerCase().includes(q)  ||
+        (c.hospital||'').toLowerCase().includes(q)   ||
+        (c.notes||'').toLowerCase().includes(q)
+    ).slice(0, 6);
+    if (caseHits.length) {
+        html += _srSection('📋 Cases', caseHits.map(c =>
+            _srItem('📋', c.procedure, `${c.date||''} · ${c.role||''} · ${c.attending||''}`, `showTab('caseList',null);closeGlobalSearch()`, procedureColors[c.procedure]||'#2563eb')
+        ));
+    }
+
+    // Journal
+    let jHits = getJournalEntries().filter(e =>
+        (e.title||'').toLowerCase().includes(q) ||
+        (e.body||'').toLowerCase().includes(q)
+    ).slice(0, 4);
+    if (jHits.length) {
+        html += _srSection('📔 Journal', jHits.map(e =>
+            _srItem(e.mood||'📔', e.title||'Untitled entry', `${e.date||''} · ${(e.body||'').slice(0,60)}…`, `showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch()`, '#7c3aed')
+        ));
+    }
+
+    // Notes
+    let nHits = getNotes().filter(n =>
+        (n.title||'').toLowerCase().includes(q) ||
+        (n.body||'').toLowerCase().includes(q)  ||
+        (n.tag||'').toLowerCase().includes(q)
+    ).slice(0, 4);
+    if (nHits.length) {
+        html += _srSection('📝 Notes', nHits.map(n =>
+            _srItem('📝', n.title||'Untitled', (n.tag||'') + (n.body ? ' · ' + n.body.slice(0,60) : ''), `showTab('journal',null);showWorkspaceTab('notes');closeGlobalSearch()`, '#0891b2')
+        ));
+    }
+
+    // Todos
+    let tHits = getTodos().filter(t => (t.text||'').toLowerCase().includes(q)).slice(0, 4);
+    if (tHits.length) {
+        let priColor = { high:'#dc2626', medium:'#d97706', low:'#16a34a' };
+        html += _srSection('✅ Tasks', tHits.map(t =>
+            _srItem(t.done ? '✅' : '⬜', t.text, `${t.priority} priority${t.due?' · due '+t.due:''}`, `showTab('journal',null);showWorkspaceTab('todo');closeGlobalSearch()`, priColor[t.priority]||'#64748b')
+        ));
+    }
+
+    // Study
+    let sHits = getStudyItems().filter(s =>
+        (s.topic||'').toLowerCase().includes(q) ||
+        (s.notes||'').toLowerCase().includes(q)
+    ).slice(0, 4);
+    if (sHits.length) {
+        let stColor = { 'to-read':'#2563eb', 'reading':'#d97706', 'done':'#16a34a' };
+        html += _srSection('📚 Study List', sHits.map(s =>
+            _srItem('📚', s.topic, `${s.type||''} · ${s.status||''}`, `showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch()`, stColor[s.status]||'#64748b')
+        ));
+    }
+
+    if (!html) {
+        html = `<div style="text-align:center;padding:40px 20px;color:#94a3b8">
+            <div style="font-size:40px;margin-bottom:12px">🤷</div>
+            <p style="font-size:14px;font-weight:600;color:#64748b">No results for "${q}"</p>
+            <p style="font-size:12px">Try a different keyword</p>
+        </div>`;
+    }
+    out.innerHTML = html;
+}
+
+function _srSection(label, items) {
+    return `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">${label}</div>
+        ${items.join('')}
+    </div>`;
+}
+
+function _srItem(icon, title, sub, action, color) {
+    return `<div onclick="${action}" style="display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;margin-bottom:6px;cursor:pointer;border:1px solid #f1f5f9;transition:background 0.1s"
+        onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+        <div style="width:36px;height:36px;background:${color}18;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${icon}</div>
+        <div style="flex:1;min-width:0">
+            <p style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${title}</p>
+            <p style="font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sub}</p>
+        </div>
+        <span style="font-size:16px;color:#cbd5e1;flex-shrink:0">›</span>
+    </div>`;
+}
+
+// ── Analytics Accordion ───────────────────────────────────────────────────────
+let _accordionState = {};
+
+function initAnalyticsAccordions() {
+    let tab = document.getElementById('analyticsTab');
+    if (!tab) return;
+    let cards = tab.querySelectorAll('.dash-card');
+    cards.forEach((card, i) => {
+        let h3 = card.querySelector('h3');
+        if (!h3 || card.dataset.accordion) return;
+        card.dataset.accordion = 'true';
+        let key = 'acc_' + i;
+        // First 2 cards open by default, rest closed
+        let open = _accordionState[key] !== undefined ? _accordionState[key] : (i < 2);
+
+        // Wrap all children except h3 in a collapsible body
+        let children = Array.from(card.children).filter(c => c !== h3);
+        let body = document.createElement('div');
+        body.className = 'acc-body';
+        body.style.cssText = open ? '' : 'display:none';
+        children.forEach(c => body.appendChild(c));
+        card.appendChild(body);
+
+        // Style the h3 as a toggle
+        h3.style.cssText += ';cursor:pointer;display:flex;justify-content:space-between;align-items:center;margin-bottom:' + (open?'14px':'0');
+        let chevron = document.createElement('span');
+        chevron.className = 'acc-chevron';
+        chevron.textContent = open ? '▾' : '▸';
+        chevron.style.cssText = 'font-size:14px;color:#94a3b8;transition:transform 0.2s;margin-left:8px;flex-shrink:0';
+        h3.appendChild(chevron);
+
+        h3.onclick = () => {
+            let isOpen = body.style.display !== 'none';
+            body.style.display = isOpen ? 'none' : 'block';
+            chevron.textContent = isOpen ? '▸' : '▾';
+            h3.style.marginBottom = isOpen ? '0' : '14px';
+            _accordionState[key] = !isOpen;
+        };
+    });
+}
+
 // Toast
 function showToast(message, type = 'success') {
     let toast = document.getElementById('toast');
@@ -1003,6 +1157,8 @@ function showAnalytics() {
     generateInsights();
     showComplexityChart();
     showProcedureCalendar();
+    // Run after all content is rendered so cards have their children
+    setTimeout(initAnalyticsAccordions, 50);
 }
 
 function showProjections() {

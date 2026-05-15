@@ -44,6 +44,28 @@
         </div>
     </div>
 
+    <!-- Global Search Modal -->
+    <div id="globalSearchModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;backdrop-filter:blur(6px)" onclick="if(event.target===this)closeGlobalSearch()">
+        <div style="background:white;border-radius:0 0 24px 24px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,0.25);display:flex;flex-direction:column">
+            <div style="padding:16px;border-bottom:1px solid #f1f5f9;position:sticky;top:0;background:white;z-index:1">
+                <div style="display:flex;align-items:center;gap:10px">
+                    <span style="font-size:20px">🔍</span>
+                    <input id="globalSearchInput" type="text" placeholder="Search cases, journal, notes, tasks…"
+                        oninput="runGlobalSearch()" autofocus
+                        style="flex:1;margin:0;padding:10px 14px;border-radius:12px;font-size:15px;border:2px solid #2563eb;outline:none">
+                    <button onclick="closeGlobalSearch()" style="width:36px;height:36px;margin:0;padding:0;background:#f1f5f9;border-radius:10px;font-size:18px;color:#64748b;box-shadow:none;flex-shrink:0">✕</button>
+                </div>
+            </div>
+            <div id="globalSearchResults" style="padding:16px;min-height:200px">
+                <div style="text-align:center;padding:40px 20px;color:#94a3b8">
+                    <div style="font-size:40px;margin-bottom:12px">🔍</div>
+                    <p style="font-size:14px;font-weight:600;color:#64748b">Start typing to search everything</p>
+                    <p style="font-size:12px">Cases · Journal · Notes · Tasks · Study List</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Stats Card Modal -->
     <div id="statsCardModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px)">
         <div style="background:white;border-radius:24px;padding:32px;width:90%;max-width:420px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.3)">
@@ -230,8 +252,8 @@
     <div id="appSection" style="display:none">
 
         <div class="top-bar">
+            <button onclick="openGlobalSearch()" class="top-btn" style="background:#2563eb">🔍 Search</button>
             <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSev-87zwv0Ot_7LNJuuNNTBpKpcOvS_vEtSnGbgLGjMVP-iMA/viewform', '_blank')" class="top-btn" style="background:#16a34a">💬 Feedback</button>
-            <button onclick="showTab('help', event)" class="top-btn" style="background:#64748b">❓ Help</button>
             <button id="darkBtn" onclick="toggleDarkMode()" class="top-btn" style="background:#1e293b">🌙 Dark</button>
             <button onclick="signOut()" class="top-btn" style="background:#dc2626">🚪 Sign Out</button>
         </div>
