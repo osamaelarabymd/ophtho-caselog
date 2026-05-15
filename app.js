@@ -669,31 +669,29 @@ async function completeSignUp() {
         let { data, error } = await db.auth.signUp({ email, password });
 
         if (error) {
-            // Any sign-up error — try sign-in to recover existing account
+            // Already registered — sign in to get userId, save profile, then sign out
             let { data: siData, error: siErr } = await db.auth.signInWithPassword({ email, password });
             if (siErr) { showToast('⚠️ ' + error.message, 'error'); resetBtn(); return; }
             userId = siData.user?.id;
+            if (userId) {
+                let row = { id: userId, email, full_name: fullName, role: _signupRole, status: 'pending', preferred_name: preferredName };
+                await db.from('profiles').upsert(row);
+            }
             await db.auth.signOut();
         } else {
             userId = data.user?.id;
-            // If session came back (email confirm OFF + existing user) — sign back out
+            if (userId) {
+                // Save profile while still authenticated
+                let row = { id: userId, email, full_name: fullName, role: _signupRole, status: 'pending', preferred_name: preferredName };
+                await db.from('profiles').upsert(row);
+            }
             if (data.session) await db.auth.signOut();
         }
 
         if (!userId) {
-            // Email confirmation required — user created but no ID yet; profile created by DB trigger
-            document.getElementById('roleModal').style.display = 'none';
+            // Email confirmation required — show pending (DB trigger creates default profile)
             showPendingScreen(preferredName || fullName);
             return;
-        }
-
-        // Save profile
-        let row = { id: userId, email, full_name: fullName, role: _signupRole, status: 'pending' };
-        try { row.preferred_name = preferredName; } catch(e) {}
-        let { error: uErr } = await db.from('profiles').upsert(row);
-        if (uErr) {
-            delete row.preferred_name;
-            await db.from('profiles').upsert(row);
         }
 
         let p = JSON.parse(localStorage.getItem('userProfile')) || {};
