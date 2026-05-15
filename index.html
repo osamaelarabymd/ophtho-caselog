@@ -29,18 +29,18 @@
     <div id="shareView" style="display:none; max-width:480px; margin:40px auto; padding:20px">
         <div style="background:linear-gradient(135deg,#8C1515,#2563eb); border-radius:24px; padding:32px; color:white; text-align:center; margin-bottom:20px; position:relative; overflow:hidden">
             <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:rgba(255,255,255,0.06);border-radius:50%"></div>
-            <div style="width:72px;height:72px;background:rgba(255,255,255,0.2);border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:32px;border:3px solid rgba(255,255,255,0.4)">👨‍⚕️</div>
+            <div style="width:72px;height:72px;background:rgba(255,255,255,0.2);border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,255,255,0.4)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
             <h2 id="svName" style="color:white;font-size:22px;margin-bottom:6px">Dr. Resident</h2>
             <p id="svProgram" style="opacity:0.85;font-size:14px;margin-bottom:4px;font-weight:600">Ophthalmology Program</p>
             <p id="svPgy" style="opacity:0.7;font-size:13px">PGY-1</p>
         </div>
         <div id="svStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px"></div>
         <div class="dash-card" style="margin-bottom:16px">
-            <h3>📊 ACGME Progress</h3>
+            <h3>ACGME Progress</h3>
             <div id="svProgress" style="margin-top:12px"></div>
         </div>
         <div style="text-align:center;padding:16px;color:#94a3b8;font-size:13px">
-            <p>👁️ <strong>EyeLog</strong> — Ophthalmology Residency Case Tracker</p>
+            <p><strong>EyeLog</strong> — Ophthalmology Residency Case Tracker</p>
         </div>
     </div>
 
@@ -49,7 +49,7 @@
         <div style="background:white;border-radius:0 0 24px 24px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,0.25);display:flex;flex-direction:column">
             <div style="padding:16px;border-bottom:1px solid #f1f5f9;position:sticky;top:0;background:white;z-index:1">
                 <div style="display:flex;align-items:center;gap:10px">
-                    <span style="font-size:20px">🔍</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     <input id="globalSearchInput" type="text" placeholder="Search cases, journal, notes, tasks…"
                         oninput="runGlobalSearch()" autofocus
                         style="flex:1;margin:0;padding:10px 14px;border-radius:12px;font-size:15px;border:2px solid #2563eb;outline:none">
@@ -58,7 +58,7 @@
             </div>
             <div id="globalSearchResults" style="padding:16px;min-height:200px">
                 <div style="text-align:center;padding:40px 20px;color:#94a3b8">
-                    <div style="font-size:40px;margin-bottom:12px">🔍</div>
+                    <div style="margin-bottom:12px;display:flex;justify-content:center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
                     <p style="font-size:14px;font-weight:600;color:#64748b">Start typing to search everything</p>
                     <p style="font-size:12px">Cases · Journal · Notes · Tasks · Study List</p>
                 </div>
@@ -70,7 +70,7 @@
     <div id="statsCardModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px)">
         <div style="background:white;border-radius:24px;padding:32px;width:90%;max-width:420px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.3)">
             <div style="background:linear-gradient(135deg,#8C1515,#2563eb);border-radius:16px;padding:24px;color:white;text-align:center;margin-bottom:20px">
-                <div style="font-size:32px;margin-bottom:10px">👨‍⚕️</div>
+                <div style="margin-bottom:10px;display:flex;justify-content:center"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
                 <h3 id="scName" style="color:white;font-size:18px;margin-bottom:4px">Dr. Resident</h3>
                 <p id="scProgram" style="opacity:0.85;font-size:13px;margin-bottom:2px">Ophthalmology Program</p>
                 <p id="scPgy" style="opacity:0.7;font-size:12px">PGY-1</p>
@@ -105,13 +105,13 @@
             <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#374151;margin-bottom:8px;display:block">Performance Rating</label>
             <div style="display:flex;gap:8px;margin-bottom:18px">
                 <button class="feedback-rating-btn" onclick="selectFeedbackRating('Excellent',this)" style="flex:1;margin:0;padding:10px 6px;font-size:12px;font-weight:700;border:2px solid #e2e8f0;background:#f8fafc;color:#64748b;border-radius:10px;cursor:pointer;transition:all 0.15s">
-                    <div style="font-size:16px;margin-bottom:2px">⭐</div>Excellent
+                    <div style="margin-bottom:4px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>Excellent
                 </button>
                 <button class="feedback-rating-btn" onclick="selectFeedbackRating('Good',this)" style="flex:1;margin:0;padding:10px 6px;font-size:12px;font-weight:700;border:2px solid #e2e8f0;background:#f8fafc;color:#64748b;border-radius:10px;cursor:pointer;transition:all 0.15s">
-                    <div style="font-size:16px;margin-bottom:2px">👍</div>Good
+                    <div style="margin-bottom:4px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg></div>Good
                 </button>
                 <button class="feedback-rating-btn" onclick="selectFeedbackRating('Needs Work',this)" style="flex:1;margin:0;padding:10px 6px;font-size:12px;font-weight:700;border:2px solid #e2e8f0;background:#f8fafc;color:#64748b;border-radius:10px;cursor:pointer;transition:all 0.15s">
-                    <div style="font-size:16px;margin-bottom:2px">📈</div>Needs Work
+                    <div style="margin-bottom:4px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>Needs Work
                 </button>
             </div>
 
@@ -146,7 +146,7 @@
             <p id="milestoneText" style="font-size:16px; color:#64748b; line-height:1.6; margin-bottom:24px">You reached a milestone!</p>
             <div id="milestoneBadge" style="display:inline-block; background:linear-gradient(135deg,#2563eb,#7c3aed); color:white; padding:8px 24px; border-radius:50px; font-size:14px; font-weight:700; margin-bottom:24px"></div>
             <br>
-            <button onclick="closeMilestone()" style="width:auto; padding:14px 40px; border-radius:50px; font-size:16px; font-weight:700; background:linear-gradient(135deg,#2563eb,#7c3aed); box-shadow:0 4px 16px rgba(37,99,235,0.4)">Keep Going! 🚀</button>
+            <button onclick="closeMilestone()" style="width:auto; padding:14px 40px; border-radius:50px; font-size:16px; font-weight:700; background:linear-gradient(135deg,#2563eb,#7c3aed); box-shadow:0 4px 16px rgba(37,99,235,0.4)">Keep Going</button>
         </div>
     </div>
 
@@ -154,34 +154,34 @@
     <div id="welcomeGuide" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9997; align-items:center; justify-content:center; backdrop-filter:blur(6px)">
         <div style="background:white; border-radius:24px; padding:36px 32px; width:90%; max-width:480px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,0.3)">
             <div style="text-align:center; margin-bottom:28px">
-                <div style="font-size:56px; margin-bottom:12px">👋</div>
+                <div style="margin-bottom:12px;display:flex;justify-content:center"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
                 <h2 style="font-size:24px; font-weight:900; color:#0f172a; margin-bottom:8px">Welcome to EyeLog!</h2>
                 <p style="font-size:14px; color:#64748b; line-height:1.6">Here's how to get started in 3 simple steps</p>
             </div>
             <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:28px">
                 <div style="display:flex; gap:16px; align-items:flex-start; background:#f0f9ff; padding:16px; border-radius:14px; border:1px solid #bae6fd">
-                    <div style="width:40px; height:40px; background:#2563eb; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0">👤</div>
+                    <div style="width:40px; height:40px; background:#2563eb; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
                     <div>
                         <p style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:14px">Step 1 — Set up your profile</p>
                         <p style="font-size:13px; color:#64748b; line-height:1.5">Go to Profile tab and enter your name, PGY year, and program.</p>
                     </div>
                 </div>
                 <div style="display:flex; gap:16px; align-items:flex-start; background:#f0fdf4; padding:16px; border-radius:14px; border:1px solid #bbf7d0">
-                    <div style="width:40px; height:40px; background:#16a34a; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0">➕</div>
+                    <div style="width:40px; height:40px; background:#16a34a; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
                     <div>
                         <p style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:14px">Step 2 — Log your first case</p>
                         <p style="font-size:13px; color:#64748b; line-height:1.5">Tap Log Case, fill in procedure details, and hit Save. Takes less than 30 seconds!</p>
                     </div>
                 </div>
                 <div style="display:flex; gap:16px; align-items:flex-start; background:#faf5ff; padding:16px; border-radius:14px; border:1px solid #e9d5ff">
-                    <div style="width:40px; height:40px; background:#7c3aed; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0">📊</div>
+                    <div style="width:40px; height:40px; background:#7c3aed; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
                     <div>
                         <p style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:14px">Step 3 — Track your ACGME progress</p>
                         <p style="font-size:13px; color:#64748b; line-height:1.5">Your dashboard updates automatically showing progress toward all ACGME requirements.</p>
                     </div>
                 </div>
                 <div style="display:flex; gap:16px; align-items:flex-start; background:#fff7ed; padding:16px; border-radius:14px; border:1px solid #fed7aa">
-                    <div style="width:40px; height:40px; background:#d97706; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0">📄</div>
+                    <div style="width:40px; height:40px; background:#d97706; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
                     <div>
                         <p style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:14px">Bonus — Export PDF reports</p>
                         <p style="font-size:13px; color:#64748b; line-height:1.5">Generate beautiful PDF reports anytime from the Log Case tab.</p>
@@ -189,10 +189,10 @@
                 </div>
             </div>
             <div style="background:#f8fafc; border-radius:12px; padding:14px; margin-bottom:24px; border:1px solid #e2e8f0">
-                <p style="font-size:12px; color:#64748b; text-align:center; line-height:1.6">💡 <strong>Pro tip:</strong> Save case templates for procedures you do often!</p>
+                <p style="font-size:12px; color:#64748b; text-align:center; line-height:1.6"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><strong>Pro tip:</strong> Save case templates for procedures you do often!</p>
             </div>
             <button onclick="closeWelcomeGuide()" style="width:100%; border-radius:50px; font-size:16px; font-weight:700; background:linear-gradient(135deg,#8C1515,#2563eb); margin:0">
-                Let's Get Started! 🚀
+                Get Started
             </button>
         </div>
     </div>
@@ -200,28 +200,28 @@
     <!-- Onboarding -->
     <div id="onboarding" style="display:none">
         <div id="slide1" class="onboard-slide">
-            <div class="onboard-icon">👁️</div>
+            <div class="onboard-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
             <h1 class="onboard-title">Welcome to<br>EyeLog</h1>
             <p class="onboard-text">The smart case logging app built for ophthalmology residents</p>
             <button class="onboard-btn" onclick="nextSlide(2)">Get Started →</button>
         </div>
         <div id="slide2" class="onboard-slide" style="display:none">
-            <div class="onboard-icon">📋</div>
+            <div class="onboard-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
             <h1 class="onboard-title">Log Cases<br>Instantly</h1>
             <p class="onboard-text">Record procedures in seconds — procedure type, role, attending, hospital and notes all in one place</p>
             <button class="onboard-btn" onclick="nextSlide(3)">Next →</button>
         </div>
         <div id="slide3" class="onboard-slide" style="display:none">
-            <div class="onboard-icon">📊</div>
+            <div class="onboard-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
             <h1 class="onboard-title">Track ACGME<br>Progress</h1>
             <p class="onboard-text">See your progress toward ACGME requirements in real time with beautiful charts and progress bars</p>
             <button class="onboard-btn" onclick="nextSlide(4)">Next →</button>
         </div>
         <div id="slide4" class="onboard-slide" style="display:none">
-            <div class="onboard-icon">🏥</div>
+            <div class="onboard-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
             <h1 class="onboard-title">Built for<br>Residents</h1>
             <p class="onboard-text">Free forever. Works on iPhone and desktop. Export PDF reports for your Program Director anytime.</p>
-            <button class="onboard-btn" onclick="finishOnboarding()">Let's Go! 🚀</button>
+            <button class="onboard-btn" onclick="finishOnboarding()">Get Started</button>
         </div>
         <div class="onboard-dots">
             <span id="dot1" class="dot active-dot"></span>
@@ -233,7 +233,7 @@
 
     <!-- Login -->
     <div id="loginSection">
-        <h2>👁️ EyeLog</h2>
+        <h2>EyeLog</h2>
         <p>Ophthalmology Residency Case Tracker</p>
 
         <div id="signUpForm">
@@ -245,7 +245,7 @@
             <input type="password" id="password" placeholder="Password (min 6 characters)">
             <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:10px; padding:12px; margin-top:16px">
                 <p style="font-size:12px; color:#0369a1; line-height:1.6; margin:0">
-                    🔒 <strong>Privacy:</strong> Your case data is stored securely and only visible to you and your program director. We never share your data with third parties.
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><strong>Privacy:</strong> Your case data is stored securely and only visible to you and your program director. We never share your data with third parties.
                 </p>
             </div>
             <div class="btn-row">
@@ -284,11 +284,11 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
                 <button id="roleBtn-resident" onclick="selectSignupRole('resident')"
                     style="padding:18px 10px;border-radius:16px;border:2px solid #2563eb;background:#eff6ff;color:#2563eb;font-size:13px;font-weight:700;margin:0;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:8px">
-                    <span style="font-size:28px">👨‍🎓</span>Resident
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Resident
                 </button>
                 <button id="roleBtn-attending" onclick="selectSignupRole('attending')"
                     style="padding:18px 10px;border-radius:16px;border:2px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:13px;font-weight:700;margin:0;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:8px">
-                    <span style="font-size:28px">🩺</span>Attending
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Attending
                 </button>
             </div>
 
@@ -316,7 +316,7 @@
         <p id="pendingName" style="font-size:18px; font-weight:700; color:#2563eb; margin-bottom:16px">Dr. Resident</p>
         <p style="font-size:14px; color:#64748b; line-height:1.6; margin-bottom:24px">Your account request has been submitted. The program director will review and approve your access shortly.</p>
         <div style="background:#f0fdf4; border:2px solid #16a34a; border-radius:12px; padding:16px; margin-bottom:24px">
-            <p style="font-size:13px; color:#15803d; font-weight:600">✅ Account created successfully</p>
+            <p style="font-size:13px; color:#15803d; font-weight:600; display:flex; align-items:center; gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Account created successfully</p>
             <p style="font-size:13px; color:#15803d">You'll be able to log in once approved</p>
         </div>
         <button onclick="signOut()" style="background:#64748b; width:auto; padding:10px 24px">Back to Login</button>
@@ -335,7 +335,7 @@
         <!-- PWA Install Banner -->
         <div id="installBanner" style="display:none; background:linear-gradient(135deg,#2563eb,#7c3aed); color:white; padding:14px 20px; border-radius:14px; margin-bottom:16px; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
             <div>
-                <div style="font-weight:700; font-size:14px">📱 Add EyeLog to your home screen</div>
+                <div style="font-weight:700; font-size:14px; display:flex; align-items:center; gap:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> Add EyeLog to your home screen</div>
                 <div style="font-size:12px; opacity:0.85; margin-top:2px">Log cases faster — works offline too</div>
             </div>
             <div style="display:flex; gap:8px; flex-shrink:0">
@@ -351,11 +351,11 @@
         <div id="tabs">
             <button onclick="showTab('dashboard', event)" class="tab-btn active-tab" id="tabBtnDashboard"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg> Dashboard</button>
             <button onclick="showTab('profile', event)"   class="tab-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile</button>
-            <button onclick="showTab('settings', event)"  class="tab-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Settings</button>
             <button onclick="showTab('logCase', event)"   class="tab-btn" id="tabBtnLogCase"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg> Log Case</button>
             <button onclick="showTab('caseList', event)"  class="tab-btn" id="tabBtnAnalytics"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Cases</button>
             <button onclick="showTab('journal', event)"   class="tab-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Journal</button>
             <button onclick="showTab('help', event)"      class="tab-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Help</button>
+            <button onclick="showTab('settings', event)"  class="tab-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Settings</button>
             <button onclick="showTab('admin', event)" id="adminTab" class="tab-btn" style="display:none; background:#16a34a; color:white"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> PD Panel</button>
             <button onclick="showTab('attending', event)" id="attendingTab" class="tab-btn" style="display:none; background:#0891b2; color:white"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> My Supervision</button>
         </div>
@@ -1100,8 +1100,8 @@
             <div id="ws-calendar" style="display:none">
                 <!-- View toggle -->
                 <div style="display:flex;gap:6px;margin-bottom:12px">
-                    <button id="cal-toggle-month" onclick="toggleCalView('month')" style="flex:1;margin:0;padding:8px;font-size:12px;font-weight:700;border-radius:10px;background:#2563eb;color:white;box-shadow:none">📅 Month</button>
-                    <button id="cal-toggle-week"  onclick="toggleCalView('week')"  style="flex:1;margin:0;padding:8px;font-size:12px;font-weight:700;border-radius:10px;background:#f1f5f9;color:#64748b;box-shadow:none">📋 Week</button>
+                    <button id="cal-toggle-month" onclick="toggleCalView('month')" style="flex:1;margin:0;padding:8px;font-size:12px;font-weight:700;border-radius:10px;background:#2563eb;color:white;box-shadow:none">Month</button>
+                    <button id="cal-toggle-week"  onclick="toggleCalView('week')"  style="flex:1;margin:0;padding:8px;font-size:12px;font-weight:700;border-radius:10px;background:#f1f5f9;color:#64748b;box-shadow:none">Week</button>
                     <button onclick="calJumpToday()" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#f1f5f9;color:#64748b;box-shadow:none">Today</button>
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
@@ -1188,14 +1188,14 @@
                 <label>Title <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
                 <div style="display:flex;gap:8px;align-items:center">
                     <input type="text" id="journalTitle" placeholder="e.g. First solo cataract, Tough VR case…" style="flex:1;margin:0">
-                    <button onclick="startVoiceFill('journalTitle',this)" title="Voice input" style="width:38px;height:38px;padding:0;margin:0;background:#f1f5f9;border-radius:10px;font-size:16px;box-shadow:none;border:1px solid #e2e8f0;flex-shrink:0">🎤</button>
+                    <button onclick="startVoiceFill('journalTitle',this)" title="Voice input" style="width:38px;height:38px;padding:0;margin:0;background:#f1f5f9;border-radius:10px;font-size:16px;box-shadow:none;border:1px solid #e2e8f0;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
                 </div>
-                <label style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">Entry <button onclick="startVoiceFill('journalBody',this)" title="Voice input" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:14px;box-shadow:none;border:1px solid #e2e8f0">🎤</button></label>
+                <label style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">Entry <button onclick="startVoiceFill('journalBody',this)" title="Voice input" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:14px;box-shadow:none;border:1px solid #e2e8f0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button></label>
                 <textarea id="journalBody" rows="6" placeholder="What happened today? What did you learn? What would you do differently?"></textarea>
                 <label>Link to a case <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
                 <select id="journalCaseLink" style="margin-bottom:20px"><option value="">— No case linked —</option></select>
                 <div style="display:flex;gap:10px">
-                    <button onclick="saveJournalEntry()" style="flex:1;margin:0;background:linear-gradient(135deg,#7c3aed,#2563eb)">💾 Save</button>
+                    <button onclick="saveJournalEntry()" style="flex:1;margin:0;background:linear-gradient(135deg,#7c3aed,#2563eb)">Save</button>
                     <button onclick="closeJournalModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
                 </div>
             </div>
@@ -1212,7 +1212,7 @@
                 <label>Task</label>
                 <div style="display:flex;gap:8px;align-items:center">
                     <input type="text" id="todoText" placeholder="e.g. Review cornea anatomy before grand rounds" style="flex:1;margin:0">
-                    <button onclick="startVoiceFill('todoText',this)" title="Voice input" style="width:38px;height:38px;padding:0;margin:0;background:#f1f5f9;border-radius:10px;font-size:16px;box-shadow:none;border:1px solid #e2e8f0;flex-shrink:0">🎤</button>
+                    <button onclick="startVoiceFill('todoText',this)" title="Voice input" style="width:38px;height:38px;padding:0;margin:0;background:#f1f5f9;border-radius:10px;font-size:16px;box-shadow:none;border:1px solid #e2e8f0;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
                 </div>
                 <label>Due Date <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
                 <input type="date" id="todoDue">
@@ -1223,7 +1223,7 @@
                     <button onclick="selectPriority('high')"   id="pri-high"   class="pri-btn" style="flex:1;margin:0;padding:10px;font-size:12px;font-weight:700;border-radius:10px;background:#fef2f2;color:#dc2626;border:1.5px solid #fecaca;box-shadow:none"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#dc2626;margin-right:5px;vertical-align:middle"></span>High</button>
                 </div>
                 <div style="display:flex;gap:10px">
-                    <button onclick="saveTodo()" style="flex:1;margin:0;background:#16a34a">💾 Save</button>
+                    <button onclick="saveTodo()" style="flex:1;margin:0;background:#16a34a">Save</button>
                     <button onclick="closeTodoModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
                 </div>
             </div>
@@ -1240,22 +1240,22 @@
                 <label>Title</label>
                 <div style="display:flex;gap:8px;align-items:center">
                     <input type="text" id="noteTitle" placeholder="e.g. Glaucoma Pearl, IOL Formula…" style="flex:1;margin:0">
-                    <button onclick="startVoiceFill('noteTitle',this)" title="Voice input" style="width:38px;height:38px;padding:0;margin:0;background:#f1f5f9;border-radius:10px;font-size:16px;box-shadow:none;border:1px solid #e2e8f0;flex-shrink:0">🎤</button>
+                    <button onclick="startVoiceFill('noteTitle',this)" title="Voice input" style="width:38px;height:38px;padding:0;margin:0;background:#f1f5f9;border-radius:10px;font-size:16px;box-shadow:none;border:1px solid #e2e8f0;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
                 </div>
                 <label>Tag</label>
                 <select id="noteTag">
                     <option value="">No tag</option>
-                    <option value="Clinical Pearl">🌟 Clinical Pearl</option>
-                    <option value="Technique">🔧 Technique</option>
-                    <option value="Drug / Dosing">💊 Drug / Dosing</option>
-                    <option value="Anatomy">🧬 Anatomy</option>
-                    <option value="Board Prep">📋 Board Prep</option>
-                    <option value="Reminder">🔔 Reminder</option>
+                    <option value="Clinical Pearl">Clinical Pearl</option>
+                    <option value="Technique">Technique</option>
+                    <option value="Drug / Dosing">Drug / Dosing</option>
+                    <option value="Anatomy">Anatomy</option>
+                    <option value="Board Prep">Board Prep</option>
+                    <option value="Reminder">Reminder</option>
                 </select>
-                <label style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">Note <button onclick="startVoiceFill('noteBody',this)" title="Voice input" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:14px;box-shadow:none;border:1px solid #e2e8f0">🎤</button></label>
+                <label style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">Note <button onclick="startVoiceFill('noteBody',this)" title="Voice input" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:14px;box-shadow:none;border:1px solid #e2e8f0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button></label>
                 <textarea id="noteBody" rows="6" placeholder="Clinical pearl, drug dose, technique tip, anatomy note…"></textarea>
                 <div style="display:flex;gap:10px;margin-top:16px">
-                    <button onclick="saveNote()" style="flex:1;margin:0;background:#0891b2">💾 Save</button>
+                    <button onclick="saveNote()" style="flex:1;margin:0;background:#0891b2">Save</button>
                     <button onclick="closeNoteModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
                 </div>
             </div>
@@ -1272,20 +1272,20 @@
                 <label>Topic / Resource</label>
                 <div style="display:flex;gap:8px;align-items:center">
                     <input type="text" id="studyTopic" placeholder="e.g. Wills Eye Ch. 4, AAO Glaucoma, OKAP prep…" style="flex:1;margin:0">
-                    <button onclick="startVoiceFill('studyTopic',this)" title="Voice input" style="width:38px;height:38px;padding:0;margin:0;background:#f1f5f9;border-radius:10px;font-size:16px;box-shadow:none;border:1px solid #e2e8f0;flex-shrink:0">🎤</button>
+                    <button onclick="startVoiceFill('studyTopic',this)" title="Voice input" style="width:38px;height:38px;padding:0;margin:0;background:#f1f5f9;border-radius:10px;font-size:16px;box-shadow:none;border:1px solid #e2e8f0;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
                 </div>
                 <label>Type</label>
                 <select id="studyType">
-                    <option value="Textbook">📖 Textbook</option>
-                    <option value="Article">📄 Article / Paper</option>
-                    <option value="Video">🎥 Video / Lecture</option>
-                    <option value="Question Bank">❓ Question Bank</option>
-                    <option value="Other">📌 Other</option>
+                    <option value="Textbook">Textbook</option>
+                    <option value="Article">Article / Paper</option>
+                    <option value="Video">Video / Lecture</option>
+                    <option value="Question Bank">Question Bank</option>
+                    <option value="Other">Other</option>
                 </select>
-                <label style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">Notes <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span> <button onclick="startVoiceFill('studyNotes',this)" title="Voice input" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:14px;box-shadow:none;border:1px solid #e2e8f0">🎤</button></label>
+                <label style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">Notes <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span> <button onclick="startVoiceFill('studyNotes',this)" title="Voice input" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:14px;box-shadow:none;border:1px solid #e2e8f0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button></label>
                 <textarea id="studyNotes" rows="3" placeholder="Why you're studying this, key points to focus on…"></textarea>
                 <div style="display:flex;gap:10px;margin-top:16px">
-                    <button onclick="saveStudyItem()" style="flex:1;margin:0;background:#7c3aed">💾 Add</button>
+                    <button onclick="saveStudyItem()" style="flex:1;margin:0;background:#7c3aed">Add</button>
                     <button onclick="closeStudyModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
                 </div>
             </div>
@@ -1296,7 +1296,7 @@
         <div id="eventModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
             <div style="background:white;border-radius:20px;padding:28px;width:92%;max-width:460px;box-shadow:0 24px 64px rgba(0,0,0,0.25)">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-                    <h2 style="margin:0;font-size:20px">📅 Event</h2>
+                    <h2 style="margin:0;font-size:20px;display:flex;align-items:center;gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg> Event</h2>
                     <button onclick="closeEventModal()" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b">✕</button>
                 </div>
                 <input type="hidden" id="eventId">
@@ -1314,16 +1314,16 @@
                 </div>
                 <label>Type</label>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
-                    <button onclick="selectEventType('clinic')"    id="et-clinic"    class="et-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#eff6ff;color:#2563eb;border:2px solid #e2e8f0;box-shadow:none">🏥 Clinic</button>
-                    <button onclick="selectEventType('meeting')"   id="et-meeting"   class="et-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#f0fdf4;color:#16a34a;border:2px solid #e2e8f0;box-shadow:none">🤝 Meeting</button>
-                    <button onclick="selectEventType('or')"        id="et-or"        class="et-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#faf5ff;color:#7c3aed;border:2px solid #e2e8f0;box-shadow:none">🔬 OR</button>
-                    <button onclick="selectEventType('education')" id="et-education" class="et-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#fffbeb;color:#ca8a04;border:2px solid #e2e8f0;box-shadow:none">📚 Education</button>
+                    <button onclick="selectEventType('clinic')"    id="et-clinic"    class="et-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#eff6ff;color:#2563eb;border:2px solid #e2e8f0;box-shadow:none"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> Clinic</button>
+                    <button onclick="selectEventType('meeting')"   id="et-meeting"   class="et-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#f0fdf4;color:#16a34a;border:2px solid #e2e8f0;box-shadow:none"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Meeting</button>
+                    <button onclick="selectEventType('or')"        id="et-or"        class="et-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#faf5ff;color:#7c3aed;border:2px solid #e2e8f0;box-shadow:none"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg> OR</button>
+                    <button onclick="selectEventType('education')" id="et-education" class="et-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#fffbeb;color:#ca8a04;border:2px solid #e2e8f0;box-shadow:none"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Education</button>
                     <button onclick="selectEventType('personal')"  id="et-personal"  class="et-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#fff1f2;color:#e11d48;border:2px solid #e2e8f0;box-shadow:none">👤 Personal</button>
                 </div>
                 <label>Notes <span style="font-size:11px;color:#94a3b8">(optional)</span></label>
                 <textarea id="eventNotes" rows="3" placeholder="Location, preparation notes, agenda…"></textarea>
                 <div style="display:flex;gap:10px;margin-top:16px">
-                    <button onclick="saveEvent()" style="flex:1;margin:0;background:#2563eb">💾 Save</button>
+                    <button onclick="saveEvent()" style="flex:1;margin:0;background:#2563eb">Save</button>
                     <button onclick="closeEventModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
                 </div>
             </div>
@@ -1333,13 +1333,13 @@
         <div id="helpTab" style="display:none">
 
             <div style="background:linear-gradient(135deg, #8C1515 0%, #2563eb 100%); border-radius:20px; padding:28px; margin-bottom:20px; color:white; text-align:center">
-                <div style="font-size:48px; margin-bottom:12px">❓</div>
+                <div style="margin-bottom:12px;display:flex;justify-content:center"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
                 <h2 style="color:white; font-size:22px; margin-bottom:8px">How to Use EyeLog</h2>
                 <p style="opacity:0.8; font-size:14px">Everything you need to know in one place</p>
             </div>
 
             <div class="dash-card" style="margin-bottom:16px">
-                <h3>🚀 Quick Start</h3>
+                <h3 style="display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Quick Start</h3>
                 <div style="display:flex; flex-direction:column; gap:12px; margin-top:12px">
                     <div style="display:flex; gap:12px; align-items:flex-start">
                         <div style="width:28px; height:28px; background:#2563eb; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:13px; font-weight:700; flex-shrink:0">1</div>
@@ -1366,44 +1366,44 @@
                         <div style="width:28px; height:28px; background:#d97706; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:13px; font-weight:700; flex-shrink:0">4</div>
                         <div>
                             <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:2px">Export a report</p>
-                            <p style="font-size:13px; color:#64748b">Log Case tab → 📄 Export PDF or 📅 Monthly Report</p>
+                            <p style="font-size:13px; color:#64748b">Log Case tab → Export PDF or Monthly Report</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="dash-card" style="margin-bottom:16px">
-                <h3>✨ Features</h3>
+                <h3 style="display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Features</h3>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px">
                     <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
-                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">⚡ Templates</p>
+                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px"><span style="display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Templates</span></p>
                         <p style="font-size:12px; color:#64748b">Save common cases as templates for one-tap logging</p>
                     </div>
                     <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
-                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">🔄 Duplicate</p>
+                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px"><span style="display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Duplicate</span></p>
                         <p style="font-size:12px; color:#64748b">Copy a previous case with today's date instantly</p>
                     </div>
                     <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
-                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">🔍 Search & Filter</p>
+                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px"><span style="display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search &amp; Filter</span></p>
                         <p style="font-size:12px; color:#64748b">Find cases by procedure, role, date, or keyword</p>
                     </div>
                     <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
-                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">📊 Analytics</p>
+                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px"><span style="display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Analytics</span></p>
                         <p style="font-size:12px; color:#64748b">Monthly trends, role breakdown, busiest days</p>
                     </div>
                     <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
-                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">🔥 Streaks</p>
+                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px"><span style="display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Streaks</span></p>
                         <p style="font-size:12px; color:#64748b">Track consecutive days of logging cases</p>
                     </div>
                     <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
-                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">📱 Mobile App</p>
+                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px"><span style="display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> Mobile App</span></p>
                         <p style="font-size:12px; color:#64748b">Add to iPhone home screen for native app feel</p>
                     </div>
                 </div>
             </div>
 
             <div class="dash-card" style="margin-bottom:16px">
-                <h3>❓ FAQ</h3>
+                <h3 style="display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> FAQ</h3>
                 <div style="display:flex; flex-direction:column; gap:12px; margin-top:12px">
                     <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
                         <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">How do I add EyeLog to my iPhone?</p>
@@ -1411,11 +1411,11 @@
                     </div>
                     <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
                         <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">Can I edit a case after saving?</p>
-                        <p style="font-size:13px; color:#64748b">Yes! Go to Case List → tap ✏️ on any case to edit all fields</p>
+                        <p style="font-size:13px; color:#64748b">Yes! Go to Case List → tap the edit button on any case to edit all fields</p>
                     </div>
                     <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
                         <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">How do I create a PDF for my PD?</p>
-                        <p style="font-size:13px; color:#64748b">Go to Log Case tab → tap 📄 Export PDF or 📅 Monthly Report</p>
+                        <p style="font-size:13px; color:#64748b">Go to Log Case tab → tap Export PDF or Monthly Report</p>
                     </div>
                     <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
                         <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">Is my data private?</p>
@@ -1423,7 +1423,7 @@
                     </div>
                     <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
                         <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">How do I enable daily reminders?</p>
-                        <p style="font-size:13px; color:#64748b">Dashboard → tap 🔔 Reminders → allow notifications → get reminded at 6 PM daily</p>
+                        <p style="font-size:13px; color:#64748b">Dashboard → tap Reminders → allow notifications → get reminded at 6 PM daily</p>
                     </div>
                     <div>
                         <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">How do I use templates?</p>
@@ -1436,7 +1436,7 @@
                 <h3>📬 Contact & Feedback</h3>
                 <p style="font-size:14px; color:#64748b; margin-top:8px; line-height:1.6">Have a suggestion or found a bug? We'd love to hear from you!</p>
                 <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSev-87zwv0Ot_7LNJuuNNTBpKpcOvS_vEtSnGbgLGjMVP-iMA/viewform', '_blank')" style="background:linear-gradient(135deg,#16a34a,#15803d); margin-top:16px; border-radius:50px">
-                    💬 Send Feedback
+                    <span style="display:inline-flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Send Feedback</span>
                 </button>
             </div>
 
@@ -1450,7 +1450,7 @@
             <!-- Hero banner -->
             <div style="background:linear-gradient(135deg,#0891b2,#0e7490);border-radius:20px;padding:24px;margin-bottom:20px;color:white">
                 <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-                    <div style="width:52px;height:52px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px">🩺</div>
+                    <div style="width:52px;height:52px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
                     <div>
                         <h2 id="attName" style="margin:0;font-size:20px;font-weight:900">Dr. Attending</h2>
                         <p id="attTitle" style="margin:0;opacity:0.85;font-size:13px">Attending Ophthalmologist</p>
@@ -1474,21 +1474,21 @@
 
             <!-- Procedure breakdown -->
             <div class="dash-card" style="margin-bottom:16px">
-                <h3 style="margin-bottom:14px">📊 Supervision by Procedure</h3>
+                <h3 style="margin-bottom:14px">Supervision by Procedure</h3>
                 <div id="attProcBreakdown"></div>
             </div>
 
             <!-- Resident breakdown -->
             <div class="dash-card" style="margin-bottom:16px">
-                <h3 style="margin-bottom:14px">👨‍⚕️ Residents Supervised</h3>
+                <h3 style="margin-bottom:14px">Residents Supervised</h3>
                 <div id="attResidentList"></div>
             </div>
 
             <!-- Recent supervised cases -->
             <div class="dash-card" style="margin-bottom:16px">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-                    <h3 style="margin:0">📋 Recent Cases Supervised</h3>
-                    <input type="text" id="attSearch" placeholder="🔍 Search…" oninput="renderAttendingCases()" style="width:140px;margin:0;padding:8px 12px;border-radius:10px;font-size:12px">
+                    <h3 style="margin:0">Recent Cases Supervised</h3>
+                    <input type="text" id="attSearch" placeholder="Search…" oninput="renderAttendingCases()" style="width:140px;margin:0;padding:8px 12px;border-radius:10px;font-size:12px">
                 </div>
                 <div id="attCaseList"></div>
             </div>
@@ -1540,7 +1540,7 @@
                 <label>Notes</label>
                 <textarea id="editNotes" rows="3"></textarea>
                 <div style="display:flex; gap:10px; margin-top:20px">
-                    <button onclick="saveEdit()" style="flex:1; margin:0">💾 Save</button>
+                    <button onclick="saveEdit()" style="flex:1; margin:0">Save</button>
                     <button onclick="closeEditModal()" style="flex:1; margin:0; background:#64748b">Cancel</button>
                 </div>
             </div>
@@ -1576,8 +1576,8 @@
 
     <!-- Footer -->
     <div style="text-align:center; padding:20px; color:#94a3b8; font-size:12px; margin-top:40px">
-        <p>👁️ <strong>EyeLog</strong> — Built for ophthalmology residents</p>
-        <p style="margin-top:4px">Your data is private and secure 🔒 | <a href="https://docs.google.com/forms/d/e/1FAIpQLSev-87zwv0Ot_7LNJuuNNTBpKpcOvS_vEtSnGbgLGjMVP-iMA/viewform" target="_blank" style="color:#2563eb">Contact & Feedback</a></p>
+        <p><strong>EyeLog</strong> — Built for ophthalmology residents</p>
+        <p style="margin-top:4px">Your data is private and secure | <a href="https://docs.google.com/forms/d/e/1FAIpQLSev-87zwv0Ot_7LNJuuNNTBpKpcOvS_vEtSnGbgLGjMVP-iMA/viewform" target="_blank" style="color:#2563eb">Contact & Feedback</a></p>
     </div>
 
     <script src="app.js"></script>

@@ -66,7 +66,7 @@ function runGlobalSearch() {
     if (!out) return;
 
     if (q.length < 2) {
-        out.innerHTML = '<div style="text-align:center;padding:40px 20px;color:#94a3b8"><div style="font-size:40px;margin-bottom:12px">🔍</div><p style="font-size:14px;font-weight:600;color:#64748b">Start typing to search everything</p><p style="font-size:12px">Cases · Journal · Notes · Tasks · Study List</p></div>';
+        out.innerHTML = '<div style="text-align:center;padding:40px 20px;color:#94a3b8"><div style="margin-bottom:12px;display:flex;justify-content:center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><p style="font-size:14px;font-weight:600;color:#64748b">Start typing to search everything</p><p style="font-size:12px">Cases · Journal · Notes · Tasks · Study List</p></div>';
         return;
     }
 
@@ -80,7 +80,7 @@ function runGlobalSearch() {
         (c.notes||'').toLowerCase().includes(q)
     ).slice(0, 6);
     if (caseHits.length) {
-        html += _srSection('📋 Cases', caseHits.map(c =>
+        html += _srSection('Cases', caseHits.map(c =>
             _srItem('📋', c.procedure, `${c.date||''} · ${c.role||''} · ${c.attending||''}`, `showTab('caseList',null);closeGlobalSearch()`, procedureColors[c.procedure]||'#2563eb')
         ));
     }
@@ -91,7 +91,7 @@ function runGlobalSearch() {
         (e.body||'').toLowerCase().includes(q)
     ).slice(0, 4);
     if (jHits.length) {
-        html += _srSection('📔 Journal', jHits.map(e =>
+        html += _srSection('Journal', jHits.map(e =>
             _srItem(e.mood||'📔', e.title||'Untitled entry', `${e.date||''} · ${(e.body||'').slice(0,60)}…`, `showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch()`, '#7c3aed')
         ));
     }
@@ -103,7 +103,7 @@ function runGlobalSearch() {
         (n.tag||'').toLowerCase().includes(q)
     ).slice(0, 4);
     if (nHits.length) {
-        html += _srSection('📝 Notes', nHits.map(n =>
+        html += _srSection('Notes', nHits.map(n =>
             _srItem('📝', n.title||'Untitled', (n.tag||'') + (n.body ? ' · ' + n.body.slice(0,60) : ''), `showTab('journal',null);showWorkspaceTab('notes');closeGlobalSearch()`, '#0891b2')
         ));
     }
@@ -112,7 +112,7 @@ function runGlobalSearch() {
     let tHits = getTodos().filter(t => (t.text||'').toLowerCase().includes(q)).slice(0, 4);
     if (tHits.length) {
         let priColor = { high:'#dc2626', medium:'#d97706', low:'#16a34a' };
-        html += _srSection('✅ Tasks', tHits.map(t =>
+        html += _srSection('Tasks', tHits.map(t =>
             _srItem(t.done ? '✅' : '⬜', t.text, `${t.priority} priority${t.due?' · due '+t.due:''}`, `showTab('journal',null);showWorkspaceTab('todo');closeGlobalSearch()`, priColor[t.priority]||'#64748b')
         ));
     }
@@ -124,14 +124,14 @@ function runGlobalSearch() {
     ).slice(0, 4);
     if (sHits.length) {
         let stColor = { 'to-read':'#2563eb', 'reading':'#d97706', 'done':'#16a34a' };
-        html += _srSection('📚 Study List', sHits.map(s =>
+        html += _srSection('Study List', sHits.map(s =>
             _srItem('📚', s.topic, `${s.type||''} · ${s.status||''}`, `showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch()`, stColor[s.status]||'#64748b')
         ));
     }
 
     if (!html) {
         html = `<div style="text-align:center;padding:40px 20px;color:#94a3b8">
-            <div style="font-size:40px;margin-bottom:12px">🤷</div>
+            <div style="margin-bottom:12px;display:flex;justify-content:center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
             <p style="font-size:14px;font-weight:600;color:#64748b">No results for "${q}"</p>
             <p style="font-size:12px">Try a different keyword</p>
         </div>`;
@@ -229,7 +229,7 @@ function showMilestone(m) {
     document.getElementById('milestoneEmoji').textContent  = m.emoji;
     document.getElementById('milestoneTitle').textContent  = m.title;
     document.getElementById('milestoneText').textContent   = m.text;
-    document.getElementById('milestoneBadge').textContent  = '🏅 ' + m.badge;
+    document.getElementById('milestoneBadge').textContent  = m.badge;
     document.getElementById('milestoneBadge').style.background = 'linear-gradient(135deg,' + m.color + ',#7c3aed)';
     document.getElementById('milestoneModal').style.display = 'flex';
     setTimeout(() => {
@@ -368,7 +368,7 @@ function updateStreak(cases) {
     let banner = document.getElementById('streakBanner');
     if (streak >= 2) {
         banner.style.display = 'block';
-        banner.textContent = '🔥 ' + streak + ' day streak! Keep logging cases!';
+        banner.textContent = streak + ' day streak — keep logging!';
     } else {
         banner.style.display = 'none';
     }
@@ -548,7 +548,7 @@ function loadTemplates() {
     let html = '';
     for (let i = 0; i < templates.length; i++) {
         html += '<button onclick="applyTemplate(' + i + ')" style="background:#f1f5f9; color:#1e293b; border:2px solid #e2e8f0; padding:8px 14px; font-size:12px; width:auto; margin:0; border-radius:8px">';
-        html += '⚡ ' + templates[i].procedure + ' — ' + templates[i].role;
+        html += templates[i].procedure + ' — ' + templates[i].role;
         html += ' <span onclick="deleteTemplate(event,' + i + ')" style="color:#dc2626; margin-left:6px">✕</span>';
         html += '</button>';
     }
@@ -567,7 +567,7 @@ function saveTemplate() {
     });
     localStorage.setItem('caseTemplates', JSON.stringify(templates));
     loadTemplates();
-    showToast('📋 Template saved!');
+    showToast('Template saved');
 }
 
 // ── Role & complexity radio helpers ──────────────────────────────────────────
@@ -610,7 +610,7 @@ function applyTemplate(index) {
     document.getElementById('attending').value    = t.attending;
     document.getElementById('hospital').value     = t.hospital;
     updateRoleLabels(t.role);
-    showToast('⚡ Template applied!');
+    showToast('Template applied');
 }
 
 function deleteTemplate(event, index) {
@@ -680,7 +680,7 @@ async function duplicateCase(id) {
     });
     hideLoading();
     if (error) { showToast('Error: ' + error.message, 'error'); }
-    else { loadCases(); showToast('🔄 Case duplicated!'); }
+    else { loadCases(); showToast('Case duplicated'); }
 }
 
 // Tab navigation
@@ -1121,9 +1121,9 @@ async function checkPendingUsers() {
     let adminTab = document.getElementById('adminTab');
     if (adminTab) {
         if (count > 0) {
-            adminTab.innerHTML = '👨‍⚕️ PD Panel <span style="background:#dc2626; color:white; border-radius:50%; padding:2px 7px; font-size:11px; margin-left:4px">' + count + '</span>';
+            adminTab.innerHTML = 'PD Panel <span style="background:#dc2626; color:white; border-radius:50%; padding:2px 7px; font-size:11px; margin-left:4px">' + count + '</span>';
         } else {
-            adminTab.innerHTML = '👨‍⚕️ PD Panel';
+            adminTab.innerHTML = 'PD Panel';
         }
     }
     if (count > _lastPendingCount) {
@@ -1141,7 +1141,7 @@ async function loadAdminData() {
     hideLoading();
 
     let pending = profiles ? profiles.filter(p => p.status === 'pending') : [];
-    let html = '<h2>👨‍⚕️ Program Director Panel</h2>';
+    let html = '<h2>Program Director Panel</h2>';
 
     if (pending.length > 0) {
         html += '<div style="background:#fff7ed; border:2px solid #f97316; border-radius:14px; padding:16px; margin-bottom:20px">';
@@ -1149,8 +1149,8 @@ async function loadAdminData() {
         for (let p of pending) {
             let isAttending = p.role === 'attending';
             let roleBadge   = isAttending
-                ? '<span style="font-size:10px;font-weight:700;background:#0891b218;color:#0891b2;padding:2px 8px;border-radius:20px;margin-left:6px">🩺 Attending</span>'
-                : '<span style="font-size:10px;font-weight:700;background:#2563eb18;color:#2563eb;padding:2px 8px;border-radius:20px;margin-left:6px">👨‍🎓 Resident</span>';
+                ? '<span style="font-size:10px;font-weight:700;background:#0891b218;color:#0891b2;padding:2px 8px;border-radius:20px;margin-left:6px">Attending</span>'
+                : '<span style="font-size:10px;font-weight:700;background:#2563eb18;color:#2563eb;padding:2px 8px;border-radius:20px;margin-left:6px">Resident</span>';
             html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #fed7aa">';
             html += '<div><div style="display:flex;align-items:center;flex-wrap:wrap"><strong>' + (p.full_name || 'Unknown') + '</strong>' + roleBadge + '</div>';
             html += '<span style="font-size:12px; color:#64748b">' + p.email + '</span></div>';
@@ -1170,7 +1170,7 @@ async function loadAdminData() {
     }
 
     // ── Approved Residents
-    html += '<h3 style="margin-bottom:12px">✅ Approved Residents</h3>';
+    html += '<h3 style="margin-bottom:12px">Approved Residents</h3>';
     html += '<table>';
     html += '<tr><th>Name</th><th>Email</th><th>PGY</th><th>Total</th><th>Cataract</th><th>VR</th><th>Glaucoma</th><th>Progress</th><th>Action</th></tr>';
     if (profiles) {
@@ -1208,7 +1208,7 @@ async function loadAdminData() {
     // ── Approved Attendings
     let approvedAttending = profiles ? profiles.filter(p => p.role === 'attending' && p.status === 'approved') : [];
     if (approvedAttending.length > 0) {
-        html += '<h3 style="margin:20px 0 12px">🩺 Approved Attendings</h3>';
+        html += '<h3 style="margin:20px 0 12px">Approved Attendings</h3>';
         html += '<div style="display:flex;flex-direction:column;gap:10px">';
         for (let p of approvedAttending) {
             let supervisedCount = cases ? cases.filter(c => c.attending && p.full_name && c.attending.toLowerCase().includes(p.full_name.split(' ').pop().toLowerCase())).length : 0;
@@ -1243,7 +1243,7 @@ async function rejectUser(userId) {
 async function revokeUser(userId) {
     if (!confirm('Revoke access for this user?')) return;
     await db.from('profiles').update({ status: 'pending' }).eq('id', userId);
-    showToast('🔒 Access revoked', 'warning');
+    showToast('Access revoked', 'warning');
     loadAdminData();
 }
 
@@ -1832,7 +1832,7 @@ function exportAnalyticsPDF() {
         doc.text('Page '+i+' of '+pageCount, 196, doc.internal.pageSize.height-4, {align:'right'});
     }
     doc.save('eyelog-analytics-'+now.toISOString().slice(0,10)+'.pdf');
-    showToast('📄 Analytics PDF exported!');
+    showToast('Analytics PDF exported');
 }
 
 function displayCaseList(cases) {
@@ -1842,7 +1842,7 @@ function displayCaseList(cases) {
     if (cases.length === 0) {
         document.getElementById('caseList').innerHTML =
             '<div style="text-align:center; padding:60px 20px; color:#94a3b8">' +
-            '<div style="font-size:48px; margin-bottom:16px">📋</div>' +
+            '<div style="margin-bottom:16px;display:flex;justify-content:center"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>' +
             '<p style="font-size:16px; font-weight:600; margin-bottom:8px">No cases found</p>' +
             '<p style="font-size:14px">Try adjusting your filters or log a new case</p>' +
             '</div>';
@@ -2032,7 +2032,7 @@ function exportPDF() {
         doc.text('Page '+i+' of '+pageCount, 196, doc.internal.pageSize.height-4, {align:'right'});
     }
     doc.save('eyelog-report-'+new Date().toISOString().slice(0,10)+'.pdf');
-    showToast('📄 PDF exported!');
+    showToast('PDF exported');
 }
 
 function exportMonthlyReport() {
@@ -2121,7 +2121,7 @@ function exportMonthlyReport() {
         doc.text('Page '+i+' of '+pageCount, 196, doc.internal.pageSize.height-4, {align:'right'});
     }
     doc.save('eyelog-monthly-'+thisMonth+'.pdf');
-    showToast('📅 Monthly report exported!');
+    showToast('Monthly report exported');
 }
 
 // PWA Install
@@ -2170,7 +2170,7 @@ function updateNotifStatus() {
         el.textContent = '🚫 Notifications are blocked. Enable them in your browser settings.';
         el.style.color = '#dc2626';
     } else {
-        el.textContent = '🔔 Not enabled — tap Enable to get daily case reminders.';
+        el.textContent = 'Not enabled — tap Enable to get daily case reminders.';
         el.style.color = '';
     }
 }
@@ -2180,7 +2180,7 @@ async function setupNotifications() {
     let permission = await Notification.requestPermission();
     if (permission === 'granted') {
         localStorage.setItem('notificationsEnabled', 'true');
-        showToast('🔔 Daily reminders enabled!');
+        showToast('Daily reminders enabled');
         scheduleReminder();
     } else {
         showToast('Notifications blocked — check browser settings', 'warning');
@@ -2236,11 +2236,12 @@ function generateInsights() {
     let strongest = sorted[0], weakest = sorted[sorted.length-1];
     let strongPct = Math.round((strongest[1]/acgme[strongest[0]])*100);
     let weakPct   = Math.round((weakest[1]/acgme[weakest[0]])*100);
-    insights.push({ icon:'💪', color:'#16a34a', bg:'#f0fdf4', text:'Your strongest area is <strong>'+strongest[0].split('/')[0].trim()+'</strong> ('+strongPct+'% of ACGME goal). Keep it up!' });
+    const _isvg = (path, vb) => `<svg width="14" height="14" viewBox="${vb||'0 0 24 24'}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
+    insights.push({ icon:_isvg('<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>'), color:'#16a34a', bg:'#f0fdf4', text:'Your strongest area is <strong>'+strongest[0].split('/')[0].trim()+'</strong> ('+strongPct+'% of ACGME goal). Keep it up!' });
     if (weakest[1] === 0) {
-        insights.push({ icon:'⚠️', color:'#dc2626', bg:'#fef2f2', text:'You have <strong>zero</strong> '+weakest[0].split('/')[0].trim()+' cases logged. This is your biggest gap — prioritize it next.' });
+        insights.push({ icon:_isvg('<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>'), color:'#dc2626', bg:'#fef2f2', text:'You have <strong>zero</strong> '+weakest[0].split('/')[0].trim()+' cases logged. This is your biggest gap — prioritize it next.' });
     } else {
-        insights.push({ icon:'🎯', color:'#d97706', bg:'#fffbeb', text:'Focus on <strong>'+weakest[0].split('/')[0].trim()+'</strong> — only '+weakPct+'% complete. Consider requesting more of these cases.' });
+        insights.push({ icon:_isvg('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'), color:'#d97706', bg:'#fffbeb', text:'Focus on <strong>'+weakest[0].split('/')[0].trim()+'</strong> — only '+weakPct+'% complete. Consider requesting more of these cases.' });
     }
 
     let thisMonth = now.toISOString().slice(0,7);
@@ -2249,29 +2250,29 @@ function generateInsights() {
     let lastMo = allCases.filter(c => c.date && c.date.startsWith(lastMonth)).length;
     if (lastMo > 0) {
         let trend = thisMo - lastMo;
-        if (trend > 0) insights.push({ icon:'📈', color:'#2563eb', bg:'#eff6ff', text:'You logged <strong>'+trend+' more</strong> case'+(trend>1?'s':'')+' this month than last — great momentum! 🔥' });
-        else if (trend < 0) insights.push({ icon:'📉', color:'#d97706', bg:'#fffbeb', text:'Case volume dropped by <strong>'+Math.abs(trend)+'</strong> this month vs last. Try to schedule more OR time.' });
-        else insights.push({ icon:'〽️', color:'#64748b', bg:'#f8fafc', text:'Consistent pace — same number of cases as last month. Can you push for more?' });
+        if (trend > 0) insights.push({ icon:_isvg('<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>'), color:'#2563eb', bg:'#eff6ff', text:'You logged <strong>'+trend+' more</strong> case'+(trend>1?'s':'')+' this month than last — great momentum!' });
+        else if (trend < 0) insights.push({ icon:_isvg('<polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/>'), color:'#d97706', bg:'#fffbeb', text:'Case volume dropped by <strong>'+Math.abs(trend)+'</strong> this month vs last. Try to schedule more OR time.' });
+        else insights.push({ icon:_isvg('<line x1="5" y1="12" x2="19" y2="12"/>'), color:'#64748b', bg:'#f8fafc', text:'Consistent pace — same number of cases as last month. Can you push for more?' });
     }
 
     let primaryPct = Math.round((allCases.filter(c=>c.role==='Primary Surgeon').length / allCases.length)*100);
-    if (primaryPct < 30) insights.push({ icon:'🏥', color:'#dc2626', bg:'#fef2f2', text:'Only <strong>'+primaryPct+'%</strong> of your cases are as Primary Surgeon. Push to operate more independently.' });
-    else if (primaryPct >= 60) insights.push({ icon:'⭐', color:'#16a34a', bg:'#f0fdf4', text:'<strong>'+primaryPct+'%</strong> of cases as Primary Surgeon — excellent independence!' });
+    if (primaryPct < 30) insights.push({ icon:_isvg('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'), color:'#dc2626', bg:'#fef2f2', text:'Only <strong>'+primaryPct+'%</strong> of your cases are as Primary Surgeon. Push to operate more independently.' });
+    else if (primaryPct >= 60) insights.push({ icon:_isvg('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'), color:'#16a34a', bg:'#f0fdf4', text:'<strong>'+primaryPct+'%</strong> of cases as Primary Surgeon — excellent independence!' });
 
     let challenging = allCases.filter(c=>parseComplexity(c.notes)==='Challenging').length;
     let complex     = allCases.filter(c=>parseComplexity(c.notes)==='Complex').length;
     let compPct = Math.round(((challenging+complex)/allCases.length)*100);
-    if (compPct >= 20) insights.push({ icon:'🧠', color:'#7c3aed', bg:'#faf5ff', text:'<strong>'+compPct+'%</strong> of your cases are Complex or Challenging — you\'re taking on high-acuity surgical experience.' });
+    if (compPct >= 20) insights.push({ icon:_isvg('<path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>'), color:'#7c3aed', bg:'#faf5ff', text:'<strong>'+compPct+'%</strong> of your cases are Complex or Challenging — you\'re taking on high-acuity surgical experience.' });
 
     if (profile.endYear) {
         let monthsLeft = Math.max(1,(new Date(parseInt(profile.endYear),5,30)-now)/(1000*60*60*24*30.44));
         let remaining  = Math.max(0,Object.values(acgme).reduce((a,b)=>a+b,0)-allCases.length);
-        insights.push({ icon:'🗓️', color:'#0891b2', bg:'#f0f9ff', text:'<strong>'+Math.round(monthsLeft)+' months</strong> until graduation. You need ~<strong>'+(remaining/monthsLeft).toFixed(1)+' cases/month</strong> to complete all ACGME requirements.' });
+        insights.push({ icon:_isvg('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/>'), color:'#0891b2', bg:'#f0f9ff', text:'<strong>'+Math.round(monthsLeft)+' months</strong> until graduation. You need ~<strong>'+(remaining/monthsLeft).toFixed(1)+' cases/month</strong> to complete all ACGME requirements.' });
     }
 
     el.innerHTML = insights.map(ins =>
         '<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:'+ins.bg+';border-radius:12px;margin-bottom:10px;border-left:3px solid '+ins.color+'">' +
-        '<span style="font-size:18px;flex-shrink:0">'+ins.icon+'</span>' +
+        '<div style="width:28px;height:28px;border-radius:8px;background:'+ins.color+'18;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+ins.icon+'</div>' +
         '<p style="font-size:13px;color:#0f172a;line-height:1.5;margin:0">'+ins.text+'</p></div>'
     ).join('');
 }
@@ -2441,7 +2442,7 @@ function showProcedureCalendar() {
         return [top[wi%top.length][0], top[(wi+1)%top.length][0]].filter(Boolean);
     });
 
-    let html = '<div style="font-weight:700;color:#0f172a;margin-bottom:12px;text-align:center;font-size:15px">📅 '+monthName+'</div>';
+    let html = '<div style="font-weight:700;color:#0f172a;margin-bottom:12px;text-align:center;font-size:15px">'+monthName+'</div>';
     html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px">';
     for (let day of ['Su','Mo','Tu','We','Th','Fr','Sa']) {
         html += '<div style="text-align:center;font-size:10px;font-weight:700;color:#94a3b8;padding:4px 0">'+day+'</div>';
@@ -2581,7 +2582,7 @@ function exportFellowshipPDF() {
         doc.text('Page '+i+' of '+pages, 196, doc.internal.pageSize.height-4, {align:'right'});
     }
     doc.save('fellowship-portfolio-'+name.replace(/\s+/g,'-').toLowerCase()+'.pdf');
-    showToast('🎓 Fellowship PDF exported!');
+    showToast('Fellowship PDF exported');
 }
 
 // ── Smart Gap Alerts ────────────────────────────────────────────────────────
@@ -2616,7 +2617,7 @@ function checkSmartAlerts(cases) {
             let monthsNeeded = remaining / recentRate;
             if (monthsNeeded > monthsLeft * 0.9) {
                 let isRed = monthsNeeded > monthsLeft;
-                alerts.push({ proc, remaining, monthsNeeded: Math.round(monthsNeeded), color: isRed ? '#dc2626' : '#d97706', icon: isRed ? '🚨' : '⚠️', label: isRed ? 'At risk — behind pace' : 'Behind — needs attention' });
+                alerts.push({ proc, remaining, monthsNeeded: Math.round(monthsNeeded), color: isRed ? '#dc2626' : '#d97706', icon: isRed ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>', label: isRed ? 'At risk — behind pace' : 'Behind — needs attention' });
             }
         }
     }
@@ -2624,7 +2625,7 @@ function checkSmartAlerts(cases) {
     if (alerts.length === 0) { banner.style.display = 'none'; return; }
 
     let html = '<div style="background:white; border-radius:14px; padding:16px; border:2px solid #fca5a5; box-shadow:0 2px 12px rgba(220,38,38,0.1)">';
-    html += '<div style="display:flex; align-items:center; gap:8px; margin-bottom:12px"><span style="font-size:18px">🎯</span><strong style="color:#dc2626; font-size:14px">ACGME Gap Alerts</strong><span style="font-size:12px; color:#64748b; margin-left:auto">' + Math.round(monthsLeft) + ' months left</span></div>';
+    html += '<div style="display:flex; align-items:center; gap:8px; margin-bottom:12px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><strong style="color:#dc2626; font-size:14px">ACGME Gap Alerts</strong><span style="font-size:12px; color:#64748b; margin-left:auto">' + Math.round(monthsLeft) + ' months left</span></div>';
     for (let a of alerts) {
         let short = a.proc.split('/')[0].trim().split('(')[0].trim();
         html += '<div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid #f1f5f9">';
@@ -2712,7 +2713,7 @@ function _cleanupVoiceFill(saved) {
     _vfRec = null; _vfAccumulated = '';
     let overlay = document.getElementById('voiceOverlay');
     if (overlay) overlay.style.display = 'none';
-    if (_vfBtn) { _vfBtn.innerHTML = '🎤'; _vfBtn.style.color = ''; _vfBtn = null; }
+    if (_vfBtn) { _vfBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>'; _vfBtn.style.color = ''; _vfBtn = null; }
 }
 
 function startVoiceLog() {
@@ -2723,7 +2724,7 @@ function startVoiceLog() {
     if (_voiceActive && _voiceRec) {
         _voiceRec.stop();
         _voiceActive = false;
-        voiceBtn.innerHTML = '🎤 Voice';
+        voiceBtn.innerHTML = 'Voice';
         if (statusEl) { statusEl.textContent = '⏹ Recording stopped'; setTimeout(() => { statusEl.style.display = 'none'; }, 2000); }
         return;
     }
@@ -2740,7 +2741,7 @@ function startVoiceLog() {
     _voiceRec.maxAlternatives = 1;
     _voiceActive = true;
 
-    statusEl.textContent = '🎤 Listening… say e.g. "Cataract primary surgeon today with Dr. Smith"';
+    statusEl.textContent = 'Listening… say e.g. "Cataract primary surgeon today with Dr. Smith"';
     statusEl.style.display = 'block';
     voiceBtn.innerHTML = '⏹ Stop';
 
@@ -2751,24 +2752,24 @@ function startVoiceLog() {
             let t = e.results[i][0].transcript;
             if (e.results[i].isFinal) final += t; else interim += t;
         }
-        if (interim) statusEl.textContent = '🎤 ' + interim + '…';
+        if (interim) statusEl.textContent = interim + '…';
         if (final)   { statusEl.textContent = '✅ Heard: "' + final + '"'; parseVoiceInput(final); }
     };
     _voiceRec.onerror = (e) => {
         _voiceActive = false;
-        voiceBtn.innerHTML = '🎤 Voice';
+        voiceBtn.innerHTML = 'Voice';
         let msg = { 'not-allowed':'⚠️ Microphone permission denied — allow mic in browser settings', 'no-speech':'⚠️ No speech detected — tap and speak clearly', 'network':'⚠️ Network error — check connection', 'audio-capture':'⚠️ No microphone found' }[e.error] || ('⚠️ Error: ' + e.error);
         statusEl.textContent = msg;
         setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
     };
     _voiceRec.onend = () => {
         _voiceActive = false;
-        voiceBtn.innerHTML = '🎤 Voice';
+        voiceBtn.innerHTML = 'Voice';
         setTimeout(() => { if (statusEl.textContent.startsWith('✅')) setTimeout(() => { statusEl.style.display = 'none'; }, 3000); }, 100);
     };
 
     try { _voiceRec.start(); }
-    catch(e) { showToast('⚠️ Could not start microphone: ' + e.message, 'error'); _voiceActive = false; voiceBtn.innerHTML = '🎤 Voice'; }
+    catch(e) { showToast('⚠️ Could not start microphone: ' + e.message, 'error'); _voiceActive = false; voiceBtn.innerHTML = 'Voice'; }
 }
 
 function parseVoiceInput(text) {
@@ -2816,7 +2817,7 @@ function parseVoiceInput(text) {
         if (el) el.value = matched.attending;
     }
     let filled = Object.values(matched).filter(Boolean).length;
-    if (filled > 0) showToast('🎤 Filled ' + filled + ' field' + (filled > 1 ? 's' : '') + ' — review and save!');
+    if (filled > 0) showToast('Filled ' + filled + ' field' + (filled > 1 ? 's' : '') + ' — review and save!');
 }
 
 // ── QR Shareable Stats Card ──────────────────────────────────────────────────
@@ -2876,15 +2877,14 @@ function checkShareURL() {
         if (svProg) svProg.textContent = (data.program || 'Ophthalmology') + ' Program';
 
         let stats = [
-            { icon: '📋', val: data.total, label: 'Total Cases' },
-            { icon: '🎯', val: data.pct + '%', label: 'ACGME Done' },
-            { icon: '🏥', val: data.pgy || '—', label: 'Year' }
+            { val: data.total,       label: 'Total Cases', color: '#2563eb' },
+            { val: data.pct + '%',   label: 'ACGME Done',  color: '#16a34a' },
+            { val: data.pgy || '—',  label: 'Year',        color: '#7c3aed' }
         ];
         document.getElementById('svStats').innerHTML = stats.map(s =>
             `<div style="background:white;border-radius:14px;padding:16px;text-align:center;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(37,99,235,0.07)">
-                <div style="font-size:24px;margin-bottom:4px">${s.icon}</div>
-                <div style="font-size:22px;font-weight:900;color:#0f172a">${s.val}</div>
-                <div style="font-size:11px;color:#64748b">${s.label}</div>
+                <div style="font-size:22px;font-weight:900;color:${s.color};letter-spacing:-0.5px;margin-bottom:4px">${s.val}</div>
+                <div style="font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px">${s.label}</div>
             </div>`
         ).join('');
 
@@ -2982,7 +2982,7 @@ async function loadAttendingDashboard() {
         resListEl.innerHTML = sorted.length === 0 ? '<p style="color:#94a3b8;font-size:13px">No residents yet</p>' :
             sorted.map(([res, cnt]) => `
                 <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f1f5f9">
-                    <div style="width:36px;height:36px;background:#0891b218;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">👨‍⚕️</div>
+                    <div style="width:36px;height:36px;background:#0891b218;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
                     <div style="flex:1"><p style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:2px">${res}</p>
                         <p style="font-size:11px;color:#64748b">${cnt} case${cnt>1?'s':''} supervised</p></div>
                 </div>`).join('');
@@ -3003,7 +3003,7 @@ function renderAttendingCases() {
 
     if (cases.length === 0) {
         el.innerHTML = `<div style="text-align:center;padding:32px;color:#94a3b8">
-            <div style="font-size:40px;margin-bottom:10px">🩺</div>
+            <div style="margin-bottom:10px;display:flex;justify-content:center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
             <p style="font-size:14px;font-weight:600;color:#64748b">${search ? 'No matching cases' : 'No supervised cases found'}</p>
             <p style="font-size:12px;margin-top:6px">Cases appear here when residents enter your name as attending</p>
         </div>`;
@@ -3103,7 +3103,7 @@ async function toggleTeachingCase(caseId, currentValue) {
     // Refresh local copy
     let c = allCases.find(x => x.id === caseId);
     if (c) c.is_teaching = newVal;
-    showToast(newVal ? '📚 Marked as Teaching Case' : 'Teaching badge removed');
+    showToast(newVal ? 'Marked as Teaching Case' : 'Teaching badge removed');
     applyFilter();
 }
 
@@ -3454,7 +3454,7 @@ function renderDayDetail(dk) {
 
     let evTypeBg    = { clinic:'#eff6ff', meeting:'#f0fdf4', or:'#faf5ff', education:'#fffbeb', personal:'#fff1f2' };
     let evTypeColor = { clinic:'#2563eb', meeting:'#16a34a', or:'#7c3aed', education:'#ca8a04', personal:'#e11d48' };
-    let evTypeIcon  = { clinic:'🏥', meeting:'🤝', or:'🔬', education:'📚', personal:'👤' };
+    let evTypeIcon  = { clinic:'Clinic', meeting:'Meeting', or:'OR', education:'Education', personal:'Personal' };
     let priColor    = { high:'#dc2626', medium:'#ca8a04', low:'#16a34a' };
 
     let html = '';
@@ -3464,7 +3464,7 @@ function renderDayDetail(dk) {
         html += '<div style="margin-bottom:16px"><p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">EVENTS</p>';
         for (let ev of events) {
             html += `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:${evTypeBg[ev.type]||'#f8fafc'};border-radius:12px;margin-bottom:6px;border-left:3px solid ${evTypeColor[ev.type]||'#64748b'}">
-                <span style="font-size:20px">${evTypeIcon[ev.type]||'📅'}</span>
+                <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">${evTypeIcon[ev.type]||'Event'}</span>
                 <div style="flex:1">
                     <p style="font-weight:700;font-size:14px;color:#0f172a;margin-bottom:2px">${ev.title}</p>
                     ${ev.time?`<p style="font-size:12px;color:#64748b;margin-bottom:2px">🕐 ${formatTime(ev.time)}</p>`:''}
@@ -3484,7 +3484,7 @@ function renderDayDetail(dk) {
         html += '<div style="margin-bottom:16px"><p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">CASES LOGGED</p>';
         for (let c of cases) {
             html += `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f0fdf4;border-radius:12px;margin-bottom:6px;border-left:3px solid #16a34a">
-                <span style="font-size:18px">🔬</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
                 <div>
                     <p style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:2px">${c.procedure||'Unknown'}</p>
                     <p style="font-size:12px;color:#64748b">${c.role||''}${c.attending?' · '+c.attending:''}${c.hospital?' · '+c.hospital:''}</p>
@@ -3580,7 +3580,7 @@ function saveEvent() {
     renderCalendar();
     let dd = document.getElementById('dayDetail');
     if (dd) dd.style.display = 'block';
-    showToast('📅 Event saved!');
+    showToast('Event saved');
 }
 
 function deleteEvent(id) {
@@ -3991,7 +3991,7 @@ function saveStudyItem() {
     _cloudUpsert('workspace_study', item, _wsMap.study);
     closeStudyModal();
     renderStudyList();
-    showToast('📚 Added to study list!');
+    showToast('Added to study list');
 }
 
 function cycleStudyStatus(id) {
@@ -4037,13 +4037,13 @@ function renderStudyList() {
     if (progressEl && all.length > 0) {
         let pct = Math.round((done / all.length) * 100);
         progressEl.innerHTML = `<div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:6px">
-            <span>📚 ${all.length} items total</span><span style="font-weight:700;color:#7c3aed">${pct}% complete</span>
+            <span>${all.length} item${all.length!==1?'s':''} total</span><span style="font-weight:700;color:#7c3aed">${pct}% complete</span>
         </div>
         <div style="background:#e2e8f0;border-radius:99px;height:8px">
             <div style="background:linear-gradient(90deg,#7c3aed,#2563eb);width:${pct}%;height:8px;border-radius:99px;transition:width 0.5s"></div>
         </div>
         <div style="display:flex;gap:12px;margin-top:8px;font-size:11px;color:#64748b">
-            <span>📖 ${toRead} to read</span><span>⏳ ${reading} reading</span><span>✅ ${done} done</span>
+            <span>${toRead} to read</span><span>${reading} in progress</span><span>${done} done</span>
         </div>`;
     } else if (progressEl) { progressEl.innerHTML = ''; }
 
@@ -4051,24 +4051,30 @@ function renderStudyList() {
 
     if (items.length === 0) {
         el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#94a3b8">
-            <div style="font-size:40px;margin-bottom:12px">📚</div>
             <p style="font-size:14px;font-weight:600;color:#64748b">${studyFilter!=='all'?'Nothing in this category':'Study list empty'}</p>
             <p style="font-size:13px">Add textbooks, articles, or videos to study</p>
         </div>`;
         return;
     }
 
-    let statusLabel = { 'to-read':'📖 To Read', 'reading':'⏳ Reading', 'done':'✅ Done' };
+    let statusLabel = { 'to-read':'To Read', 'reading':'Reading', 'done':'Done' };
     let statusBg    = { 'to-read':'#eff6ff', 'reading':'#fffbeb', 'done':'#f0fdf4' };
     let statusColor = { 'to-read':'#2563eb', 'reading':'#ca8a04', 'done':'#16a34a' };
-    let typeIcon    = { 'Textbook':'📖','Article':'📄','Video':'🎥','Question Bank':'❓','Other':'📌' };
+    const _tsvg = (d, col) => `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${col||'#64748b'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+    let typeIcon    = {
+        'Textbook':      _tsvg('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>', '#7c3aed'),
+        'Article':       _tsvg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>', '#2563eb'),
+        'Video':         _tsvg('<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>', '#dc2626'),
+        'Question Bank': _tsvg('<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>', '#d97706'),
+        'Other':         _tsvg('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>', '#64748b')
+    };
 
     el.innerHTML = items.map(s => `
         <div style="background:white;border:1.5px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:8px">
             <div style="display:flex;align-items:flex-start;gap:10px">
                 <div style="flex:1;min-width:0">
                     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-                        <span style="font-size:16px">${typeIcon[s.type]||'📌'}</span>
+                        <span style="display:flex;align-items:center">${typeIcon[s.type]||typeIcon['Other']}</span>
                         <p style="font-weight:700;font-size:14px;color:#0f172a;margin:0">${s.topic}</p>
                     </div>
                     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
