@@ -670,10 +670,10 @@
             </div>
             <div style="display:flex;gap:3px;margin-bottom:16px;background:#f1f5f9;border-radius:14px;padding:5px">
                 <button id="ws-tab-calendar" onclick="showWorkspaceTab('calendar')" class="ws-tab" style="flex:1;margin:0;border-radius:10px;padding:8px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none">📅<br>Plan</button>
-                <button id="ws-tab-journal"  onclick="showWorkspaceTab('journal')"  class="ws-tab active-ws-tab" style="flex:1;margin:0;border-radius:10px;padding:8px 2px;font-size:11px;font-weight:700">📔<br>Journal</button>
-                <button id="ws-tab-todo"     onclick="showWorkspaceTab('todo')"     class="ws-tab" style="flex:1;margin:0;border-radius:10px;padding:8px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none">✅<br>To-Do</button>
-                <button id="ws-tab-notes"    onclick="showWorkspaceTab('notes')"    class="ws-tab" style="flex:1;margin:0;border-radius:10px;padding:8px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none">📝<br>Notes</button>
-                <button id="ws-tab-study"    onclick="showWorkspaceTab('study')"    class="ws-tab" style="flex:1;margin:0;border-radius:10px;padding:8px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none">📚<br>Study</button>
+                <button id="ws-tab-journal"  onclick="showWorkspaceTab('journal')"  class="ws-tab active-ws-tab" style="flex:1;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Journal</button>
+                <button id="ws-tab-todo"     onclick="showWorkspaceTab('todo')"     class="ws-tab" style="flex:1;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>To-Do</button>
+                <button id="ws-tab-notes"    onclick="showWorkspaceTab('notes')"    class="ws-tab" style="flex:1;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Notes</button>
+                <button id="ws-tab-study"    onclick="showWorkspaceTab('study')"    class="ws-tab" style="flex:1;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Study</button>
             </div>
             <!-- Calendar section -->
             <div id="ws-calendar" style="display:none">
@@ -751,7 +751,7 @@
         <div id="journalModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
             <div style="background:white;border-radius:20px;padding:28px;width:92%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.25)">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-                    <h2 style="margin:0;font-size:20px">📔 Journal Entry</h2>
+                    <h2 style="margin:0;font-size:18px;font-weight:700">Journal Entry</h2>
                     <button onclick="closeJournalModal()" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b">✕</button>
                 </div>
                 <input type="hidden" id="journalEntryId">
@@ -784,7 +784,7 @@
         <div id="todoModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
             <div style="background:white;border-radius:20px;padding:28px;width:92%;max-width:460px;box-shadow:0 24px 64px rgba(0,0,0,0.25)">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-                    <h2 style="margin:0;font-size:20px">✅ Task</h2>
+                    <h2 style="margin:0;font-size:18px;font-weight:700">Task</h2>
                     <button onclick="closeTodoModal()" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b">✕</button>
                 </div>
                 <input type="hidden" id="todoId">
@@ -797,9 +797,9 @@
                 <input type="date" id="todoDue">
                 <label>Priority</label>
                 <div style="display:flex;gap:8px;margin-bottom:20px">
-                    <button onclick="selectPriority('low')"    id="pri-low"    class="pri-btn" style="flex:1;margin:0;padding:10px;font-size:12px;font-weight:700;border-radius:10px;background:#f0fdf4;color:#16a34a;border:2px solid #e2e8f0;box-shadow:none">🟢 Low</button>
-                    <button onclick="selectPriority('medium')" id="pri-medium" class="pri-btn" style="flex:1;margin:0;padding:10px;font-size:12px;font-weight:700;border-radius:10px;background:#fffbeb;color:#ca8a04;border:2px solid #e2e8f0;box-shadow:none">🟡 Medium</button>
-                    <button onclick="selectPriority('high')"   id="pri-high"   class="pri-btn" style="flex:1;margin:0;padding:10px;font-size:12px;font-weight:700;border-radius:10px;background:#fef2f2;color:#dc2626;border:2px solid #e2e8f0;box-shadow:none">🔴 High</button>
+                    <button onclick="selectPriority('low')"    id="pri-low"    class="pri-btn" style="flex:1;margin:0;padding:10px;font-size:12px;font-weight:700;border-radius:10px;background:#f0fdf4;color:#16a34a;border:1.5px solid #bbf7d0;box-shadow:none"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#16a34a;margin-right:5px;vertical-align:middle"></span>Low</button>
+                    <button onclick="selectPriority('medium')" id="pri-medium" class="pri-btn" style="flex:1;margin:0;padding:10px;font-size:12px;font-weight:700;border-radius:10px;background:#fffbeb;color:#ca8a04;border:1.5px solid #fde68a;box-shadow:none"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ca8a04;margin-right:5px;vertical-align:middle"></span>Medium</button>
+                    <button onclick="selectPriority('high')"   id="pri-high"   class="pri-btn" style="flex:1;margin:0;padding:10px;font-size:12px;font-weight:700;border-radius:10px;background:#fef2f2;color:#dc2626;border:1.5px solid #fecaca;box-shadow:none"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#dc2626;margin-right:5px;vertical-align:middle"></span>High</button>
                 </div>
                 <div style="display:flex;gap:10px">
                     <button onclick="saveTodo()" style="flex:1;margin:0;background:#16a34a">💾 Save</button>
@@ -812,7 +812,7 @@
         <div id="noteModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
             <div style="background:white;border-radius:20px;padding:28px;width:92%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.25)">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-                    <h2 style="margin:0;font-size:20px">📝 Note</h2>
+                    <h2 style="margin:0;font-size:18px;font-weight:700">Note</h2>
                     <button onclick="closeNoteModal()" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b">✕</button>
                 </div>
                 <input type="hidden" id="noteId">
@@ -844,7 +844,7 @@
         <div id="studyModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
             <div style="background:white;border-radius:20px;padding:28px;width:92%;max-width:460px;box-shadow:0 24px 64px rgba(0,0,0,0.25)">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-                    <h2 style="margin:0;font-size:20px">📚 Study Item</h2>
+                    <h2 style="margin:0;font-size:18px;font-weight:700">Study Item</h2>
                     <button onclick="closeStudyModal()" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b">✕</button>
                 </div>
                 <input type="hidden" id="studyId">

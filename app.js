@@ -1061,11 +1061,12 @@ function updateDashboard(cases) {
     checkMilestones(overallPercent);
     updateAchievementBadges(overallPercent);
 
+    const _cardIcon = (paths, color) => `<div style="width:40px;height:40px;border-radius:12px;background:${color}18;display:flex;align-items:center;justify-content:center;margin:0 auto 10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg></div>`;
     document.getElementById('summaryCards').innerHTML =
-        '<div class="summary-card"><div style="font-size:26px;margin-bottom:4px">📋</div><h3>' + totalDone + '</h3><p>Total Cases</p></div>' +
-        '<div class="summary-card"><div style="font-size:26px;margin-bottom:4px">📅</div><h3>' + monthCases.length + '</h3><p>This Month</p></div>' +
-        '<div class="summary-card"><div style="font-size:26px;margin-bottom:4px">🎯</div><h3>' + overallPercent + '%</h3><p>ACGME Progress</p></div>' +
-        '<div class="summary-card"><div style="font-size:26px;margin-bottom:4px">🔥</div><h3>' + streak + '</h3><p>Day Streak</p></div>';
+        `<div class="summary-card">${_cardIcon('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>','#2563eb')}<h3 style="color:#2563eb">${totalDone}</h3><p>Total Cases</p></div>` +
+        `<div class="summary-card">${_cardIcon('<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>','#0891b2')}<h3 style="color:#0891b2">${monthCases.length}</h3><p>This Month</p></div>` +
+        `<div class="summary-card">${_cardIcon('<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>','#7c3aed')}<h3 style="color:#7c3aed">${overallPercent}%</h3><p>ACGME Progress</p></div>` +
+        `<div class="summary-card">${_cardIcon('<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>','#d97706')}<h3 style="color:#d97706">${streak}</h3><p>Day Streak</p></div>`;
 
     let badge = document.getElementById('overallBadge');
     if (badge) badge.textContent = overallPercent + '% Complete';
@@ -3404,7 +3405,7 @@ function renderTodos() {
 
     let priColors = { high:'#dc2626', medium:'#ca8a04', low:'#16a34a' };
     let priBg     = { high:'#fef2f2', medium:'#fffbeb', low:'#f0fdf4' };
-    let priIcon   = { high:'🔴', medium:'🟡', low:'🟢' };
+    let priDot    = (c) => `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c};margin-right:4px;vertical-align:middle"></span>`;
 
     let open = getTodos().filter(t=>!t.done).length;
     let total = getTodos().length;
@@ -3422,13 +3423,13 @@ function renderTodos() {
                 <div style="flex:1;min-width:0">
                     <p style="font-size:14px;font-weight:600;color:#0f172a;margin-bottom:4px;${t.done?'text-decoration:line-through;color:#94a3b8':''}">${t.text}</p>
                     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-                        <span style="font-size:11px;font-weight:700;color:${priColors[t.priority]}">${priIcon[t.priority]} ${t.priority.charAt(0).toUpperCase()+t.priority.slice(1)}</span>
-                        ${t.due?`<span style="font-size:11px;color:${overdue?'#dc2626':'#64748b'};font-weight:${overdue?700:400}">${overdue?'⚠️ Overdue · ':'📅 '}${new Date(t.due+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>`:''}
+                        <span style="font-size:11px;font-weight:700;color:${priColors[t.priority]}">${priDot(priColors[t.priority])}${t.priority.charAt(0).toUpperCase()+t.priority.slice(1)}</span>
+                        ${t.due?`<span style="font-size:11px;color:${overdue?'#dc2626':'#64748b'};font-weight:${overdue?700:400}">${overdue?'Overdue · ':''}${new Date(t.due+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>`:''}
                     </div>
                 </div>
                 <div style="display:flex;gap:4px;flex-shrink:0">
-                    <button onclick="openTodoModal('${t.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:12px;color:#64748b;box-shadow:none">✏️</button>
-                    <button onclick="deleteTodo('${t.id}')"    style="width:28px;height:28px;padding:0;margin:0;background:#fef2f2;border-radius:8px;font-size:12px;color:#dc2626;box-shadow:none">🗑️</button>
+                    <button onclick="openTodoModal('${t.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;box-shadow:none;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                    <button onclick="deleteTodo('${t.id}')"    style="width:28px;height:28px;padding:0;margin:0;background:#fef2f2;border-radius:8px;box-shadow:none;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
                 </div>
             </div>`;
         }).join('');
