@@ -730,28 +730,30 @@ async function signInForm() {
     if (error) { showToast(error.message, 'error'); return; }
     let { data: { user } } = await db.auth.getUser();
     let { data: profile }  = await db.from('profiles').select('*').eq('id', user.id).single();
-    // Auto-recover: profile row missing (e.g. JS upsert failed at sign-up)
+    const adminEmails = ['elarabyo@stanford.edu'];
+    const isAdminEmail = adminEmails.includes(user.email);
+    // If profile missing, insert (never upsert — avoids overwriting existing row)
     if (!profile) {
-        await db.from('profiles').upsert({
+        if (isAdminEmail) { showApp(); return; }
+        await db.from('profiles').insert({
             id: user.id, email: user.email,
             full_name: user.email.split('@')[0],
             role: 'resident', status: 'pending'
-        });
+        }).select();
         showPendingScreen(user.email.split('@')[0]);
         await db.auth.signOut();
         return;
     }
-    if (profile.role !== 'admin') {
-        if (profile.status === 'pending') {
-            showPendingScreen(profile.preferred_name || profile.full_name || '');
-            await db.auth.signOut();
-            return;
-        }
-        if (profile.status === 'rejected') {
-            showToast('❌ Your access request was declined.', 'error');
-            await db.auth.signOut();
-            return;
-        }
+    if (profile.role === 'admin' || isAdminEmail) { showApp(); return; }
+    if (profile.status === 'pending') {
+        showPendingScreen(profile.preferred_name || profile.full_name || '');
+        await db.auth.signOut();
+        return;
+    }
+    if (profile.status === 'rejected') {
+        showToast('❌ Your access request was declined.', 'error');
+        await db.auth.signOut();
+        return;
     }
     showApp();
 }
