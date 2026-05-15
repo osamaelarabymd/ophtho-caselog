@@ -645,35 +645,50 @@ async function signUp() {
 }
 
 async function completeSignUp() {
+    let btn = document.querySelector('#roleModal button:last-child');
+    if (btn) { btn.textContent = 'Submitting…'; btn.disabled = true; }
+
     let email         = document.getElementById('email').value.trim();
     let password      = document.getElementById('password').value;
     let fullName      = document.getElementById('fullName').value.trim();
     let preferredName = (document.getElementById('preferredNameInput')?.value || '').trim() || fullName.split(' ')[0];
     let pgy           = _signupRole === 'resident' ? (document.getElementById('signupPgy')?.value || 'PGY-1') : null;
 
-    document.getElementById('roleModal').style.display = 'none';
-    showLoading();
+    let userId = null;
 
+    // Try sign-up; if email already registered, sign in to get the user id
     let { data, error } = await db.auth.signUp({ email, password });
-    if (error) { hideLoading(); showToast(error.message, 'error'); document.getElementById('roleModal').style.display = 'flex'; return; }
+    if (error && error.message.toLowerCase().includes('already registered')) {
+        // Account exists from a broken previous attempt — sign in to get the user
+        let { data: siData, error: siErr } = await db.auth.signInWithPassword({ email, password });
+        if (siErr) {
+            showToast('⚠️ Email already registered — try signing in instead', 'warning');
+            if (btn) { btn.textContent = 'Complete Registration →'; btn.disabled = false; }
+            return;
+        }
+        userId = siData.user?.id;
+        await db.auth.signOut(); // sign them back out; they'll sign in properly after approval
+    } else if (error) {
+        showToast('⚠️ ' + error.message, 'error');
+        if (btn) { btn.textContent = 'Complete Registration →'; btn.disabled = false; }
+        return;
+    } else {
+        userId = data.user?.id;
+    }
 
-    if (data.user) {
-        // Try with preferred_name column first; if column missing, fall back without it
-        let profileRow = { id: data.user.id, email, full_name: fullName, preferred_name: preferredName, role: _signupRole, status: 'pending' };
+    if (userId) {
+        let profileRow = { id: userId, email, full_name: fullName, preferred_name: preferredName, role: _signupRole, status: 'pending' };
         let { error: upsertErr } = await db.from('profiles').upsert(profileRow);
         if (upsertErr) {
-            // Column may not exist yet — retry without preferred_name
-            let { error: fallbackErr } = await db.from('profiles').upsert({ id: data.user.id, email, full_name: fullName, role: _signupRole, status: 'pending' });
-            if (fallbackErr) { hideLoading(); showToast('⚠️ Profile save failed: ' + fallbackErr.message, 'error'); return; }
+            await db.from('profiles').upsert({ id: userId, email, full_name: fullName, role: _signupRole, status: 'pending' });
         }
-        // Seed localStorage so the app is personalised from first login
         let p = JSON.parse(localStorage.getItem('userProfile')) || {};
         p.name = fullName; p.preferredName = preferredName;
         if (pgy) p.pgy = pgy;
         localStorage.setItem('userProfile', JSON.stringify(p));
     }
 
-    hideLoading();
+    document.getElementById('roleModal').style.display = 'none';
     showPendingScreen(preferredName || fullName);
 }
 
