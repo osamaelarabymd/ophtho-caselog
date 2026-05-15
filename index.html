@@ -610,12 +610,19 @@
             </div>
             <!-- Calendar section -->
             <div id="ws-calendar" style="display:none">
+                <!-- View toggle -->
+                <div style="display:flex;gap:6px;margin-bottom:12px">
+                    <button id="cal-toggle-month" onclick="toggleCalView('month')" style="flex:1;margin:0;padding:8px;font-size:12px;font-weight:700;border-radius:10px;background:#2563eb;color:white;box-shadow:none">📅 Month</button>
+                    <button id="cal-toggle-week"  onclick="toggleCalView('week')"  style="flex:1;margin:0;padding:8px;font-size:12px;font-weight:700;border-radius:10px;background:#f1f5f9;color:#64748b;box-shadow:none">📋 Week</button>
+                    <button onclick="calJumpToday()" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#f1f5f9;color:#64748b;box-shadow:none">Today</button>
+                </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
                     <button onclick="calNav(-1)" style="width:36px;height:36px;margin:0;padding:0;background:#f1f5f9;border-radius:10px;font-size:18px;color:#374151;box-shadow:none">‹</button>
                     <h3 id="calMonthLabel" style="margin:0;font-size:16px;font-weight:800;color:#0f172a"></h3>
                     <button onclick="calNav(1)"  style="width:36px;height:36px;margin:0;padding:0;background:#f1f5f9;border-radius:10px;font-size:18px;color:#374151;box-shadow:none">›</button>
                 </div>
                 <div id="calGrid" style="margin-bottom:16px"></div>
+                <div id="weekGrid" style="display:none;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch"></div>
                 <div id="dayDetail" style="display:none">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
                         <h3 id="dayDetailTitle" style="margin:0;font-size:15px;font-weight:800;color:#0f172a"></h3>

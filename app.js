@@ -2148,7 +2148,7 @@ function showWorkspaceTab(tab) {
             }
         }
     });
-    if (tab === 'calendar') renderCalendar();
+    if (tab === 'calendar') { if (calView === 'week') renderWeekView(); else renderCalendar(); }
     if (tab === 'journal')  renderJournalList();
     if (tab === 'todo')     renderTodos();
     if (tab === 'notes')    renderNotes();
@@ -2229,6 +2229,8 @@ async function _cloudDelete(table, id) {
 // ── Calendar ──────────────────────────────────────────────────────────────────
 const EVENTS_KEY = 'eyeEvents';
 let calYear, calMonth, selectedCalDate;
+let calView = 'month';
+let calWeekStart = null; // Date object — Monday of current week view
 
 function getEvents()         { return JSON.parse(localStorage.getItem(EVENTS_KEY) || '[]'); }
 function saveEvents(events)  { localStorage.setItem(EVENTS_KEY, JSON.stringify(events)); }
@@ -2237,9 +2239,53 @@ function initCal() {
     let now = new Date();
     calYear  = now.getFullYear();
     calMonth = now.getMonth();
+    calWeekStart = _getWeekStart(now);
+}
+
+function _getWeekStart(date) {
+    let d = new Date(date);
+    let day = d.getDay(); // 0=Sun
+    d.setDate(d.getDate() - (day === 0 ? 6 : day - 1)); // back to Monday
+    d.setHours(0,0,0,0);
+    return d;
+}
+
+function _dayKey(d) {
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function toggleCalView(v) {
+    calView = v;
+    let monthBtn = document.getElementById('cal-toggle-month');
+    let weekBtn  = document.getElementById('cal-toggle-week');
+    if (monthBtn) { monthBtn.style.background = v==='month' ? '#2563eb' : '#f1f5f9'; monthBtn.style.color = v==='month' ? 'white' : '#64748b'; }
+    if (weekBtn)  { weekBtn.style.background  = v==='week'  ? '#2563eb' : '#f1f5f9'; weekBtn.style.color  = v==='week'  ? 'white' : '#64748b'; }
+    let dd = document.getElementById('dayDetail');
+    if (dd) dd.style.display = 'none';
+    selectedCalDate = null;
+    if (v === 'week') renderWeekView();
+    else renderCalendar();
+}
+
+function calJumpToday() {
+    let now = new Date();
+    calYear  = now.getFullYear();
+    calMonth = now.getMonth();
+    calWeekStart = _getWeekStart(now);
+    let dd = document.getElementById('dayDetail');
+    if (dd) dd.style.display = 'none';
+    selectedCalDate = null;
+    if (calView === 'week') renderWeekView();
+    else renderCalendar();
 }
 
 function calNav(dir) {
+    if (calView === 'week') {
+        calWeekStart = calWeekStart || _getWeekStart(new Date());
+        calWeekStart.setDate(calWeekStart.getDate() + dir * 7);
+        renderWeekView();
+        return;
+    }
     calMonth += dir;
     if (calMonth > 11) { calMonth = 0;  calYear++; }
     if (calMonth < 0)  { calMonth = 11; calYear--; }
@@ -2249,8 +2295,91 @@ function calNav(dir) {
     renderCalendar();
 }
 
+function renderWeekView() {
+    if (!calWeekStart) initCal();
+    let ws = new Date(calWeekStart);
+
+    // Update header label
+    let we = new Date(ws); we.setDate(we.getDate() + 6);
+    let label = ws.toLocaleString('default',{month:'short',day:'numeric'}) + ' – ' + we.toLocaleString('default',{month:'short',day:'numeric',year:'numeric'});
+    let el = document.getElementById('calMonthLabel');
+    if (el) el.textContent = label;
+
+    let grid    = document.getElementById('calGrid');
+    let wGrid   = document.getElementById('weekGrid');
+    if (grid)  grid.style.display  = 'none';
+    if (!wGrid) return;
+    wGrid.style.display = 'block';
+
+    let events  = getEvents();
+    let todos   = getTodos();
+    let journal = getJournalEntries();
+    let today   = new Date().toISOString().slice(0,10);
+    let dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+    let cols = '';
+    for (let i = 0; i < 7; i++) {
+        let d   = new Date(ws); d.setDate(ws.getDate() + i);
+        let dk  = _dayKey(d);
+        let isToday = dk === today;
+        let dayNum  = d.getDate();
+        let evs     = events.filter(e => e.date === dk);
+        let tds     = todos.filter(t => t.due === dk && !t.done);
+        let cases   = allCases.filter(c => c.date === dk);
+        let jrnl    = journal.filter(j => j.date === dk);
+
+        let typeColors = { clinic:'#0891b2', meeting:'#7c3aed', or:'#16a34a', education:'#d97706', personal:'#ec4899' };
+
+        let items = '';
+        evs.forEach(e => {
+            let c = typeColors[e.type] || '#2563eb';
+            items += `<div onclick="selectCalDay('${dk}')" style="background:${c}18;border-left:3px solid ${c};border-radius:6px;padding:4px 6px;margin-bottom:3px;cursor:pointer">
+                <div style="font-size:10px;font-weight:700;color:${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.time?e.time+' ':''}${e.title}</div>
+            </div>`;
+        });
+        cases.forEach(c => {
+            let short = c.procedure.split('/')[0].trim().split('(')[0].trim();
+            items += `<div style="background:#16a34a18;border-left:3px solid #16a34a;border-radius:6px;padding:4px 6px;margin-bottom:3px">
+                <div style="font-size:10px;font-weight:700;color:#16a34a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🔪 ${short}</div>
+            </div>`;
+        });
+        tds.forEach(t => {
+            let pc = { high:'#dc2626', medium:'#d97706', low:'#16a34a' }[t.priority] || '#64748b';
+            items += `<div style="background:${pc}18;border-left:3px solid ${pc};border-radius:6px;padding:4px 6px;margin-bottom:3px">
+                <div style="font-size:10px;font-weight:600;color:${pc};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">✅ ${t.text}</div>
+            </div>`;
+        });
+        if (jrnl.length > 0) {
+            items += `<div style="background:#7c3aed18;border-left:3px solid #7c3aed;border-radius:6px;padding:4px 6px;margin-bottom:3px">
+                <div style="font-size:10px;font-weight:600;color:#7c3aed">📔 ${jrnl.length} entr${jrnl.length>1?'ies':'y'}</div>
+            </div>`;
+        }
+
+        cols += `<div style="min-width:110px;flex:1;display:flex;flex-direction:column">
+            <div onclick="selectCalDay('${dk}')" style="text-align:center;padding:8px 4px;margin-bottom:6px;border-radius:12px;cursor:pointer;
+                background:${isToday?'#2563eb':'#f8fafc'};border:${isToday?'2px solid #2563eb':'1px solid #e2e8f0'}">
+                <div style="font-size:10px;font-weight:700;color:${isToday?'rgba(255,255,255,0.8)':'#94a3b8'};text-transform:uppercase">${dayNames[i]}</div>
+                <div style="font-size:20px;font-weight:900;color:${isToday?'white':'#0f172a'};line-height:1.2">${dayNum}</div>
+            </div>
+            <div style="flex:1;min-height:80px">${items || '<div style="font-size:10px;color:#cbd5e1;text-align:center;padding:8px 0">—</div>'}</div>
+            <button onclick="openEventModal('${dk}')" style="margin:4px 0 0;padding:5px;font-size:11px;font-weight:700;border-radius:8px;background:#f1f5f9;color:#64748b;box-shadow:none;width:100%">＋</button>
+        </div>`;
+    }
+
+    wGrid.innerHTML = `<div style="display:flex;gap:6px;min-width:700px">${cols}</div>`;
+
+    // Keep dayDetail open if a day was selected
+    if (selectedCalDate) renderDayDetail(selectedCalDate);
+}
+
 function renderCalendar() {
     if (calYear === undefined) initCal();
+    // Ensure correct grid visibility for month view
+    let wg = document.getElementById('weekGrid');
+    let cg = document.getElementById('calGrid');
+    if (wg) wg.style.display = 'none';
+    if (cg) cg.style.display = 'block';
+
     let now          = new Date();
     let firstDay     = new Date(calYear, calMonth, 1).getDay();
     let daysInMonth  = new Date(calYear, calMonth + 1, 0).getDate();
