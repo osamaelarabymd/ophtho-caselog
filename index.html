@@ -765,8 +765,11 @@
                     <button onclick="selectMood('🤔')" id="mood-🤔" class="mood-btn" style="flex:1;min-width:52px;margin:0;background:#faf5ff;color:#7c3aed;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">🤔</button>
                 </div>
                 <label>Title <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
-                <input type="text" id="journalTitle" placeholder="e.g. First solo cataract, Tough VR case…">
-                <label>Entry</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <input type="text" id="journalTitle" placeholder="e.g. First solo cataract, Tough VR case…" style="flex:1;margin:0">
+                    <button onclick="startVoiceFill('journalTitle',this)" title="Voice input" style="width:38px;height:38px;padding:0;margin:0;background:#f1f5f9;border-radius:10px;font-size:16px;box-shadow:none;border:1px solid #e2e8f0;flex-shrink:0">🎤</button>
+                </div>
+                <label style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">Entry <button onclick="startVoiceFill('journalBody',this)" title="Voice input" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:14px;box-shadow:none;border:1px solid #e2e8f0">🎤</button></label>
                 <textarea id="journalBody" rows="6" placeholder="What happened today? What did you learn? What would you do differently?"></textarea>
                 <label>Link to a case <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
                 <select id="journalCaseLink" style="margin-bottom:20px"><option value="">— No case linked —</option></select>
@@ -786,7 +789,10 @@
                 </div>
                 <input type="hidden" id="todoId">
                 <label>Task</label>
-                <input type="text" id="todoText" placeholder="e.g. Review cornea anatomy before grand rounds">
+                <div style="display:flex;gap:8px;align-items:center">
+                    <input type="text" id="todoText" placeholder="e.g. Review cornea anatomy before grand rounds" style="flex:1;margin:0">
+                    <button onclick="startVoiceFill('todoText',this)" title="Voice input" style="width:38px;height:38px;padding:0;margin:0;background:#f1f5f9;border-radius:10px;font-size:16px;box-shadow:none;border:1px solid #e2e8f0;flex-shrink:0">🎤</button>
+                </div>
                 <label>Due Date <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
                 <input type="date" id="todoDue">
                 <label>Priority</label>
@@ -811,7 +817,10 @@
                 </div>
                 <input type="hidden" id="noteId">
                 <label>Title</label>
-                <input type="text" id="noteTitle" placeholder="e.g. Glaucoma Pearl, IOL Formula…">
+                <div style="display:flex;gap:8px;align-items:center">
+                    <input type="text" id="noteTitle" placeholder="e.g. Glaucoma Pearl, IOL Formula…" style="flex:1;margin:0">
+                    <button onclick="startVoiceFill('noteTitle',this)" title="Voice input" style="width:38px;height:38px;padding:0;margin:0;background:#f1f5f9;border-radius:10px;font-size:16px;box-shadow:none;border:1px solid #e2e8f0;flex-shrink:0">🎤</button>
+                </div>
                 <label>Tag</label>
                 <select id="noteTag">
                     <option value="">No tag</option>
@@ -822,7 +831,7 @@
                     <option value="Board Prep">📋 Board Prep</option>
                     <option value="Reminder">🔔 Reminder</option>
                 </select>
-                <label style="margin-top:12px">Note</label>
+                <label style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">Note <button onclick="startVoiceFill('noteBody',this)" title="Voice input" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:14px;box-shadow:none;border:1px solid #e2e8f0">🎤</button></label>
                 <textarea id="noteBody" rows="6" placeholder="Clinical pearl, drug dose, technique tip, anatomy note…"></textarea>
                 <div style="display:flex;gap:10px;margin-top:16px">
                     <button onclick="saveNote()" style="flex:1;margin:0;background:#0891b2">💾 Save</button>
@@ -840,7 +849,10 @@
                 </div>
                 <input type="hidden" id="studyId">
                 <label>Topic / Resource</label>
-                <input type="text" id="studyTopic" placeholder="e.g. Wills Eye Ch. 4, AAO Glaucoma, OKAP prep…">
+                <div style="display:flex;gap:8px;align-items:center">
+                    <input type="text" id="studyTopic" placeholder="e.g. Wills Eye Ch. 4, AAO Glaucoma, OKAP prep…" style="flex:1;margin:0">
+                    <button onclick="startVoiceFill('studyTopic',this)" title="Voice input" style="width:38px;height:38px;padding:0;margin:0;background:#f1f5f9;border-radius:10px;font-size:16px;box-shadow:none;border:1px solid #e2e8f0;flex-shrink:0">🎤</button>
+                </div>
                 <label>Type</label>
                 <select id="studyType">
                     <option value="Textbook">📖 Textbook</option>
@@ -849,7 +861,7 @@
                     <option value="Question Bank">❓ Question Bank</option>
                     <option value="Other">📌 Other</option>
                 </select>
-                <label style="margin-top:12px">Notes <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
+                <label style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">Notes <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span> <button onclick="startVoiceFill('studyNotes',this)" title="Voice input" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:14px;box-shadow:none;border:1px solid #e2e8f0">🎤</button></label>
                 <textarea id="studyNotes" rows="3" placeholder="Why you're studying this, key points to focus on…"></textarea>
                 <div style="display:flex;gap:10px;margin-top:16px">
                     <button onclick="saveStudyItem()" style="flex:1;margin:0;background:#7c3aed">💾 Add</button>

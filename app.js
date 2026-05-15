@@ -2260,6 +2260,46 @@ function checkSmartAlerts(cases) {
 let _voiceRec = null;
 let _voiceActive = false;
 
+// Universal voice fill — works for any input/textarea by ID
+function startVoiceFill(targetId, btnEl) {
+    if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
+        showToast('⚠️ Voice not supported — try Chrome', 'error'); return;
+    }
+    if (btnEl._vfRec) {
+        btnEl._vfRec.stop(); return;
+    }
+    let SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let rec = new SR();
+    rec.lang = 'en-US'; rec.interimResults = true; rec.maxAlternatives = 1;
+    btnEl._vfRec = rec;
+    let origText = btnEl.innerHTML;
+    btnEl.innerHTML = '⏹'; btnEl.style.color = '#dc2626';
+    let interim = '';
+    rec.onresult = (e) => {
+        interim = '';
+        let final = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+            let t = e.results[i][0].transcript;
+            if (e.results[i].isFinal) final += t; else interim += t;
+        }
+        let el = document.getElementById(targetId);
+        if (final && el) {
+            el.value = el.value ? el.value + ' ' + final : final;
+            el.focus();
+            showToast('✅ ' + final);
+        }
+    };
+    rec.onerror = (e) => {
+        let msg = {'not-allowed':'Mic permission denied','no-speech':'No speech detected','network':'Network error'}[e.error] || e.error;
+        showToast('⚠️ ' + msg, 'error');
+    };
+    rec.onend = () => {
+        btnEl._vfRec = null;
+        btnEl.innerHTML = origText; btnEl.style.color = '';
+    };
+    try { rec.start(); } catch(e) { showToast('⚠️ ' + e.message, 'error'); btnEl._vfRec = null; btnEl.innerHTML = origText; btnEl.style.color = ''; }
+}
+
 function startVoiceLog() {
     let statusEl = document.getElementById('voiceStatus');
     let voiceBtn = document.getElementById('voiceBtn');
