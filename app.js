@@ -683,7 +683,8 @@ async function completeSignUp() {
             if (userId) {
                 // Save profile while still authenticated
                 let row = { id: userId, email, full_name: fullName, role: _signupRole, status: 'pending', preferred_name: preferredName };
-                await db.from('profiles').upsert(row);
+                let { error: profErr } = await db.from('profiles').upsert(row);
+                if (profErr) showToast('⚠️ Profile save error: ' + profErr.message, 'error');
             }
             if (data.session) await db.auth.signOut();
         }
@@ -908,16 +909,26 @@ async function deleteCase(id) {
     showToast('🗑️ Case deleted', 'warning');
 }
 
+let _lastPendingCount = 0;
 async function checkPendingUsers() {
     if (currentUserRole !== 'admin') return;
     let { data: profiles } = await db.from('profiles').select('status').eq('status', 'pending');
     let count    = profiles ? profiles.length : 0;
     let adminTab = document.getElementById('adminTab');
-    if (adminTab && count > 0) {
-        adminTab.innerHTML = '👨‍⚕️ PD Panel <span style="background:#dc2626; color:white; border-radius:50%; padding:2px 7px; font-size:11px; margin-left:4px">' + count + '</span>';
-        showToast('⚠️ ' + count + ' new user(s) pending approval!', 'warning');
+    if (adminTab) {
+        if (count > 0) {
+            adminTab.innerHTML = '👨‍⚕️ PD Panel <span style="background:#dc2626; color:white; border-radius:50%; padding:2px 7px; font-size:11px; margin-left:4px">' + count + '</span>';
+        } else {
+            adminTab.innerHTML = '👨‍⚕️ PD Panel';
+        }
     }
+    if (count > _lastPendingCount) {
+        showToast('⚠️ ' + count + ' user(s) pending approval!', 'warning');
+    }
+    _lastPendingCount = count;
 }
+// Poll every 60 seconds so new sign-ups appear without requiring re-login
+setInterval(() => { if (currentUserRole === 'admin') checkPendingUsers(); }, 60000);
 
 async function loadAdminData() {
     showLoading();
