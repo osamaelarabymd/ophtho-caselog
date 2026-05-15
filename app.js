@@ -340,15 +340,24 @@ function updateStreak(cases) {
 }
 
 // Profile
+function _drName(profile) {
+    // Returns "Dr. [preferred]" — falls back to first name, then generic
+    if (profile.preferredName) return 'Dr. ' + profile.preferredName;
+    if (profile.name) return 'Dr. ' + profile.name.split(' ')[0];
+    return 'Dr. ___';
+}
+
 function saveProfile() {
     let profile = {
-        name:      document.getElementById('profileNameInput').value,
-        pgy:       document.getElementById('profilePgyInput').value,
-        program:   document.getElementById('profileProgramInput').value,
-        startYear: document.getElementById('profileStartYear').value,
-        endYear:   document.getElementById('profileEndYear').value,
-        goals:     document.getElementById('profileGoals').value
+        name:          document.getElementById('profileNameInput').value,
+        preferredName: (document.getElementById('profilePreferredName')?.value || '').trim(),
+        pgy:           document.getElementById('profilePgyInput').value,
+        program:       document.getElementById('profileProgramInput').value,
+        startYear:     document.getElementById('profileStartYear').value,
+        endYear:       document.getElementById('profileEndYear').value,
+        goals:         document.getElementById('profileGoals').value
     };
+    if (!profile.preferredName && profile.name) profile.preferredName = profile.name.split(' ')[0];
     localStorage.setItem('userProfile', JSON.stringify(profile));
     localStorage.setItem('residentName', profile.name);
     updateProfileDisplay();
@@ -357,7 +366,9 @@ function saveProfile() {
 
 function loadProfile() {
     let profile = JSON.parse(localStorage.getItem('userProfile')) || {};
-    if (profile.name)      document.getElementById('profileNameInput').value    = profile.name;
+    if (profile.name)          document.getElementById('profileNameInput').value    = profile.name;
+    let prefEl = document.getElementById('profilePreferredName');
+    if (prefEl) prefEl.value = profile.preferredName || (profile.name ? profile.name.split(' ')[0] : '');
     if (profile.pgy)       document.getElementById('profilePgyInput').value     = profile.pgy;
     if (profile.program)   document.getElementById('profileProgramInput').value = profile.program;
     if (profile.startYear) document.getElementById('profileStartYear').value    = profile.startYear;
@@ -371,7 +382,7 @@ function updateProfileDisplay() {
     let nameEl  = document.getElementById('profileName');
     let pgyEl   = document.getElementById('profilePgy');
     let progEl  = document.getElementById('profileProgram');
-    if (nameEl) nameEl.textContent = profile.name ? 'Dr. ' + profile.name : 'Dr. Resident';
+    if (nameEl) nameEl.textContent = _drName(profile);
     if (pgyEl)  pgyEl.textContent  = profile.pgy  || 'PGY-1';
     if (progEl) progEl.textContent = (profile.program || 'Ophthalmology Program') + ' — Ophthalmology';
     let goalsEl = document.getElementById('profileGoalsDisplay');
@@ -394,11 +405,7 @@ function updateProfileDisplay() {
         }
     }
     let welcomeEl = document.getElementById('welcomeName');
-    if (welcomeEl && profile.name) {
-        let parts    = profile.name.trim().split(' ');
-        let lastName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
-        welcomeEl.textContent = 'Dr. ' + lastName;
-    }
+    if (welcomeEl) welcomeEl.textContent = _drName(profile);
 }
 
 // Templates
@@ -604,27 +611,70 @@ async function forgotPassword() {
 }
 
 // Auth
+let _signupRole = 'resident';
+
+function selectSignupRole(role) {
+    _signupRole = role;
+    ['resident','attending'].forEach(r => {
+        let btn = document.getElementById('roleBtn-' + r);
+        if (!btn) return;
+        btn.style.borderColor = r === role ? (r === 'resident' ? '#2563eb' : '#0891b2') : '#e2e8f0';
+        btn.style.background  = r === role ? (r === 'resident' ? '#eff6ff' : '#f0f9ff')  : '#f8fafc';
+        btn.style.color       = r === role ? (r === 'resident' ? '#2563eb' : '#0891b2')  : '#64748b';
+    });
+    let pgyRow = document.getElementById('pgySignupRow');
+    if (pgyRow) pgyRow.style.display = role === 'resident' ? 'block' : 'none';
+}
+
 async function signUp() {
-    let email    = document.getElementById('email').value;
+    let email    = document.getElementById('email').value.trim();
     let password = document.getElementById('password').value;
-    let fullName = document.getElementById('fullName').value;
+    let fullName = document.getElementById('fullName').value.trim();
     if (!fullName) { showToast('⚠️ Please enter your full name', 'warning'); return; }
     if (!email || !password) { showToast('⚠️ Enter email and password', 'warning'); return; }
     if (password.length < 6) { showToast('⚠️ Password must be at least 6 characters', 'warning'); return; }
+
+    // Pre-fill preferred name with first name, then show role modal
+    let firstNameGuess = fullName.split(' ')[0];
+    let inp = document.getElementById('preferredNameInput');
+    if (inp && !inp.value) inp.value = firstNameGuess;
+
+    selectSignupRole('resident'); // reset to default selection
+    document.getElementById('roleModal').style.display = 'flex';
+    setTimeout(() => { if (inp) inp.focus(); inp.select(); }, 150);
+}
+
+async function completeSignUp() {
+    let email         = document.getElementById('email').value.trim();
+    let password      = document.getElementById('password').value;
+    let fullName      = document.getElementById('fullName').value.trim();
+    let preferredName = (document.getElementById('preferredNameInput')?.value || '').trim() || fullName.split(' ')[0];
+    let pgy           = _signupRole === 'resident' ? (document.getElementById('signupPgy')?.value || 'PGY-1') : null;
+
+    document.getElementById('roleModal').style.display = 'none';
     showLoading();
+
     let { data, error } = await db.auth.signUp({ email, password });
-    if (error) { hideLoading(); showToast(error.message, 'error'); return; }
+    if (error) { hideLoading(); showToast(error.message, 'error'); document.getElementById('roleModal').style.display = 'flex'; return; }
+
     if (data.user) {
         await db.from('profiles').upsert({
-            id:        data.user.id,
-            email:     email,
-            full_name: fullName,
-            role:      'resident',
-            status:    'pending'
+            id:             data.user.id,
+            email,
+            full_name:      fullName,
+            preferred_name: preferredName,
+            role:           _signupRole,
+            status:         'pending'
         });
+        // Seed localStorage so the app is personalised from first login
+        let p = JSON.parse(localStorage.getItem('userProfile')) || {};
+        p.name = fullName; p.preferredName = preferredName;
+        if (pgy) p.pgy = pgy;
+        localStorage.setItem('userProfile', JSON.stringify(p));
     }
+
     hideLoading();
-    showPendingScreen(fullName);
+    showPendingScreen(preferredName || fullName);
 }
 
 function showPendingScreen(name) {
@@ -633,9 +683,7 @@ function showPendingScreen(name) {
     document.getElementById('pendingSection').style.display = 'block';
     let nameEl = document.getElementById('pendingName');
     if (nameEl && name) {
-        let parts    = name.trim().split(' ');
-        let lastName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
-        nameEl.textContent = 'Dr. ' + lastName;
+        nameEl.textContent = 'Dr. ' + name.trim().split(' ')[0];
     }
 }
 
@@ -688,7 +736,7 @@ async function showApp() {
     document.getElementById('appSection').style.display     = 'block';
     document.getElementById('pendingSection').style.display = 'none';
     let { data: { user } } = await db.auth.getUser();
-    let { data: profile }  = await db.from('profiles').select('role, full_name, status').eq('id', user.id).single();
+    let { data: profile }  = await db.from('profiles').select('role, full_name, preferred_name, status').eq('id', user.id).single();
     currentUserRole = profile ? profile.role : 'resident';
     if (currentUserRole === 'admin') {
         document.getElementById('adminTab').style.display = 'inline-block';
@@ -697,18 +745,19 @@ async function showApp() {
     if (currentUserRole === 'attending') {
         let at = document.getElementById('attendingTab');
         if (at) at.style.display = 'inline-block';
-        // Attendings land on their supervision dashboard
         showTab('attending', null);
     }
-    let savedProfile = JSON.parse(localStorage.getItem('userProfile')) || {};
-    if (savedProfile.name) {
-        document.getElementById('residentName').value = savedProfile.name;
-    } else if (profile && profile.full_name) {
-        document.getElementById('residentName').value = profile.full_name;
-        let p = JSON.parse(localStorage.getItem('userProfile')) || {};
-        p.name = profile.full_name;
-        localStorage.setItem('userProfile', JSON.stringify(p));
-    }
+
+    // Sync name + preferred name from Supabase into localStorage
+    let saved = JSON.parse(localStorage.getItem('userProfile')) || {};
+    if (profile?.full_name && !saved.name) saved.name = profile.full_name;
+    if (profile?.preferred_name && !saved.preferredName) saved.preferredName = profile.preferred_name;
+    // Derive preferredName from full_name if still missing
+    if (!saved.preferredName && saved.name) saved.preferredName = saved.name.split(' ')[0];
+    localStorage.setItem('userProfile', JSON.stringify(saved));
+
+    let nameForForm = saved.name || profile?.full_name || '';
+    if (nameForForm) document.getElementById('residentName').value = nameForForm;
     updateProfileDisplay();
     loadCases();
     syncWorkspaceFromCloud();
@@ -2301,13 +2350,14 @@ let _attendingCases = [];
 
 async function loadAttendingDashboard() {
     let { data: { user } } = await db.auth.getUser();
-    let { data: profile }  = await db.from('profiles').select('full_name, role').eq('id', user.id).single();
-    let name = profile?.full_name || '';
+    let { data: profile }  = await db.from('profiles').select('full_name, preferred_name, role').eq('id', user.id).single();
+    let name     = profile?.full_name || '';
+    let dispName = profile?.preferred_name || name.split(' ')[0] || name;
 
     // Populate header
     let nameEl = document.getElementById('attName');
     let titleEl = document.getElementById('attTitle');
-    if (nameEl) nameEl.textContent = 'Dr. ' + name;
+    if (nameEl) nameEl.textContent = 'Dr. ' + dispName;
     if (titleEl) titleEl.textContent = 'Attending Ophthalmologist';
 
     // Fetch all cases (requires attending RLS policy — see setup SQL)
