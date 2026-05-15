@@ -584,9 +584,12 @@ function showTab(tab, e) {
         updateCxLabels();
     } else if (tab === 'caseList') {
         document.getElementById('caseListTab').style.display = 'block';
+        showCasesSubTab('list');
         displayCaseList(allCases);
     } else if (tab === 'analytics') {
-        document.getElementById('analyticsTab').style.display = 'block';
+        // Analytics merged into Cases > Insights
+        document.getElementById('caseListTab').style.display = 'block';
+        showCasesSubTab('insights');
         showAnalytics();
     } else if (tab === 'profile') {
         document.getElementById('profileTab').style.display = 'block';
@@ -613,6 +616,26 @@ function showTab(tab, e) {
     }
     const navMap = { dashboard: 'nav-dashboard', logCase: 'nav-logCase', caseList: 'nav-caseList', analytics: 'nav-analytics', journal: 'nav-journal', help: 'nav-help' };
     if (navMap[tab]) setActiveNav(navMap[tab]);
+}
+
+function showCasesSubTab(which) {
+    let listEl     = document.getElementById('cl-section-list');
+    let insightsEl = document.getElementById('cl-section-insights');
+    let listBtn    = document.getElementById('cl-tab-list');
+    let insBtn     = document.getElementById('cl-tab-insights');
+    if (!listEl || !insightsEl) return;
+    if (which === 'insights') {
+        listEl.style.display     = 'none';
+        insightsEl.style.display = 'block';
+        if (listBtn) { listBtn.style.background = 'transparent'; listBtn.style.color = '#6B7280'; listBtn.style.boxShadow = 'none'; }
+        if (insBtn)  { insBtn.style.background  = 'white';       insBtn.style.color  = '#111827'; insBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)'; }
+        showAnalytics();
+    } else {
+        insightsEl.style.display = 'none';
+        listEl.style.display     = 'block';
+        if (insBtn)  { insBtn.style.background  = 'transparent'; insBtn.style.color  = '#6B7280'; insBtn.style.boxShadow = 'none'; }
+        if (listBtn) { listBtn.style.background = 'white';       listBtn.style.color = '#111827'; listBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)'; }
+    }
 }
 
 function setActiveNav(id) {
@@ -1425,25 +1448,58 @@ function showAnalytics() {
         monthlyCounts.push(allCases.filter(c => c.date && c.date.startsWith(d.toISOString().slice(0,7))).length);
     }
 
+    const chartDefaults = {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, grid: { color: '#F3F4F6' }, ticks: { font: { size: 10, family: 'Inter' }, color: '#9CA3AF' } },
+            x: { grid: { display: false }, ticks: { font: { size: 10, family: 'Inter' }, color: '#9CA3AF' } }
+        }
+    };
+
     if (monthlyChart) { monthlyChart.destroy(); }
     monthlyChart = new Chart(document.getElementById('monthlyChart').getContext('2d'), {
         type: 'line',
         data: {
             labels: months,
-            datasets: [{ label: 'Cases', data: monthlyCounts, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.08)', borderWidth: 3, fill: true, tension: 0.4, pointBackgroundColor: '#2563eb', pointRadius: 5 }]
+            datasets: [{ data: monthlyCounts, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.08)', borderWidth: 2.5, fill: true, tension: 0.45, pointBackgroundColor: '#6366f1', pointRadius: 4, pointHoverRadius: 6 }]
         },
-        options: { responsive: true, scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } } }
+        options: { ...chartDefaults }
     });
 
-    let roleCounts = { 'Primary Surgeon': 0, 'Assistant': 0, 'Observer': 0 };
-    for (let c of allCases) { if (roleCounts[c.role] !== undefined) { roleCounts[c.role]++; } }
-
-    if (roleChart) { roleChart.destroy(); }
-    roleChart = new Chart(document.getElementById('roleChart').getContext('2d'), {
-        type: 'doughnut',
-        data: { labels: Object.keys(roleCounts), datasets: [{ data: Object.values(roleCounts), backgroundColor: ['#2563eb','#16a34a','#d97706'] }] },
-        options: { responsive: true }
-    });
+    // Role Split — pure HTML (same style as dashboard)
+    let roleCounts = { 'Primary': 0, 'Assistant': 0, 'Observer': 0 };
+    for (let c of allCases) {
+        if (c.role === 'Primary Surgeon') roleCounts['Primary']++;
+        else if (c.role === 'Assistant')  roleCounts['Assistant']++;
+        else if (c.role === 'Observer')   roleCounts['Observer']++;
+    }
+    let roleColors2 = { 'Primary': '#6366f1', 'Assistant': '#0891b2', 'Observer': '#f59e0b' };
+    let roleTotal2  = Object.values(roleCounts).reduce((a,b)=>a+b,0) || 1;
+    let roleEl2 = document.getElementById('roleChart');
+    if (roleEl2) {
+        let barSegs2 = Object.entries(roleCounts).map(([r, n]) => {
+            let pct = Math.round((n / roleTotal2) * 100);
+            return pct > 0 ? `<div style="flex:${n};background:${roleColors2[r]};height:6px;transition:flex 0.6s" title="${r}: ${n}"></div>` : '';
+        }).join('');
+        let rows2 = Object.entries(roleCounts).map(([r, n]) => {
+            let pct = Math.round((n / roleTotal2) * 100);
+            let col = roleColors2[r];
+            return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #F9FAFB">
+                <div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div>
+                <span style="flex:1;font-size:12px;font-weight:600;color:#111827">${r}</span>
+                <div style="width:80px;background:#F3F4F6;border-radius:99px;height:4px;overflow:hidden">
+                    <div style="background:${col};width:${pct}%;height:4px;border-radius:99px"></div>
+                </div>
+                <span style="font-size:12px;font-weight:700;color:${col};min-width:24px;text-align:right">${n}</span>
+                <span style="font-size:11px;color:#9CA3AF;min-width:30px;text-align:right">${pct}%</span>
+            </div>`;
+        }).join('');
+        roleEl2.innerHTML = `
+            <div style="display:flex;gap:2px;border-radius:6px;overflow:hidden;margin-bottom:12px;background:#F3F4F6;padding:2px;border-radius:8px">${barSegs2 || '<div style="flex:1;background:#E5E7EB;height:6px;border-radius:6px"></div>'}</div>
+            ${rows2}
+            <p style="font-size:11px;color:#9CA3AF;text-align:center;margin-top:10px">${roleTotal2} total case${roleTotal2!==1?'s':''}</p>`;
+    }
 
     let dayCounts = [0,0,0,0,0,0,0];
     for (let c of allCases) { if (c.date) { dayCounts[new Date(c.date).getDay()]++; } }
@@ -1451,19 +1507,23 @@ function showAnalytics() {
     if (dayChart) { dayChart.destroy(); }
     dayChart = new Chart(document.getElementById('dayChart').getContext('2d'), {
         type: 'bar',
-        data: { labels: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], datasets: [{ label: 'Cases', data: dayCounts, backgroundColor: '#8C1515', borderRadius: 6 }] },
-        options: { responsive: true, scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } } }
+        data: { labels: ['Su','Mo','Tu','We','Th','Fr','Sa'], datasets: [{ data: dayCounts, backgroundColor: '#818cf8', borderRadius: 5, hoverBackgroundColor: '#6366f1' }] },
+        options: { ...chartDefaults }
     });
 
     let monthCases = allCases.filter(c => c.date && c.date.startsWith(thisMonth));
     let procCounts = {};
     for (let c of monthCases) { procCounts[c.procedure] = (procCounts[c.procedure] || 0) + 1; }
     let sorted = Object.entries(procCounts).sort((a, b) => b[1] - a[1]);
-    let html = sorted.length === 0 ? '<p style="color:#94a3b8">No cases this month yet.</p>' : '';
+    let html = sorted.length === 0 ? '<p style="color:#9CA3AF;font-size:12px">No cases this month yet.</p>' : '';
     for (let [proc, count] of sorted) {
         let pct = Math.round((count / monthCases.length) * 100);
-        html += '<div style="margin-bottom:12px"><p style="font-size:14px; font-weight:600; margin-bottom:4px">' + proc + ' — ' + count + ' (' + pct + '%)</p>';
-        html += '<div style="background:#e2e8f0; border-radius:99px; height:8px"><div style="background:#2563eb; width:' + pct + '%; height:8px; border-radius:99px"></div></div></div>';
+        let shortProc = proc.split('/')[0].trim().split('(')[0].trim();
+        html += `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #F9FAFB">
+            <span style="font-size:12px;font-weight:600;color:#111827;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${shortProc}</span>
+            <div style="width:50px;background:#F3F4F6;border-radius:99px;height:4px;overflow:hidden"><div style="background:#6366f1;width:${pct}%;height:4px;border-radius:99px"></div></div>
+            <span style="font-size:11px;font-weight:700;color:#6366f1;min-width:28px;text-align:right">${count}</span>
+        </div>`;
     }
     document.getElementById('topProcedures').innerHTML = html;
 
@@ -2148,11 +2208,14 @@ function showComplexityChart() {
     complexityChart = new Chart(canvas.getContext('2d'), {
         type: 'bar',
         data: { labels: months, datasets: [
-            { label:'Routine',     data:routineData,     backgroundColor:'#86efac', borderRadius:4 },
-            { label:'Complex',     data:complexData,     backgroundColor:'#fde68a', borderRadius:4 },
-            { label:'Challenging', data:challengingData, backgroundColor:'#fca5a5', borderRadius:4 }
+            { label:'Routine',     data:routineData,     backgroundColor:'#6ee7b7', borderRadius:3 },
+            { label:'Complex',     data:complexData,     backgroundColor:'#fcd34d', borderRadius:3 },
+            { label:'Challenging', data:challengingData, backgroundColor:'#f87171', borderRadius:3 }
         ]},
-        options: { responsive:true, scales:{ x:{stacked:true,grid:{display:false}}, y:{stacked:true,beginAtZero:true,grid:{color:'#f1f5f9'}} }, plugins:{legend:{position:'bottom'}} }
+        options: { responsive:true, scales:{
+            x:{stacked:true,grid:{display:false},ticks:{font:{size:9,family:'Inter'},color:'#9CA3AF'}},
+            y:{stacked:true,beginAtZero:true,grid:{color:'#F3F4F6'},ticks:{font:{size:9,family:'Inter'},color:'#9CA3AF'}}
+        }, plugins:{legend:{position:'bottom',labels:{font:{size:10,family:'Inter'},boxWidth:8,boxHeight:8,padding:8}}} }
     });
 
     let totR  = allCases.filter(c=>parseComplexity(c.notes)==='Routine').length;
@@ -2161,10 +2224,11 @@ function showComplexityChart() {
     let tot   = allCases.length || 1;
     if (summaryEl) {
         summaryEl.innerHTML =
-            '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center">' +
-            '<div style="background:#f0fdf4;border-radius:10px;padding:10px"><div style="font-size:20px;font-weight:900;color:#16a34a">'+totR+'</div><div style="font-size:11px;color:#64748b">Routine ('+Math.round(totR/tot*100)+'%)</div></div>' +
-            '<div style="background:#fffbeb;border-radius:10px;padding:10px"><div style="font-size:20px;font-weight:900;color:#ca8a04">'+totC+'</div><div style="font-size:11px;color:#64748b">Complex ('+Math.round(totC/tot*100)+'%)</div></div>' +
-            '<div style="background:#fef2f2;border-radius:10px;padding:10px"><div style="font-size:20px;font-weight:900;color:#dc2626">'+totCh+'</div><div style="font-size:11px;color:#64748b">Challenging ('+Math.round(totCh/tot*100)+'%)</div></div></div>';
+            '<div style="display:flex;gap:6px;margin-top:4px">' +
+            `<div style="flex:1;background:#f0fdf4;border-radius:8px;padding:8px;text-align:center"><div style="font-size:16px;font-weight:800;color:#059669">${totR}</div><div style="font-size:10px;color:#9CA3AF;font-weight:600">${Math.round(totR/tot*100)}%</div><div style="font-size:10px;color:#6B7280">Routine</div></div>` +
+            `<div style="flex:1;background:#fffbeb;border-radius:8px;padding:8px;text-align:center"><div style="font-size:16px;font-weight:800;color:#d97706">${totC}</div><div style="font-size:10px;color:#9CA3AF;font-weight:600">${Math.round(totC/tot*100)}%</div><div style="font-size:10px;color:#6B7280">Complex</div></div>` +
+            `<div style="flex:1;background:#fef2f2;border-radius:8px;padding:8px;text-align:center"><div style="font-size:16px;font-weight:800;color:#dc2626">${totCh}</div><div style="font-size:10px;color:#9CA3AF;font-weight:600">${Math.round(totCh/tot*100)}%</div><div style="font-size:10px;color:#6B7280">Challenging</div></div>` +
+            '</div>';
     }
 }
 

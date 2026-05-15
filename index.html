@@ -320,8 +320,7 @@
             <button onclick="showTab('dashboard', event)" class="tab-btn active-tab" id="tabBtnDashboard"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg> Dashboard</button>
             <button onclick="showTab('profile', event)"   class="tab-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile</button>
             <button onclick="showTab('logCase', event)"   class="tab-btn" id="tabBtnLogCase"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg> Log Case</button>
-            <button onclick="showTab('caseList', event)"  class="tab-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Case List</button>
-            <button onclick="showTab('analytics', event)" class="tab-btn" id="tabBtnAnalytics"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Analytics</button>
+            <button onclick="showTab('caseList', event)"  class="tab-btn" id="tabBtnAnalytics"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Cases</button>
             <button onclick="showTab('journal', event)"   class="tab-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Journal</button>
             <button onclick="showTab('help', event)"      class="tab-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Help</button>
             <button onclick="showTab('admin', event)" id="adminTab" class="tab-btn" style="display:none; background:#16a34a; color:white"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> PD Panel</button>
@@ -671,49 +670,184 @@
             </div>
         </div>
 
-        <!-- Case List -->
+        <!-- Cases (List + Insights merged) -->
         <div id="caseListTab" style="display:none">
-            <div style="background:white; padding:16px; border-radius:14px; margin-bottom:16px; box-shadow:0 2px 12px rgba(37,99,235,0.08); border:1px solid #e2e8f0">
-                <div style="position:relative">
-                    <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px">🔍</span>
-                    <input type="text" id="searchNotes" placeholder="Search cases..." oninput="applyFilter()" style="padding-left:44px; margin-top:0; border-radius:10px; font-size:14px">
+
+            <!-- Sub-toggle: List | Insights -->
+            <div style="display:flex;gap:3px;margin-bottom:16px;background:#F3F4F6;border-radius:14px;padding:4px">
+                <button id="cl-tab-list" onclick="showCasesSubTab('list')" style="flex:1;margin:0;border-radius:10px;padding:9px;font-size:12px;font-weight:700;background:white;color:#111827;box-shadow:0 1px 3px rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:center;gap:6px">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    List
+                </button>
+                <button id="cl-tab-insights" onclick="showCasesSubTab('insights')" style="flex:1;margin:0;border-radius:10px;padding:9px;font-size:12px;font-weight:700;background:transparent;color:#6B7280;box-shadow:none;display:flex;align-items:center;justify-content:center;gap:6px">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    Insights
+                </button>
+            </div>
+
+            <!-- LIST sub-section -->
+            <div id="cl-section-list">
+                <div style="background:white;padding:12px 14px;border-radius:14px;margin-bottom:12px;border:1px solid #E5E7EB;box-shadow:0 1px 4px rgba(0,0,0,0.04)">
+                    <input type="text" id="searchNotes" placeholder="Search cases…" oninput="applyFilter()" style="margin:0;padding:10px 14px;border-radius:10px;font-size:13px">
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+                    <select id="filterProcedure" onchange="applyFilter()" style="width:auto;padding:7px 10px;font-size:12px;border-radius:20px;margin-top:0;border:1.5px solid #E5E7EB;background:white">
+                        <option value="">All Procedures</option>
+                        <option>Cataract / Phaco</option>
+                        <option>Vitreoretinal (PPV)</option>
+                        <option>Glaucoma</option>
+                        <option>Cornea / Keratoplasty</option>
+                        <option>Oculoplastics</option>
+                        <option>Strabismus</option>
+                        <option>Laser (LIO / SLT / YAG)</option>
+                    </select>
+                    <select id="filterRole" onchange="applyFilter()" style="width:auto;padding:7px 10px;font-size:12px;border-radius:20px;margin-top:0;border:1.5px solid #E5E7EB;background:white">
+                        <option value="">All Roles</option>
+                        <option>Primary Surgeon</option>
+                        <option>Assistant</option>
+                        <option>Observer</option>
+                    </select>
+                    <input type="date" id="filterDateFrom" onchange="applyFilter()" style="width:auto;padding:7px 10px;font-size:12px;border-radius:20px;margin-top:0;border:1.5px solid #E5E7EB">
+                    <input type="date" id="filterDateTo" onchange="applyFilter()" style="width:auto;padding:7px 10px;font-size:12px;border-radius:20px;margin-top:0;border:1.5px solid #E5E7EB">
+                    <button onclick="clearFilter()" style="width:auto;padding:7px 12px;font-size:12px;border-radius:20px;margin-top:0;background:#F3F4F6;color:#374151;box-shadow:none;border:1.5px solid #E5E7EB">✕ Clear</button>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                    <span id="caseCount" style="font-size:12px;font-weight:600;color:#9CA3AF"></span>
+                    <select id="sortOrder" onchange="applyFilter()" style="width:auto;padding:7px 10px;font-size:12px;border-radius:10px;margin-top:0;border:1.5px solid #E5E7EB;background:white">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="procedure">By Procedure</option>
+                        <option value="role">By Role</option>
+                    </select>
+                </div>
+                <div id="caseList"></div>
+            </div>
+
+            <!-- INSIGHTS sub-section -->
+            <div id="cl-section-insights" style="display:none">
+                <!-- Export row -->
+                <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+                    <div style="flex:1;min-width:0">
+                        <p style="margin:0 0 2px;font-size:16px;font-weight:800;color:#0f172a">Insights</p>
+                        <p style="margin:0;font-size:12px;color:#9CA3AF">Your surgical training at a glance</p>
+                    </div>
+                    <button onclick="exportAnalyticsPDF()" style="background:#0f172a;color:white;width:auto;padding:8px 14px;font-size:12px;font-weight:700;margin:0;border-radius:10px;display:flex;align-items:center;gap:5px">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>PDF
+                    </button>
+                    <button onclick="exportFellowshipPDF()" style="background:linear-gradient(135deg,#16a34a,#0891b2);width:auto;padding:8px 14px;font-size:12px;font-weight:700;margin:0;border-radius:10px;display:flex;align-items:center;gap:5px">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/></svg>Fellowship
+                    </button>
+                </div>
+
+                <div id="analyticsSummary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px"></div>
+
+                <!-- Cases Per Month + Busiest Days: 2-col -->
+                <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:12px;margin-bottom:12px">
+                    <div class="dash-card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                            <div style="width:24px;height:24px;background:#eff6ff;border-radius:7px;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+                            <h3 style="margin:0;font-size:12px;font-weight:700;color:#111827">Cases / Month</h3>
+                        </div>
+                        <canvas id="monthlyChart" height="80"></canvas>
+                    </div>
+                    <div class="dash-card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                            <div style="width:24px;height:24px;background:#faf5ff;border-radius:7px;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+                            <h3 style="margin:0;font-size:12px;font-weight:700;color:#111827">By Day</h3>
+                        </div>
+                        <canvas id="dayChart" height="80"></canvas>
+                    </div>
+                </div>
+
+                <!-- Role Split — HTML (no Chart.js) -->
+                <div class="dash-card" style="margin-bottom:12px">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                        <div style="width:24px;height:24px;background:#f0fdf4;border-radius:7px;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+                        <h3 style="margin:0;font-size:12px;font-weight:700;color:#111827">Role Split</h3>
+                    </div>
+                    <div id="roleChart"></div>
+                </div>
+
+                <!-- ACGME Projections -->
+                <div class="dash-card" style="margin-bottom:12px">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                        <div style="width:24px;height:24px;background:#eff6ff;border-radius:7px;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+                        <h3 style="margin:0;font-size:12px;font-weight:700;color:#111827">ACGME Projections</h3>
+                    </div>
+                    <p style="font-size:11px;color:#9CA3AF;margin-bottom:10px">Based on your last 3 months pace</p>
+                    <div id="projections"></div>
+                </div>
+
+                <!-- Top Attendings -->
+                <div class="dash-card" style="margin-bottom:12px">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                        <div style="width:24px;height:24px;background:#f0fdf4;border-radius:7px;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                        <h3 style="margin:0;font-size:12px;font-weight:700;color:#111827">Top Attendings</h3>
+                    </div>
+                    <div id="attendingBreakdown"></div>
+                </div>
+
+                <!-- Year-over-Year + Top Procedures: 2-col -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+                    <div class="dash-card">
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+                            <div style="width:24px;height:24px;background:#fff7ed;border-radius:7px;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+                            <h3 style="margin:0;font-size:12px;font-weight:700;color:#111827">Year-over-Year</h3>
+                        </div>
+                        <div id="yearComparison"></div>
+                    </div>
+                    <div class="dash-card">
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+                            <div style="width:24px;height:24px;background:#faf5ff;border-radius:7px;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div>
+                            <h3 style="margin:0;font-size:12px;font-weight:700;color:#111827">Top This Month</h3>
+                        </div>
+                        <div id="topProcedures"></div>
+                    </div>
+                </div>
+
+                <!-- Complexity + AI Insights: 2-col -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+                    <div class="dash-card">
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                            <div style="width:24px;height:24px;background:#fff7ed;border-radius:7px;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+                            <h3 style="margin:0;font-size:12px;font-weight:700;color:#111827">Complexity</h3>
+                        </div>
+                        <canvas id="complexityChart" height="80"></canvas>
+                        <div id="complexitySummary" style="margin-top:8px"></div>
+                    </div>
+                    <div class="dash-card" style="border:1.5px solid #e9d5ff">
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                            <div style="width:24px;height:24px;background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:7px;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></div>
+                            <h3 style="margin:0;font-size:12px;font-weight:700;color:#7c3aed">AI Insights</h3>
+                            <span style="background:linear-gradient(135deg,#7c3aed,#2563eb);color:white;font-size:8px;font-weight:800;padding:1px 6px;border-radius:20px;margin-left:auto">SMART</span>
+                        </div>
+                        <div id="aiInsights" style="font-size:12px"></div>
+                    </div>
+                </div>
+
+                <!-- Peer Benchmarking -->
+                <div class="dash-card" style="margin-bottom:12px">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                        <div style="width:24px;height:24px;background:#eff6ff;border-radius:7px;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+                        <h3 style="margin:0;font-size:12px;font-weight:700;color:#111827">Peer Benchmarking</h3>
+                    </div>
+                    <p style="font-size:11px;color:#9CA3AF;margin-bottom:10px">Anonymous comparison with program cohort</p>
+                    <div id="peerBenchmark"><button onclick="showPeerBenchmark()" style="background:#2563eb;width:auto;padding:8px 14px;font-size:12px;font-weight:700;margin:0;border-radius:10px">Load Comparison</button></div>
+                </div>
+
+                <!-- Smart OR Calendar -->
+                <div class="dash-card" style="margin-bottom:16px">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                        <div style="width:24px;height:24px;background:#f0fdf4;border-radius:7px;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg></div>
+                        <h3 style="margin:0;font-size:12px;font-weight:700;color:#111827">Smart OR Calendar</h3>
+                    </div>
+                    <p style="font-size:11px;color:#9CA3AF;margin-bottom:10px">Recommended procedure focus based on your gaps</p>
+                    <div id="procedureCalendar"></div>
                 </div>
             </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; align-items:center">
-                <span style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px">Filter:</span>
-                <select id="filterProcedure" onchange="applyFilter()" style="width:auto; padding:7px 12px; font-size:12px; border-radius:20px; margin-top:0; border:2px solid #e2e8f0; background:white">
-                    <option value="">All Procedures</option>
-                    <option>Cataract / Phaco</option>
-                    <option>Vitreoretinal (PPV)</option>
-                    <option>Glaucoma</option>
-                    <option>Cornea / Keratoplasty</option>
-                    <option>Oculoplastics</option>
-                    <option>Strabismus</option>
-                    <option>Laser (LIO / SLT / YAG)</option>
-                </select>
-                <select id="filterRole" onchange="applyFilter()" style="width:auto; padding:7px 12px; font-size:12px; border-radius:20px; margin-top:0; border:2px solid #e2e8f0; background:white">
-                    <option value="">All Roles</option>
-                    <option>Primary Surgeon</option>
-                    <option>Assistant</option>
-                    <option>Observer</option>
-                </select>
-                <input type="date" id="filterDateFrom" onchange="applyFilter()" style="width:auto; padding:7px 12px; font-size:12px; border-radius:20px; margin-top:0; border:2px solid #e2e8f0">
-                <input type="date" id="filterDateTo" onchange="applyFilter()" style="width:auto; padding:7px 12px; font-size:12px; border-radius:20px; margin-top:0; border:2px solid #e2e8f0">
-                <button onclick="clearFilter()" style="width:auto; padding:7px 14px; font-size:12px; border-radius:20px; margin-top:0; background:#64748b">✕ Clear</button>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
-                <span id="caseCount" style="font-size:13px; font-weight:600; color:#64748b"></span>
-                <select id="sortOrder" onchange="applyFilter()" style="width:auto; padding:7px 12px; font-size:12px; border-radius:10px; margin-top:0; border:2px solid #e2e8f0; background:white">
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                    <option value="procedure">By Procedure</option>
-                    <option value="role">By Role</option>
-                </select>
-            </div>
-            <div id="caseList"></div>
         </div>
 
-        <!-- Analytics -->
+        <!-- Analytics (legacy stub — kept for PDF export references) -->
         <div id="analyticsTab" style="display:none">
             <!-- Header -->
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
@@ -1314,9 +1448,9 @@
                     <span class="nav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
                     <span>Log</span>
                 </button>
-                <button class="nav-item" id="nav-analytics" onclick="showTab('analytics', event); setActiveNav('nav-analytics')">
-                    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
-                    <span>Stats</span>
+                <button class="nav-item" id="nav-analytics" onclick="showTab('profile', event); setActiveNav('nav-analytics')">
+                    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                    <span>Profile</span>
                 </button>
                 <button class="nav-item" id="nav-journal" onclick="showTab('journal', event); setActiveNav('nav-journal')">
                     <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
