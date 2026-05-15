@@ -1098,23 +1098,34 @@
             </div>
             <!-- Calendar section -->
             <div id="ws-calendar" style="display:none">
-                <!-- View toggle -->
-                <div style="display:flex;gap:6px;margin-bottom:12px">
-                    <button id="cal-toggle-month" onclick="toggleCalView('month')" style="flex:1;margin:0;padding:8px;font-size:12px;font-weight:700;border-radius:10px;background:#2563eb;color:white;box-shadow:none">Month</button>
-                    <button id="cal-toggle-week"  onclick="toggleCalView('week')"  style="flex:1;margin:0;padding:8px;font-size:12px;font-weight:700;border-radius:10px;background:#f1f5f9;color:#64748b;box-shadow:none">Week</button>
-                    <button onclick="calJumpToday()" style="width:auto;margin:0;padding:8px 12px;font-size:12px;font-weight:700;border-radius:10px;background:#f1f5f9;color:#64748b;box-shadow:none">Today</button>
+                <!-- Month label + chevron nav -->
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+                    <button onclick="calNav(-1)" style="width:32px;height:32px;margin:0;padding:0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;color:#374151;box-shadow:none;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    </button>
+                    <h3 id="calMonthLabel" style="flex:1;margin:0;font-size:16px;font-weight:800;color:#0f172a;text-align:center;letter-spacing:-0.3px"></h3>
+                    <button onclick="calNav(1)"  style="width:32px;height:32px;margin:0;padding:0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;color:#374151;box-shadow:none;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
                 </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-                    <button onclick="calNav(-1)" style="width:36px;height:36px;margin:0;padding:0;background:#f1f5f9;border-radius:10px;font-size:18px;color:#374151;box-shadow:none">‹</button>
-                    <h3 id="calMonthLabel" style="margin:0;font-size:16px;font-weight:800;color:#0f172a"></h3>
-                    <button onclick="calNav(1)"  style="width:36px;height:36px;margin:0;padding:0;background:#f1f5f9;border-radius:10px;font-size:18px;color:#374151;box-shadow:none">›</button>
+                <!-- Segmented view toggle + Today pill -->
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px">
+                    <div style="flex:1;display:flex;background:#f1f5f9;border-radius:11px;padding:3px">
+                        <button id="cal-toggle-month" onclick="toggleCalView('month')" style="flex:1;margin:0;padding:6px 0;font-size:11px;font-weight:700;border-radius:9px;background:white;color:#111827;box-shadow:0 1px 4px rgba(0,0,0,0.08)">Month</button>
+                        <button id="cal-toggle-week"  onclick="toggleCalView('week')"  style="flex:1;margin:0;padding:6px 0;font-size:11px;font-weight:700;border-radius:9px;background:transparent;color:#6B7280;box-shadow:none">Week</button>
+                    </div>
+                    <button onclick="calJumpToday()" style="width:auto;margin:0;padding:7px 14px;font-size:11px;font-weight:700;border-radius:20px;background:#0f172a;color:white;box-shadow:none;letter-spacing:0.2px">Today</button>
                 </div>
                 <div id="calGrid" style="margin-bottom:16px"></div>
                 <div id="weekGrid" style="display:none;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch"></div>
-                <div id="dayDetail" style="display:none">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                        <h3 id="dayDetailTitle" style="margin:0;font-size:15px;font-weight:800;color:#0f172a"></h3>
-                        <button onclick="openEventModal()" style="width:auto;margin:0;padding:8px 14px;font-size:13px;border-radius:10px;background:#2563eb">＋ Add Event</button>
+                <!-- Day detail panel -->
+                <div id="dayDetail" style="display:none;margin-top:4px">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1.5px solid #f1f5f9;margin-bottom:12px">
+                        <h3 id="dayDetailTitle" style="margin:0;font-size:14px;font-weight:800;color:#0f172a"></h3>
+                        <button onclick="openEventModal()" style="width:auto;margin:0;padding:7px 14px;font-size:12px;font-weight:700;border-radius:10px;background:#2563eb;display:flex;align-items:center;gap:5px">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Add Event
+                        </button>
                     </div>
                     <div id="dayDetailContent"></div>
                 </div>

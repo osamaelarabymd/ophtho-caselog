@@ -3238,8 +3238,10 @@ function toggleCalView(v) {
     calView = v;
     let monthBtn = document.getElementById('cal-toggle-month');
     let weekBtn  = document.getElementById('cal-toggle-week');
-    if (monthBtn) { monthBtn.style.background = v==='month' ? '#2563eb' : '#f1f5f9'; monthBtn.style.color = v==='month' ? 'white' : '#64748b'; }
-    if (weekBtn)  { weekBtn.style.background  = v==='week'  ? '#2563eb' : '#f1f5f9'; weekBtn.style.color  = v==='week'  ? 'white' : '#64748b'; }
+    const _active   = { background: 'white',       color: '#111827', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' };
+    const _inactive = { background: 'transparent', color: '#6B7280',  boxShadow: 'none' };
+    if (monthBtn) { let s = v==='month' ? _active : _inactive; Object.assign(monthBtn.style, s); }
+    if (weekBtn)  { let s = v==='week'  ? _active : _inactive; Object.assign(weekBtn.style,  s); }
     let dd = document.getElementById('dayDetail');
     if (dd) dd.style.display = 'none';
     selectedCalDate = null;
@@ -3279,15 +3281,15 @@ function renderWeekView() {
     if (!calWeekStart) initCal();
     let ws = new Date(calWeekStart);
 
-    // Update header label
+    // Header label
     let we = new Date(ws); we.setDate(we.getDate() + 6);
     let label = ws.toLocaleString('default',{month:'short',day:'numeric'}) + ' – ' + we.toLocaleString('default',{month:'short',day:'numeric',year:'numeric'});
     let el = document.getElementById('calMonthLabel');
     if (el) el.textContent = label;
 
-    let grid    = document.getElementById('calGrid');
-    let wGrid   = document.getElementById('weekGrid');
-    if (grid)  grid.style.display  = 'none';
+    let grid  = document.getElementById('calGrid');
+    let wGrid = document.getElementById('weekGrid');
+    if (grid)  grid.style.display = 'none';
     if (!wGrid) return;
     wGrid.style.display = 'block';
 
@@ -3296,134 +3298,162 @@ function renderWeekView() {
     let journal = getJournalEntries();
     let today   = new Date().toISOString().slice(0,10);
     let dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    let typeColors = { clinic:'#0891b2', meeting:'#7c3aed', or:'#16a34a', education:'#d97706', personal:'#ec4899' };
 
     let cols = '';
     for (let i = 0; i < 7; i++) {
         let d   = new Date(ws); d.setDate(ws.getDate() + i);
         let dk  = _dayKey(d);
         let isToday = dk === today;
+        let isWknd  = i >= 5;
         let dayNum  = d.getDate();
-        let evs     = events.filter(e => e.date === dk);
-        let tds     = todos.filter(t => t.due === dk && !t.done);
-        let cases   = allCases.filter(c => c.date === dk);
-        let jrnl    = journal.filter(j => j.date === dk);
+        let evs   = events.filter(e => e.date === dk);
+        let tds   = todos.filter(t => t.due === dk && !t.done);
+        let cases = allCases.filter(c => c.date === dk);
+        let jrnl  = journal.filter(j => j.date === dk);
 
-        let typeColors = { clinic:'#0891b2', meeting:'#7c3aed', or:'#16a34a', education:'#d97706', personal:'#ec4899' };
+        // ── Column header ──────────────────────────────────────────────────────
+        let hdrBg    = isToday ? '#2563eb'     : isWknd ? '#fafafa' : '#f8fafc';
+        let hdrBdr   = isToday ? '#2563eb'     : '#e2e8f0';
+        let dayColor = isToday ? 'rgba(255,255,255,0.75)' : isWknd ? '#94a3b8' : '#94a3b8';
+        let numColor = isToday ? 'white'        : isWknd ? '#6B7280' : '#0f172a';
 
+        // ── Items ──────────────────────────────────────────────────────────────
         let items = '';
         evs.forEach(e => {
             let c = typeColors[e.type] || '#2563eb';
-            items += `<div onclick="selectCalDay('${dk}')" style="background:${c}18;border-left:3px solid ${c};border-radius:6px;padding:4px 6px;margin-bottom:3px;cursor:pointer">
-                <div style="font-size:10px;font-weight:700;color:${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.time?e.time+' ':''}${e.title}</div>
+            items += `<div onclick="selectCalDay('${dk}')" style="background:${c}12;border-left:2px solid ${c};border-radius:5px;padding:3px 6px;margin-bottom:3px;cursor:pointer">
+                <div style="font-size:9px;font-weight:700;color:${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4">${e.time?e.time+' ':''}${e.title}</div>
             </div>`;
         });
         cases.forEach(c => {
-            let short = c.procedure.split('/')[0].trim().split('(')[0].trim();
-            items += `<div style="background:#16a34a18;border-left:3px solid #16a34a;border-radius:6px;padding:4px 6px;margin-bottom:3px">
-                <div style="font-size:10px;font-weight:700;color:#16a34a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🔪 ${short}</div>
+            let short = (c.procedure||'').split('/')[0].trim().split('(')[0].trim();
+            items += `<div style="background:#16a34a12;border-left:2px solid #16a34a;border-radius:5px;padding:3px 6px;margin-bottom:3px">
+                <div style="font-size:9px;font-weight:700;color:#16a34a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4">${short}</div>
             </div>`;
         });
         tds.forEach(t => {
             let pc = { high:'#dc2626', medium:'#d97706', low:'#16a34a' }[t.priority] || '#64748b';
-            items += `<div style="background:${pc}18;border-left:3px solid ${pc};border-radius:6px;padding:4px 6px;margin-bottom:3px">
-                <div style="font-size:10px;font-weight:600;color:${pc};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">✅ ${t.text}</div>
+            items += `<div style="background:${pc}12;border-left:2px solid ${pc};border-radius:5px;padding:3px 6px;margin-bottom:3px">
+                <div style="font-size:9px;font-weight:600;color:${pc};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4">${t.text}</div>
             </div>`;
         });
         if (jrnl.length > 0) {
-            items += `<div style="background:#7c3aed18;border-left:3px solid #7c3aed;border-radius:6px;padding:4px 6px;margin-bottom:3px">
-                <div style="font-size:10px;font-weight:600;color:#7c3aed">📔 ${jrnl.length} entr${jrnl.length>1?'ies':'y'}</div>
+            items += `<div style="background:#7c3aed12;border-left:2px solid #7c3aed;border-radius:5px;padding:3px 6px;margin-bottom:3px">
+                <div style="font-size:9px;font-weight:600;color:#7c3aed;line-height:1.4">${jrnl.length} journal entr${jrnl.length>1?'ies':'y'}</div>
             </div>`;
         }
 
-        cols += `<div style="min-width:110px;flex:1;display:flex;flex-direction:column">
-            <div onclick="selectCalDay('${dk}')" style="text-align:center;padding:8px 4px;margin-bottom:6px;border-radius:12px;cursor:pointer;
-                background:${isToday?'#2563eb':'#f8fafc'};border:${isToday?'2px solid #2563eb':'1px solid #e2e8f0'}">
-                <div style="font-size:10px;font-weight:700;color:${isToday?'rgba(255,255,255,0.8)':'#94a3b8'};text-transform:uppercase">${dayNames[i]}</div>
-                <div style="font-size:20px;font-weight:900;color:${isToday?'white':'#0f172a'};line-height:1.2">${dayNum}</div>
+        cols += `<div style="min-width:94px;flex:1;display:flex;flex-direction:column;gap:4px">
+            <div onclick="selectCalDay('${dk}')" style="text-align:center;padding:8px 4px 7px;border-radius:12px;cursor:pointer;background:${hdrBg};border:1.5px solid ${hdrBdr}">
+                <div style="font-size:9px;font-weight:700;color:${dayColor};text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">${dayNames[i]}</div>
+                <div style="font-size:18px;font-weight:800;color:${numColor};line-height:1">${dayNum}</div>
             </div>
-            <div style="flex:1;min-height:80px">${items || '<div style="font-size:10px;color:#cbd5e1;text-align:center;padding:8px 0">—</div>'}</div>
-            <button onclick="openEventModal('${dk}')" style="margin:4px 0 0;padding:5px;font-size:11px;font-weight:700;border-radius:8px;background:#f1f5f9;color:#64748b;box-shadow:none;width:100%">＋</button>
+            <div style="flex:1;min-height:80px;display:flex;flex-direction:column">
+                ${items || `<div style="font-size:9px;color:#e2e8f0;text-align:center;padding:10px 0;letter-spacing:0.5px">—</div>`}
+            </div>
+            <button onclick="openEventModal('${dk}')" style="margin:0;padding:5px;font-size:11px;font-weight:700;border-radius:8px;background:#f8fafc;color:#9CA3AF;box-shadow:none;width:100%;border:1px dashed #e2e8f0;line-height:1">+</button>
         </div>`;
     }
 
-    wGrid.innerHTML = `<div style="display:flex;gap:6px;min-width:700px">${cols}</div>`;
+    wGrid.innerHTML = `<div style="display:flex;gap:5px;min-width:680px">${cols}</div>`;
 
-    // Keep dayDetail open if a day was selected
     if (selectedCalDate) renderDayDetail(selectedCalDate);
 }
 
 function renderCalendar() {
     if (calYear === undefined) initCal();
-    // Ensure correct grid visibility for month view
     let wg = document.getElementById('weekGrid');
     let cg = document.getElementById('calGrid');
     if (wg) wg.style.display = 'none';
     if (cg) cg.style.display = 'block';
 
-    let now          = new Date();
-    let firstDay     = new Date(calYear, calMonth, 1).getDay();
-    let daysInMonth  = new Date(calYear, calMonth + 1, 0).getDate();
-    let monthLabel   = new Date(calYear, calMonth, 1).toLocaleString('default', { month: 'long', year: 'numeric' });
+    let now         = new Date();
+    let today       = now.toISOString().slice(0,10);
+    let firstDay    = new Date(calYear, calMonth, 1).getDay();
+    let daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    let monthLabel  = new Date(calYear, calMonth, 1).toLocaleString('default', { month: 'long', year: 'numeric' });
 
     let el = document.getElementById('calMonthLabel');
     if (el) el.textContent = monthLabel;
 
-    let events   = getEvents();
-    let todos    = getTodos();
-    let journal  = getJournalEntries();
+    let events  = getEvents();
+    let todos   = getTodos();
+    let journal = getJournalEntries();
 
-    // Build day-data index
-    function pad(d) { return String(d).padStart(2,'0'); }
-    function dayKey(y,m,d) { return `${y}-${pad(m+1)}-${pad(d)}`; }
+    function pad(d)          { return String(d).padStart(2,'0'); }
+    function dayKey(y, m, d) { return `${y}-${pad(m+1)}-${pad(d)}`; }
 
-    let html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px">';
-    for (let d of ['Su','Mo','Tu','We','Th','Fr','Sa']) {
-        html += `<div style="text-align:center;font-size:10px;font-weight:700;color:#94a3b8;padding:4px 0">${d}</div>`;
+    // ── Day-of-week headers ────────────────────────────────────────────────────
+    const dayLetters = ['S','M','T','W','T','F','S'];
+    let html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:6px">';
+    for (let i = 0; i < 7; i++) {
+        let wknd = i === 0 || i === 6;
+        html += `<div style="text-align:center;font-size:10px;font-weight:700;color:${wknd?'#c7d2fe':'#94a3b8'};padding:0 0 6px;letter-spacing:0.8px">${dayLetters[i]}</div>`;
     }
-    html += '</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">';
+    html += '</div>';
 
+    // ── Day cells ──────────────────────────────────────────────────────────────
+    html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px">';
     let day = 1 - firstDay;
+
     for (let row = 0; row < 6; row++) {
         for (let col = 0; col < 7; col++, day++) {
             if (day < 1 || day > daysInMonth) {
-                html += '<div></div>';
+                html += '<div style="min-height:52px"></div>';
                 continue;
             }
-            let dk       = dayKey(calYear, calMonth, day);
-            let isToday  = dk === now.toISOString().slice(0,10);
-            let isSel    = dk === selectedCalDate;
+            let dk      = dayKey(calYear, calMonth, day);
+            let isToday = dk === today;
+            let isSel   = dk === selectedCalDate;
+            let isWknd  = col === 0 || col === 6;
+
             let hasEv    = events.some(e => e.date === dk);
             let hasTodo  = todos.some(t => t.due === dk && !t.done);
             let hasJ     = journal.some(j => j.date === dk);
             let hasCase  = allCases.some(c => c.date === dk);
 
-            let bg = isSel ? '#2563eb' : isToday ? '#dbeafe' : 'white';
-            let tc = isSel ? 'white' : isToday ? '#1d4ed8' : '#0f172a';
-            let border = isSel ? '2px solid #2563eb' : isToday ? '2px solid #93c5fd' : '1px solid #f1f5f9';
+            // Number circle
+            let circleBg, circleColor, circleWeight;
+            if (isSel && isToday) { circleBg = '#1d4ed8'; circleColor = 'white'; circleWeight = '800'; }
+            else if (isSel)       { circleBg = '#2563eb'; circleColor = 'white'; circleWeight = '800'; }
+            else if (isToday)     { circleBg = '#2563eb'; circleColor = 'white'; circleWeight = '800'; }
+            else                  { circleBg = 'transparent'; circleColor = isWknd ? '#94a3b8' : '#111827'; circleWeight = '400'; }
 
-            let dots = '';
-            if (hasEv)   dots += `<span style="width:5px;height:5px;border-radius:50%;background:#2563eb;display:inline-block;margin:0 1px"></span>`;
-            if (hasCase) dots += `<span style="width:5px;height:5px;border-radius:50%;background:#16a34a;display:inline-block;margin:0 1px"></span>`;
-            if (hasTodo) dots += `<span style="width:5px;height:5px;border-radius:50%;background:#d97706;display:inline-block;margin:0 1px"></span>`;
-            if (hasJ)    dots += `<span style="width:5px;height:5px;border-radius:50%;background:#7c3aed;display:inline-block;margin:0 1px"></span>`;
+            // Activity dots — priority order, max 3 visible
+            let dotColors = [
+                hasCase  && '#16a34a',
+                hasEv    && '#2563eb',
+                hasTodo  && '#d97706',
+                hasJ     && '#7c3aed'
+            ].filter(Boolean).slice(0, 3);
+            let dots = dotColors.map(c =>
+                `<span style="width:4px;height:4px;border-radius:50%;background:${c};display:inline-block;margin:0 1.5px;flex-shrink:0"></span>`
+            ).join('');
 
-            html += `<div onclick="selectCalDay('${dk}')" style="background:${bg};border:${border};border-radius:10px;padding:6px 4px;text-align:center;min-height:44px;cursor:pointer;transition:all 0.1s"
-                onmouseover="this.style.background='${isSel?'#2563eb':'#f1f5f9'}'"
-                onmouseout="this.style.background='${bg}'">
-                <div style="font-size:13px;font-weight:${isToday||isSel?800:500};color:${tc}">${day}</div>
-                <div style="display:flex;justify-content:center;flex-wrap:wrap;margin-top:3px;min-height:8px">${dots}</div>
+            let cellBg = isSel ? '#eff6ff' : 'transparent';
+
+            html += `<div onclick="selectCalDay('${dk}')"
+                style="min-height:52px;padding:4px 2px 6px;text-align:center;cursor:pointer;border-radius:12px;background:${cellBg};transition:background 0.12s"
+                onmouseover="this.style.background='${isSel?'#e0f2fe':'#f8fafc'}'"
+                onmouseout="this.style.background='${cellBg}'">
+                <div style="width:30px;height:30px;border-radius:50%;background:${circleBg};margin:0 auto 4px;display:flex;align-items:center;justify-content:center">
+                    <span style="font-size:12px;font-weight:${circleWeight};color:${circleColor};line-height:1">${day}</span>
+                </div>
+                <div style="display:flex;justify-content:center;align-items:center;min-height:6px">${dots}</div>
             </div>`;
         }
         if (day > daysInMonth) break;
     }
     html += '</div>';
 
-    // Legend
-    html += `<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:#64748b">
-        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#2563eb;display:inline-block"></span>Event</span>
-        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block"></span>Case logged</span>
-        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#d97706;display:inline-block"></span>Todo due</span>
-        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#7c3aed;display:inline-block"></span>Journal</span>
+    // ── Legend ─────────────────────────────────────────────────────────────────
+    html += `<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:18px;padding-top:14px;border-top:1px solid #f1f5f9">
+        ${[['#16a34a','Case'],['#2563eb','Event'],['#d97706','Task'],['#7c3aed','Journal']].map(([c,l]) =>
+            `<span style="display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;color:#64748b;letter-spacing:0.2px">
+                <span style="width:6px;height:6px;border-radius:50%;background:${c};display:inline-block;flex-shrink:0"></span>${l}
+            </span>`
+        ).join('')}
     </div>`;
 
     let grid = document.getElementById('calGrid');
@@ -3471,8 +3501,8 @@ function renderDayDetail(dk) {
                     ${ev.notes?`<p style="font-size:12px;color:#64748b">${ev.notes}</p>`:''}
                 </div>
                 <div style="display:flex;gap:4px">
-                    <button onclick="openEventModal('${dk}','${ev.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:12px;box-shadow:none">✏️</button>
-                    <button onclick="deleteEvent('${ev.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#fef2f2;border-radius:8px;font-size:12px;box-shadow:none;color:#dc2626">🗑️</button>
+                    <button onclick="openEventModal('${dk}','${ev.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;box-shadow:none;display:flex;align-items:center;justify-content:center" title="Edit"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                    <button onclick="deleteEvent('${ev.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#fef2f2;border-radius:8px;box-shadow:none;display:flex;align-items:center;justify-content:center" title="Delete"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
                 </div>
             </div>`;
         }
