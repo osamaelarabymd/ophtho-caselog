@@ -364,7 +364,8 @@ function showTab(tab, e) {
     document.getElementById('analyticsTab').style.display = 'none';
     document.getElementById('profileTab').style.display   = 'none';
     document.getElementById('helpTab').style.display      = 'none';
-    document.getElementById('adminPanel').style.display   = 'none';
+    document.getElementById('adminPanel').style.display    = 'none';
+    let ap = document.getElementById('attendingPanel'); if (ap) ap.style.display = 'none';
     let jt = document.getElementById('journalTab'); if (jt) jt.style.display = 'none';
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
 
@@ -397,6 +398,10 @@ function showTab(tab, e) {
     } else if (tab === 'admin') {
         document.getElementById('adminPanel').style.display = 'block';
         loadAdminData();
+    } else if (tab === 'attending') {
+        let ap = document.getElementById('attendingPanel');
+        if (ap) ap.style.display = 'block';
+        loadAttendingDashboard();
     }
 
     if (e && e.target && e.target.classList.contains('tab-btn')) {
@@ -534,6 +539,12 @@ async function showApp() {
     if (currentUserRole === 'admin') {
         document.getElementById('adminTab').style.display = 'inline-block';
         checkPendingUsers();
+    }
+    if (currentUserRole === 'attending') {
+        let at = document.getElementById('attendingTab');
+        if (at) at.style.display = 'inline-block';
+        // Attendings land on their supervision dashboard
+        showTab('attending', null);
     }
     let savedProfile = JSON.parse(localStorage.getItem('userProfile')) || {};
     if (savedProfile.name) {
@@ -1925,36 +1936,63 @@ function checkSmartAlerts(cases) {
 }
 
 // ── Voice Logging ────────────────────────────────────────────────────────────
+let _voiceRec = null;
+let _voiceActive = false;
+
 function startVoiceLog() {
-    if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
-        showToast('⚠️ Voice input not supported on this browser', 'warning');
-        return;
-    }
     let statusEl = document.getElementById('voiceStatus');
     let voiceBtn = document.getElementById('voiceBtn');
+
+    // Toggle off if already recording
+    if (_voiceActive && _voiceRec) {
+        _voiceRec.stop();
+        _voiceActive = false;
+        voiceBtn.innerHTML = '🎤 Voice';
+        if (statusEl) { statusEl.textContent = '⏹ Recording stopped'; setTimeout(() => { statusEl.style.display = 'none'; }, 2000); }
+        return;
+    }
+
+    if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
+        showToast('⚠️ Voice not supported — try Chrome on Android or Safari on iOS', 'warning');
+        return;
+    }
+
     let SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let rec = new SR();
-    rec.lang = 'en-US';
-    rec.interimResults = false;
-    rec.maxAlternatives = 1;
+    _voiceRec = new SR();
+    _voiceRec.lang = 'en-US';
+    _voiceRec.interimResults = true;
+    _voiceRec.maxAlternatives = 1;
+    _voiceActive = true;
 
     statusEl.textContent = '🎤 Listening… say e.g. "Cataract primary surgeon today with Dr. Smith"';
     statusEl.style.display = 'block';
-    voiceBtn.textContent = '⏹ Stop';
+    voiceBtn.innerHTML = '⏹ Stop';
 
-    rec.onresult = (e) => {
-        let transcript = e.results[0][0].transcript;
-        statusEl.textContent = '✅ Heard: "' + transcript + '"';
-        parseVoiceInput(transcript);
-        voiceBtn.innerHTML = '🎤 Voice';
+    _voiceRec.onresult = (e) => {
+        let interim = '';
+        let final   = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+            let t = e.results[i][0].transcript;
+            if (e.results[i].isFinal) final += t; else interim += t;
+        }
+        if (interim) statusEl.textContent = '🎤 ' + interim + '…';
+        if (final)   { statusEl.textContent = '✅ Heard: "' + final + '"'; parseVoiceInput(final); }
     };
-    rec.onerror = () => {
-        statusEl.textContent = '⚠️ Could not hear clearly — try again';
+    _voiceRec.onerror = (e) => {
+        _voiceActive = false;
         voiceBtn.innerHTML = '🎤 Voice';
-        setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+        let msg = { 'not-allowed':'⚠️ Microphone permission denied — allow mic in browser settings', 'no-speech':'⚠️ No speech detected — tap and speak clearly', 'network':'⚠️ Network error — check connection', 'audio-capture':'⚠️ No microphone found' }[e.error] || ('⚠️ Error: ' + e.error);
+        statusEl.textContent = msg;
+        setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
     };
-    rec.onend = () => { voiceBtn.innerHTML = '🎤 Voice'; };
-    rec.start();
+    _voiceRec.onend = () => {
+        _voiceActive = false;
+        voiceBtn.innerHTML = '🎤 Voice';
+        setTimeout(() => { if (statusEl.textContent.startsWith('✅')) setTimeout(() => { statusEl.style.display = 'none'; }, 3000); }, 100);
+    };
+
+    try { _voiceRec.start(); }
+    catch(e) { showToast('⚠️ Could not start microphone: ' + e.message, 'error'); _voiceActive = false; voiceBtn.innerHTML = '🎤 Voice'; }
 }
 
 function parseVoiceInput(text) {
@@ -2099,6 +2137,119 @@ function checkShareURL() {
         document.getElementById('shareView').style.display = 'block';
     } catch(e) {
         console.error('Invalid share URL', e);
+    }
+}
+
+// ── Attending Dashboard ───────────────────────────────────────────────────────
+let _attendingCases = [];
+
+async function loadAttendingDashboard() {
+    let { data: { user } } = await db.auth.getUser();
+    let { data: profile }  = await db.from('profiles').select('full_name, role').eq('id', user.id).single();
+    let name = profile?.full_name || '';
+
+    // Populate header
+    let nameEl = document.getElementById('attName');
+    let titleEl = document.getElementById('attTitle');
+    if (nameEl) nameEl.textContent = 'Dr. ' + name;
+    if (titleEl) titleEl.textContent = 'Attending Ophthalmologist';
+
+    // Fetch all cases (requires attending RLS policy — see setup SQL)
+    let { data: cases } = await db.from('cases').select('*').order('date', { ascending: false });
+    if (!cases) { cases = []; }
+
+    // Filter to cases where the attending field loosely matches this user's name
+    let lastName = name.split(' ').pop().toLowerCase();
+    _attendingCases = cases.filter(c => c.attending && c.attending.toLowerCase().includes(lastName));
+
+    // Stats
+    let uniqueResidents = [...new Set(_attendingCases.map(c => c.resident_name).filter(Boolean))];
+    let mocHours = Math.round(_attendingCases.length * 0.5); // 0.5 CME per case supervised
+
+    let totalEl     = document.getElementById('attTotal');
+    let residentsEl = document.getElementById('attResidents');
+    let mocEl       = document.getElementById('attMOC');
+    if (totalEl)     totalEl.textContent     = _attendingCases.length;
+    if (residentsEl) residentsEl.textContent = uniqueResidents.length;
+    if (mocEl)       mocEl.textContent       = mocHours;
+
+    // Procedure breakdown
+    let procEl = document.getElementById('attProcBreakdown');
+    if (procEl) {
+        let counts = {};
+        _attendingCases.forEach(c => { counts[c.procedure] = (counts[c.procedure] || 0) + 1; });
+        let sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+        let max = sorted[0]?.[1] || 1;
+        procEl.innerHTML = sorted.length === 0 ? '<p style="color:#94a3b8;font-size:13px">No cases yet</p>' :
+            sorted.map(([proc, cnt]) => {
+                let color = procedureColors[proc] || '#64748b';
+                let pct   = Math.round((cnt / max) * 100);
+                let short = proc.split('/')[0].trim().split('(')[0].trim();
+                return `<div style="margin-bottom:10px">
+                    <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:4px">
+                        <span>${short}</span><span style="color:${color}">${cnt} cases</span>
+                    </div>
+                    <div style="background:#e2e8f0;border-radius:99px;height:8px">
+                        <div style="background:${color};width:${pct}%;height:8px;border-radius:99px;transition:width 0.5s"></div>
+                    </div>
+                </div>`;
+            }).join('');
+    }
+
+    // Resident list
+    let resListEl = document.getElementById('attResidentList');
+    if (resListEl) {
+        let resCounts = {};
+        _attendingCases.forEach(c => { if (c.resident_name) resCounts[c.resident_name] = (resCounts[c.resident_name] || 0) + 1; });
+        let sorted = Object.entries(resCounts).sort((a,b) => b[1]-a[1]);
+        resListEl.innerHTML = sorted.length === 0 ? '<p style="color:#94a3b8;font-size:13px">No residents yet</p>' :
+            sorted.map(([res, cnt]) => `
+                <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f1f5f9">
+                    <div style="width:36px;height:36px;background:#0891b218;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">👨‍⚕️</div>
+                    <div style="flex:1"><p style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:2px">${res}</p>
+                        <p style="font-size:11px;color:#64748b">${cnt} case${cnt>1?'s':''} supervised</p></div>
+                </div>`).join('');
+    }
+
+    renderAttendingCases();
+}
+
+function renderAttendingCases() {
+    let el = document.getElementById('attCaseList');
+    if (!el) return;
+    let search = (document.getElementById('attSearch')?.value || '').toLowerCase();
+    let cases = search ? _attendingCases.filter(c =>
+        (c.procedure||'').toLowerCase().includes(search) ||
+        (c.resident_name||'').toLowerCase().includes(search) ||
+        (c.hospital||'').toLowerCase().includes(search)
+    ) : _attendingCases;
+
+    if (cases.length === 0) {
+        el.innerHTML = `<div style="text-align:center;padding:32px;color:#94a3b8">
+            <div style="font-size:40px;margin-bottom:10px">🩺</div>
+            <p style="font-size:14px;font-weight:600;color:#64748b">${search ? 'No matching cases' : 'No supervised cases found'}</p>
+            <p style="font-size:12px;margin-top:6px">Cases appear here when residents enter your name as attending</p>
+        </div>`;
+        return;
+    }
+
+    el.innerHTML = cases.slice(0, 30).map(c => {
+        let color = procedureColors[c.procedure] || '#64748b';
+        return `<div style="padding:12px 0;border-bottom:1px solid #f1f5f9">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                <div style="flex:1;min-width:0">
+                    <p style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:3px">${c.procedure||'—'}</p>
+                    <p style="font-size:12px;color:#64748b">${c.resident_name||'Unknown'} · ${c.role||'—'} · ${c.hospital||'—'}</p>
+                </div>
+                <div style="text-align:right;flex-shrink:0;margin-left:10px">
+                    <span style="font-size:11px;font-weight:700;color:${color};background:${color}18;padding:3px 8px;border-radius:20px">${c.date||'—'}</span>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+
+    if (cases.length > 30) {
+        el.innerHTML += `<p style="text-align:center;font-size:12px;color:#94a3b8;padding:12px 0">Showing 30 of ${cases.length} cases</p>`;
     }
 }
 
