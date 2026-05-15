@@ -1061,12 +1061,26 @@ function updateDashboard(cases) {
     checkMilestones(overallPercent);
     updateAchievementBadges(overallPercent);
 
-    const _cardIcon = (paths, color) => `<div style="width:40px;height:40px;border-radius:12px;background:${color}18;display:flex;align-items:center;justify-content:center;margin:0 auto 10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg></div>`;
+    // ── Inline stats row (Notion property style)
+    const _sv = (icon, val, label, color) =>
+        `<div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:16px 10px;gap:6px">
+            <div style="width:36px;height:36px;border-radius:10px;background:${color}14;display:flex;align-items:center;justify-content:center">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
+            </div>
+            <span style="font-size:22px;font-weight:800;color:${color};letter-spacing:-0.5px;line-height:1">${val}</span>
+            <span style="font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.6px">${label}</span>
+        </div>`;
+    const _div = `<div style="width:1px;background:#F3F4F6;align-self:stretch;margin:12px 0"></div>`;
     document.getElementById('summaryCards').innerHTML =
-        `<div class="summary-card">${_cardIcon('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>','#2563eb')}<h3 style="color:#2563eb">${totalDone}</h3><p>Total Cases</p></div>` +
-        `<div class="summary-card">${_cardIcon('<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>','#0891b2')}<h3 style="color:#0891b2">${monthCases.length}</h3><p>This Month</p></div>` +
-        `<div class="summary-card">${_cardIcon('<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>','#7c3aed')}<h3 style="color:#7c3aed">${overallPercent}%</h3><p>ACGME Progress</p></div>` +
-        `<div class="summary-card">${_cardIcon('<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>','#d97706')}<h3 style="color:#d97706">${streak}</h3><p>Day Streak</p></div>`;
+        `<div style="background:white;border-radius:16px;border:1px solid #E5E7EB;display:flex;align-items:stretch;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+            ${_sv('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',totalDone,'Total Cases','#2563eb')}
+            ${_div}
+            ${_sv('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',monthCases.length,'This Month','#0891b2')}
+            ${_div}
+            ${_sv('<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',overallPercent+'%','ACGME','#7c3aed')}
+            ${_div}
+            ${_sv('<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',streak,'Day Streak','#d97706')}
+        </div>`;
 
     let badge = document.getElementById('overallBadge');
     if (badge) badge.textContent = overallPercent + '% Complete';
@@ -1075,67 +1089,109 @@ function updateDashboard(cases) {
     for (let p in acgme) { counts[p] = 0; }
     for (let c of cases) { if (counts[c.procedure] !== undefined) { counts[c.procedure]++; } }
 
-    let procHtml = '';
-    for (let p in acgme) {
-        let done          = counts[p];
-        let req           = acgme[p];
-        let percent       = Math.min(Math.round((done / req) * 100), 100);
-        let color         = percent >= 100 ? '#16a34a' : percent >= 50 ? '#2563eb' : percent >= 25 ? '#d97706' : '#dc2626';
-        let shortName     = p.split('/')[0].trim().split('(')[0].trim();
-        let circumference = 2 * Math.PI * 28;
-        let dashOffset    = circumference - (percent / 100) * circumference;
-
-        procHtml += `
-        <div style="background:#f8fafc; border-radius:14px; padding:14px 10px; text-align:center; border:1px solid #e2e8f0; transition:transform 0.2s, box-shadow 0.2s; cursor:default"
-             onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(37,99,235,0.12)'"
-             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
-            <svg width="72" height="72" viewBox="0 0 72 72" style="transform:rotate(-90deg)">
-                <circle cx="36" cy="36" r="28" fill="none" stroke="#e2e8f0" stroke-width="7"/>
-                <circle cx="36" cy="36" r="28" fill="none" stroke="${color}" stroke-width="7"
-                    stroke-dasharray="${circumference.toFixed(2)}"
-                    stroke-dashoffset="${dashOffset.toFixed(2)}"
-                    stroke-linecap="round"/>
-            </svg>
-            <div style="margin-top:-52px; margin-bottom:36px; font-size:16px; font-weight:900; color:${color}">${percent}%</div>
-            <div style="font-size:11px; font-weight:700; color:#0f172a; margin-bottom:3px; line-height:1.3">${shortName}</div>
-            <div style="font-size:11px; color:#64748b; font-weight:600">${done} / ${req}</div>
+    // ── Today's Focus (Notion callout style)
+    let todayStr  = new Date().toISOString().split('T')[0];
+    let todayCases = cases.filter(c => c.date === todayStr);
+    let openTodos  = (JSON.parse(localStorage.getItem('eyelog_todos')) || []).filter(t => !t.done && (!t.due || t.due <= todayStr));
+    let focusEl = document.getElementById('todayFocus');
+    if (focusEl) {
+        let todoItems = openTodos.slice(0,3).map(t =>
+            `<div style="display:flex;align-items:center;gap:8px;padding:5px 0">
+                <div style="width:6px;height:6px;border-radius:50%;background:#7c3aed;flex-shrink:0"></div>
+                <span style="font-size:13px;color:#374151;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.text}</span>
+            </div>`).join('');
+        focusEl.innerHTML = `
+        <div style="background:#fafafa;border:1px solid #E5E7EB;border-radius:14px;padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                    <div style="width:28px;height:28px;background:#eff6ff;border-radius:8px;display:flex;align-items:center;justify-content:center">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </div>
+                    <span style="font-size:12px;font-weight:700;color:#374151;letter-spacing:0.3px">TODAY</span>
+                    <span style="font-size:12px;font-weight:700;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px">${todayCases.length} case${todayCases.length!==1?'s':''}</span>
+                </div>
+                ${todayCases.length === 0
+                    ? `<p style="font-size:12px;color:#9CA3AF;font-style:italic">No cases logged today yet</p>`
+                    : todayCases.slice(0,3).map(c=>`<div style="font-size:12px;color:#374151;padding:4px 0;border-bottom:1px solid #F3F4F6">${c.procedure?.split('/')[0]?.trim()||c.procedure} · <span style="color:#6B7280">${c.role||''}</span></div>`).join('')
+                }
+            </div>
+            <div style="border-left:1px solid #E5E7EB;padding-left:14px;display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                    <div style="width:28px;height:28px;background:#faf5ff;border-radius:8px;display:flex;align-items:center;justify-content:center">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    </div>
+                    <span style="font-size:12px;font-weight:700;color:#374151;letter-spacing:0.3px">OPEN TASKS</span>
+                    <span style="font-size:12px;font-weight:700;color:#7c3aed;background:#faf5ff;padding:2px 8px;border-radius:20px">${openTodos.length}</span>
+                </div>
+                ${openTodos.length === 0
+                    ? `<p style="font-size:12px;color:#9CA3AF;font-style:italic">All caught up!</p>`
+                    : todoItems
+                }
+            </div>
         </div>`;
     }
-    document.getElementById('procedureCards').innerHTML = procHtml;
 
+    // ── ACGME Progress — Notion-style bars
+    let statsHtml = '';
+    for (let p in acgme) {
+        let done    = counts[p];
+        let req     = acgme[p];
+        let percent = Math.min(Math.round((done / req) * 100), 100);
+        let color   = percent >= 100 ? '#16a34a' : percent >= 60 ? '#2563eb' : percent >= 30 ? '#d97706' : '#dc2626';
+        let shortName = p.split('/')[0].trim().split('(')[0].trim();
+        let statusDot = percent >= 100 ? '#16a34a' : percent >= 30 ? '#d97706' : '#dc2626';
+        statsHtml += `
+        <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #F9FAFB">
+            <div style="width:6px;height:6px;border-radius:50%;background:${statusDot};flex-shrink:0"></div>
+            <span style="font-size:13px;font-weight:600;color:#111827;min-width:120px;flex-shrink:0">${shortName}</span>
+            <div style="flex:1;background:#F3F4F6;border-radius:99px;height:6px;overflow:hidden">
+                <div style="background:${color};width:${percent}%;height:6px;border-radius:99px;transition:width 1s ease"></div>
+            </div>
+            <span style="font-size:12px;color:#6B7280;font-weight:600;min-width:60px;text-align:right">${done}<span style="color:#D1D5DB">/${req}</span></span>
+            <span style="font-size:11px;font-weight:700;color:${color};min-width:34px;text-align:right">${percent}%</span>
+        </div>`;
+    }
+    document.getElementById('stats').innerHTML = statsHtml;
+
+    // ── Role breakdown donut
     let roleCounts = { 'Primary': 0, 'Assistant': 0, 'Observer': 0 };
     for (let c of cases) {
         if (c.role === 'Primary Surgeon') roleCounts['Primary']++;
         else if (c.role === 'Assistant')  roleCounts['Assistant']++;
         else if (c.role === 'Observer')   roleCounts['Observer']++;
     }
-
     if (roleDashChart) { roleDashChart.destroy(); }
     roleDashChart = new Chart(document.getElementById('roleDonut').getContext('2d'), {
         type: 'doughnut',
         data: {
             labels: Object.keys(roleCounts),
-            datasets: [{ data: Object.values(roleCounts), backgroundColor: ['#2563eb','#16a34a','#d97706'], borderWidth: 0 }]
+            datasets: [{ data: Object.values(roleCounts), backgroundColor: ['#2563eb','#16a34a','#d97706'], borderWidth: 0, borderRadius: 4 }]
         },
-        options: { responsive: true, cutout: '72%', plugins: { legend: { position: 'bottom' } } }
+        options: { responsive: true, cutout: '74%', plugins: { legend: { position: 'bottom', labels: { font: { size: 11, family: 'Inter', weight: '600' }, padding: 10, boxWidth: 10, boxHeight: 10, borderRadius: 3 } } } }
     });
 
-    let statsHtml = '';
-    for (let p in acgme) {
-        let done    = counts[p];
-        let req     = acgme[p];
-        let percent = Math.min(Math.round((done / req) * 100), 100);
-        let color   = percent >= 100 ? '#16a34a' : percent >= 50 ? '#2563eb' : '#d97706';
-        statsHtml += '<div style="margin-bottom:14px">';
-        statsHtml += '<div style="display:flex; justify-content:space-between; margin-bottom:6px">';
-        statsHtml += '<span style="font-size:13px; font-weight:600">' + p + '</span>';
-        statsHtml += '<span style="font-size:13px; color:#64748b">' + done + ' / ' + req + ' <strong style="color:' + color + '">' + percent + '%</strong></span>';
-        statsHtml += '</div>';
-        statsHtml += '<div style="background:#f1f5f9; border-radius:99px; height:8px">';
-        statsHtml += '<div style="background:' + color + '; width:' + percent + '%; height:8px; border-radius:99px; transition:width 0.8s ease"></div>';
-        statsHtml += '</div></div>';
+    // ── Recent cases feed
+    let recentEl = document.getElementById('recentCasesFeed');
+    if (recentEl) {
+        let recent = [...cases].sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0,5);
+        if (recent.length === 0) {
+            recentEl.innerHTML = `<p style="font-size:13px;color:#9CA3AF;text-align:center;padding:20px 0">No cases yet — log your first case!</p>`;
+        } else {
+            recentEl.innerHTML = recent.map(c => {
+                let color = procedureColors[c.procedure] || '#6B7280';
+                let short = (c.procedure||'—').split('/')[0].trim().split('(')[0].trim();
+                let date  = c.date ? new Date(c.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—';
+                return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F9FAFB">
+                    <div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>
+                    <div style="flex:1;min-width:0">
+                        <p style="font-size:13px;font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${short}</p>
+                        <p style="font-size:11px;color:#9CA3AF;font-weight:500">${c.role||''}</p>
+                    </div>
+                    <span style="font-size:11px;color:#9CA3AF;font-weight:500;flex-shrink:0">${date}</span>
+                </div>`;
+            }).join('');
+        }
     }
-    document.getElementById('stats').innerHTML = statsHtml;
 }
 
 // Custom procedure categories
