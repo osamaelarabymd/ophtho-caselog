@@ -741,15 +741,17 @@ async function signInForm() {
         await db.auth.signOut();
         return;
     }
-    if (profile.status === 'pending') {
-        showPendingScreen(profile.preferred_name || profile.full_name || '');
-        await db.auth.signOut();
-        return;
-    }
-    if (profile.status === 'rejected') {
-        showToast('❌ Your access request was declined.', 'error');
-        await db.auth.signOut();
-        return;
+    if (profile.role !== 'admin') {
+        if (profile.status === 'pending') {
+            showPendingScreen(profile.preferred_name || profile.full_name || '');
+            await db.auth.signOut();
+            return;
+        }
+        if (profile.status === 'rejected') {
+            showToast('❌ Your access request was declined.', 'error');
+            await db.auth.signOut();
+            return;
+        }
     }
     showApp();
 }
