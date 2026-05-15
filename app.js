@@ -2260,44 +2260,77 @@ function checkSmartAlerts(cases) {
 let _voiceRec = null;
 let _voiceActive = false;
 
-// Universal voice fill — works for any input/textarea by ID
+// Universal voice fill — shows floating overlay with live transcript
+let _vfRec = null, _vfTargetId = null, _vfBtn = null, _vfAccumulated = '';
+
 function startVoiceFill(targetId, btnEl) {
     if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
-        showToast('⚠️ Voice not supported — try Chrome', 'error'); return;
+        showToast('⚠️ Voice not supported — use Chrome or Safari', 'error'); return;
     }
-    if (btnEl._vfRec) {
-        btnEl._vfRec.stop(); return;
-    }
+    if (_vfRec) { stopVoiceFill(); return; }
+
+    _vfTargetId = targetId;
+    _vfBtn = btnEl;
+    _vfAccumulated = '';
+
     let SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let rec = new SR();
-    rec.lang = 'en-US'; rec.interimResults = true; rec.maxAlternatives = 1;
-    btnEl._vfRec = rec;
-    let origText = btnEl.innerHTML;
+    _vfRec = new SR();
+    _vfRec.lang = 'en-US';
+    _vfRec.interimResults = true;
+    _vfRec.continuous = true;
+    _vfRec.maxAlternatives = 1;
+
+    // Show overlay
+    let overlay = document.getElementById('voiceOverlay');
+    let liveText = document.getElementById('voiceLiveText');
+    if (overlay) overlay.style.display = 'block';
+    if (liveText) liveText.textContent = 'Listening…';
     btnEl.innerHTML = '⏹'; btnEl.style.color = '#dc2626';
-    let interim = '';
-    rec.onresult = (e) => {
-        interim = '';
-        let final = '';
+
+    _vfRec.onresult = (e) => {
+        let interim = '';
+        let newFinal = '';
         for (let i = e.resultIndex; i < e.results.length; i++) {
             let t = e.results[i][0].transcript;
-            if (e.results[i].isFinal) final += t; else interim += t;
+            if (e.results[i].isFinal) newFinal += t;
+            else interim += t;
         }
-        let el = document.getElementById(targetId);
-        if (final && el) {
-            el.value = el.value ? el.value + ' ' + final : final;
-            el.focus();
-            showToast('✅ ' + final);
-        }
+        if (newFinal) _vfAccumulated += (_vfAccumulated ? ' ' : '') + newFinal.trim();
+        if (liveText) liveText.textContent = (_vfAccumulated + (interim ? ' ' + interim : '')) || 'Listening…';
     };
-    rec.onerror = (e) => {
-        let msg = {'not-allowed':'Mic permission denied','no-speech':'No speech detected','network':'Network error'}[e.error] || e.error;
+
+    _vfRec.onerror = (e) => {
+        let msg = {'not-allowed':'Mic permission denied — allow in browser settings','no-speech':'No speech detected','network':'Network error','audio-capture':'No microphone found'}[e.error] || e.error;
         showToast('⚠️ ' + msg, 'error');
+        _cleanupVoiceFill(false);
     };
-    rec.onend = () => {
-        btnEl._vfRec = null;
-        btnEl.innerHTML = origText; btnEl.style.color = '';
+
+    _vfRec.onend = () => {
+        // Save accumulated text to field
+        if (_vfAccumulated) {
+            let el = document.getElementById(_vfTargetId);
+            if (el) {
+                el.value = el.value ? el.value + ' ' + _vfAccumulated : _vfAccumulated;
+                el.focus();
+            }
+        }
+        _cleanupVoiceFill(true);
     };
-    try { rec.start(); } catch(e) { showToast('⚠️ ' + e.message, 'error'); btnEl._vfRec = null; btnEl.innerHTML = origText; btnEl.style.color = ''; }
+
+    try { _vfRec.start(); }
+    catch(e) { showToast('⚠️ ' + e.message, 'error'); _cleanupVoiceFill(false); }
+}
+
+function stopVoiceFill() {
+    if (_vfRec) { try { _vfRec.stop(); } catch(e) {} }
+}
+
+function _cleanupVoiceFill(saved) {
+    if (saved && _vfAccumulated) showToast('✅ Saved: "' + _vfAccumulated.slice(0, 60) + ((_vfAccumulated.length > 60) ? '…' : '') + '"');
+    _vfRec = null; _vfAccumulated = '';
+    let overlay = document.getElementById('voiceOverlay');
+    if (overlay) overlay.style.display = 'none';
+    if (_vfBtn) { _vfBtn.innerHTML = '🎤'; _vfBtn.style.color = ''; _vfBtn = null; }
 }
 
 function startVoiceLog() {
