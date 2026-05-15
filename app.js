@@ -697,8 +697,19 @@ async function signInForm() {
     if (error) { showToast(error.message, 'error'); return; }
     let { data: { user } } = await db.auth.getUser();
     let { data: profile }  = await db.from('profiles').select('*').eq('id', user.id).single();
-    if (!profile || profile.status === 'pending') {
-        showPendingScreen(profile ? profile.full_name : '');
+    // Auto-recover: profile row missing (e.g. JS upsert failed at sign-up)
+    if (!profile) {
+        await db.from('profiles').upsert({
+            id: user.id, email: user.email,
+            full_name: user.email.split('@')[0],
+            role: 'resident', status: 'pending'
+        });
+        showPendingScreen(user.email.split('@')[0]);
+        await db.auth.signOut();
+        return;
+    }
+    if (profile.status === 'pending') {
+        showPendingScreen(profile.preferred_name || profile.full_name || '');
         await db.auth.signOut();
         return;
     }
