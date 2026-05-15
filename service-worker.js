@@ -7,6 +7,7 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', function(event) {
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then(function(cache) {
             return cache.addAll(urlsToCache);
@@ -14,11 +15,18 @@ self.addEventListener('install', function(event) {
     );
 });
 
+self.addEventListener('activate', function(event) {
+    event.waitUntil(
+        caches.keys().then(function(keys) {
+            return Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)));
+        }).then(() => self.clients.claim())
+    );
+});
+
 self.addEventListener('fetch', function(event) {
     event.respondWith(
-        caches.match(event.request).then(function(response) {
-            if (response) { return response; }
-            return fetch(event.request);
+        fetch(event.request).catch(function() {
+            return caches.match(event.request);
         })
     );
 });
