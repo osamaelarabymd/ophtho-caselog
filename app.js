@@ -243,6 +243,41 @@ function closeMilestone() {
     document.getElementById('milestoneModal').style.display = 'none';
 }
 
+// ── Per-Procedure Milestone Notifications ─────────────────────────────────────
+function checkProcedureMilestones(cases) {
+    let allProcs = getAllProcedures();
+    let reached  = JSON.parse(localStorage.getItem('procMilestonesReached')) || {};
+    const pcts   = [25, 50, 75, 100];
+
+    for (let [proc, required] of Object.entries(allProcs)) {
+        // Count Primary Surgeon cases for this procedure
+        let done = cases.filter(c => c.procedure === proc && c.role === 'Primary Surgeon').length;
+        let pct  = required > 0 ? Math.min(Math.round((done / required) * 100), 100) : 0;
+        if (!reached[proc]) reached[proc] = [];
+
+        for (let milestone of pcts) {
+            if (pct >= milestone && !reached[proc].includes(milestone)) {
+                reached[proc].push(milestone);
+                localStorage.setItem('procMilestonesReached', JSON.stringify(reached));
+                showProcedureMilestone(proc, milestone, done, required);
+                return; // show one at a time
+            }
+        }
+    }
+}
+
+function showProcedureMilestone(proc, pct, done, required) {
+    let short = proc.split('/')[0].trim().split('(')[0].trim();
+    let color = procedureColors[proc] || '#2563eb';
+    let emoji = pct === 100 ? '🏆' : pct >= 75 ? '⭐' : pct >= 50 ? '🔥' : '🌱';
+    let title = pct === 100 ? short + ' Complete!' : short + ': ' + pct + '% done';
+    let text  = pct === 100
+        ? 'Outstanding! You\'ve completed all ' + required + ' required ' + short + ' cases as Primary Surgeon!'
+        : 'You\'ve reached ' + pct + '% of your ' + short + ' goal — ' + done + ' of ' + required + ' Primary Surgeon cases logged.';
+    let badge = short + ' ' + pct + '%';
+    showMilestone({ emoji, title, text, badge, color });
+}
+
 function updateAchievementBadges(percent) {
     let reached  = JSON.parse(localStorage.getItem('milestonesReached')) || [];
     let badgesEl = document.getElementById('achievementBadges');
@@ -1065,6 +1100,8 @@ async function loadCases() {
     checkSmartAlerts(allCases);
     updateStreak(allCases);
     hideLoading();
+    // Procedure-level milestone checks (runs after loading, non-blocking)
+    setTimeout(() => checkProcedureMilestones(allCases), 800);
 }
 
 async function deleteCase(id) {
@@ -1156,7 +1193,10 @@ async function loadAdminData() {
                     let last = uc[uc.length - 1];
                     let info = (last.procedure || '') + ' — ' + (last.date || '');
                     let safeInfo = info.replace(/'/g, "\\'");
-                    html += '<button onclick="openFeedbackModal(\'' + last.id + '\',\'' + safeInfo + '\')" style="background:#7c3aed; padding:6px 10px; font-size:11px; margin:0; width:auto; border-radius:6px">💬 Feedback</button>';
+                    html += '<button onclick="openFeedbackModal(\'' + last.id + '\',\'' + safeInfo + '\')" style="background:#7c3aed; padding:6px 10px; font-size:11px; margin:0; width:auto; border-radius:6px">Feedback</button>';
+                    let tLabel = last.is_teaching ? 'Unmark Teaching' : 'Teaching';
+                    let tBg    = last.is_teaching ? '#d97706' : '#0891b2';
+                    html += '<button onclick="toggleTeachingCase(\'' + last.id + '\',' + (!!last.is_teaching) + ')" style="background:' + tBg + '; padding:6px 10px; font-size:11px; margin:0; width:auto; border-radius:6px">' + tLabel + '</button>';
                 }
                 html += '</td>';
                 html += '</tr>';
@@ -1816,6 +1856,7 @@ function displayCaseList(cases) {
         let dateStr   = c.date ? new Date(c.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
         let initials  = c.procedure ? c.procedure.slice(0,2).toUpperCase() : '??';
 
+        let ratingColor = c.pd_rating === 'Excellent' ? '#16a34a' : c.pd_rating === 'Good' ? '#2563eb' : c.pd_rating === 'Needs Work' ? '#d97706' : '#64748b';
         html += `
         <div style="background:white; border-radius:16px; padding:0; box-shadow:0 2px 12px rgba(37,99,235,0.08); border:1px solid #e2e8f0; overflow:hidden; transition:transform 0.2s, box-shadow 0.2s"
              onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 28px rgba(37,99,235,0.13)'"
@@ -1831,6 +1872,8 @@ function displayCaseList(cases) {
                                 <span style="background:${roleColor}18; color:${roleColor}; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px">${c.role}</span>
                                 <span style="background:#f1f5f9; color:#64748b; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${dateStr}</span>
                                 ${c.pgy_year ? `<span style="background:#f1f5f9; color:#64748b; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px">${c.pgy_year}</span>` : ''}
+                                ${c.is_teaching ? `<span style="background:#fef3c7; color:#d97706; font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px; display:inline-flex; align-items:center; gap:4px"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/></svg>Teaching</span>` : ''}
+                                ${c.pd_rating  ? `<span style="background:${ratingColor}18; color:${ratingColor}; font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px">PD: ${c.pd_rating}</span>` : ''}
                             </div>
                         </div>
                     </div>
@@ -1846,6 +1889,14 @@ function displayCaseList(cases) {
                     ${c.notes     ? `<span style="font-size:12px; color:#64748b; flex:1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>${stripComplexity(c.notes)}</span>` : ''}
                     ${parseComplexity(c.notes) !== 'Routine' ? `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; background:${parseComplexity(c.notes)==='Challenging'?'#fef2f2':'#fefce8'}; color:${parseComplexity(c.notes)==='Challenging'?'#dc2626':'#ca8a04'}"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${parseComplexity(c.notes)==='Challenging'?'#dc2626':'#ca8a04'};margin-right:4px;vertical-align:middle"></span>${parseComplexity(c.notes)}</span>` : ''}
                 </div>
+                ${c.pd_feedback ? `<div style="margin-top:10px;background:#f0fdf4;border-left:3px solid #16a34a;border-radius:0 8px 8px 0;padding:8px 12px">
+                    <div style="font-size:10px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">PD Feedback</div>
+                    <div style="font-size:12px;color:#374151;line-height:1.5">${c.pd_feedback}</div>
+                </div>` : ''}
+                ${c.is_teaching && c.teaching_note ? `<div style="margin-top:8px;background:#fefce8;border-left:3px solid #d97706;border-radius:0 8px 8px 0;padding:8px 12px">
+                    <div style="font-size:10px;font-weight:700;color:#d97706;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">Teaching Point</div>
+                    <div style="font-size:12px;color:#374151;line-height:1.5">${c.teaching_note}</div>
+                </div>` : ''}
             </div>
         </div>`;
     }
@@ -2228,51 +2279,72 @@ function generateInsights() {
 // ── Peer Benchmarking ────────────────────────────────────────────────────────
 async function showPeerBenchmark() {
     let el = document.getElementById('peerBenchmark');
-    el.innerHTML = '<p style="color:#64748b; font-size:13px">Loading program data…</p>';
-
-    let { data: allProgramCases, error } = await db.from('cases').select('user_id, procedure, role');
-    if (error || !allProgramCases || allProgramCases.length === 0) {
-        el.innerHTML = '<p style="color:#94a3b8; font-size:13px">⚠️ Program data unavailable — benchmarking requires shared data access.</p>';
-        return;
-    }
+    if (!el) return;
+    el.innerHTML = '<p style="color:#64748b;font-size:13px;text-align:center;padding:12px 0">Loading cohort data…</p>';
 
     let { data: { user } } = await db.auth.getUser();
-    let myCases    = allProgramCases.filter(c => c.user_id === user.id);
-    let otherCases = allProgramCases.filter(c => c.user_id !== user.id);
-    let peers      = [...new Set(otherCases.map(c => c.user_id))];
+    let domain   = user.email.split('@')[1] || '';
+    let thisMonth = new Date().toISOString().slice(0, 7);
+    let myTotal   = allCases.length;
+    let myMonthly = allCases.filter(c => c.date && c.date.startsWith(thisMonth)).length;
+    let myPrimary = allCases.filter(c => c.role === 'Primary Surgeon').length;
+    let myPrimaryPct = myTotal > 0 ? Math.round((myPrimary / myTotal) * 100) : 0;
 
-    if (peers.length === 0) {
-        el.innerHTML = '<p style="color:#94a3b8; font-size:13px">No peer data yet — you\'re the first in the program! 🏆</p>';
+    // Try the secure RPC first (domain-filtered, security definer)
+    let bench = null;
+    let { data: rpcData, error: rpcError } = await db.rpc('get_program_benchmarks', { user_domain: domain });
+    if (!rpcError && rpcData) {
+        bench = rpcData;
+    } else {
+        // Fallback: direct query (works if RLS allows reading all cases)
+        let { data: allProgramCases, error: qErr } = await db.from('cases').select('user_id, procedure, role, date');
+        if (!qErr && allProgramCases && allProgramCases.length > 0) {
+            let peers = [...new Set(allProgramCases.map(c => c.user_id).filter(id => id !== user.id))];
+            let totalCases = allProgramCases.length;
+            let primaryCases = allProgramCases.filter(c => c.role === 'Primary Surgeon').length;
+            let monthCases = allProgramCases.filter(c => c.date && c.date.startsWith(thisMonth)).length;
+            bench = {
+                total_residents: peers.length + 1,
+                total_cases: totalCases,
+                avg_cases_per_resident: peers.length > 0 ? Math.round(totalCases / (peers.length + 1)) : myTotal,
+                primary_pct: totalCases > 0 ? Math.round((primaryCases / totalCases) * 100) : 0,
+                cases_this_month: peers.length > 0 ? Math.round(monthCases / (peers.length + 1)) : myMonthly
+            };
+        }
+    }
+
+    if (!bench) {
+        el.innerHTML = `
+            <div style="background:#f8fafc;border-radius:12px;padding:16px;text-align:center">
+                <p style="font-size:13px;color:#64748b;margin-bottom:8px">Cohort comparison requires a Supabase function.</p>
+                <p style="font-size:11px;color:#94a3b8">Ask your program admin to run the SQL setup in Supabase.</p>
+            </div>`;
         return;
     }
 
-    let peerTotals = peers.map(uid => allProgramCases.filter(c => c.user_id === uid).length);
-    let myTotal    = myCases.length;
-    let rank       = peerTotals.filter(t => t > myTotal).length + 1;
-    let pctile     = Math.round((1-(rank-1)/peers.length)*100);
+    const _brow = (label, myVal, cohortVal, unit = '', higherIsBetter = true) => {
+        let m = parseFloat(myVal), c2 = parseFloat(cohortVal);
+        let better = higherIsBetter ? m >= c2 : m <= c2;
+        let col    = better ? '#16a34a' : '#d97706';
+        let arrow  = better ? '↑' : '↓';
+        return `<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid #F9FAFB">
+            <span style="flex:1;font-size:12px;font-weight:600;color:#374151">${label}</span>
+            <span style="font-size:14px;font-weight:800;color:${col}">${myVal}${unit}</span>
+            <span style="font-size:11px;color:#9CA3AF">vs ${cohortVal}${unit} avg</span>
+            <span style="font-size:13px;font-weight:700;color:${col}">${arrow}</span>
+        </div>`;
+    };
 
-    let html = '<div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:14px;text-align:center">' +
-        '<div style="font-size:28px;font-weight:900;color:#2563eb">'+pctile+'th</div>' +
-        '<div style="font-size:12px;color:#64748b">Percentile in your program</div>' +
-        '<div style="font-size:12px;color:#94a3b8;margin-top:4px">Ranked #'+rank+' of '+(peers.length+1)+' residents</div></div>';
+    let html = `
+        <div style="background:#eff6ff;border-radius:12px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <p style="font-size:12px;color:#1d4ed8;font-weight:600;margin:0">${bench.total_residents} resident${bench.total_residents !== 1 ? 's' : ''} · ${bench.total_cases} cases logged · data anonymous</p>
+        </div>
+        ${_brow('Cases this month', myMonthly, bench.cases_this_month)}
+        ${_brow('Total cases logged', myTotal, bench.avg_cases_per_resident)}
+        ${_brow('As Primary Surgeon', myPrimaryPct + '%', bench.primary_pct + '%', '', true)}
+        <p style="font-size:10px;color:#9CA3AF;text-align:center;margin-top:12px">Only aggregated counts are used — no individual names or records are exposed</p>`;
 
-    for (let p in acgme) {
-        let mine     = myCases.filter(c => c.procedure === p).length;
-        let peerAvgs = peers.map(uid => allProgramCases.filter(c => c.user_id===uid && c.procedure===p).length);
-        let avg      = peerAvgs.length > 0 ? Math.round(peerAvgs.reduce((a,b)=>a+b,0)/peerAvgs.length) : 0;
-        let short    = p.split('/')[0].trim().split('(')[0].trim();
-        let myPct    = Math.min(Math.round((mine/acgme[p])*100),100);
-        let avgPct   = Math.min(Math.round((avg/acgme[p])*100),100);
-        let better   = mine >= avg;
-        html += '<div style="margin-bottom:10px">' +
-            '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">' +
-            '<span style="font-weight:600;color:#0f172a">'+short+'</span>' +
-            '<span style="'+(better?'color:#16a34a':'color:#d97706')+';font-weight:700">You: '+mine+' '+(better?'▲':'▼')+' Avg: '+avg+'</span></div>' +
-            '<div style="position:relative;height:8px;background:#e2e8f0;border-radius:99px">' +
-            '<div style="position:absolute;height:8px;background:#cbd5e1;border-radius:99px;width:'+avgPct+'%"></div>' +
-            '<div style="position:absolute;height:8px;background:'+(better?'#16a34a':'#d97706')+';border-radius:99px;width:'+myPct+'%;opacity:0.9"></div></div></div>';
-    }
-    html += '<p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:8px">Data is anonymous — only counts are compared, never names</p>';
     el.innerHTML = html;
 }
 
@@ -2958,29 +3030,81 @@ function renderAttendingCases() {
     }
 }
 
-// ── Attending Feedback ───────────────────────────────────────────────────────
+// ── PD Feedback ──────────────────────────────────────────────────────────────
 function openFeedbackModal(caseId, caseInfo) {
-    document.getElementById('feedbackCaseId').value      = caseId;
+    document.getElementById('feedbackCaseId').value         = caseId;
     document.getElementById('feedbackCaseInfo').textContent = caseInfo;
-    document.getElementById('feedbackText').value        = '';
+    document.getElementById('feedbackText').value           = '';
+    document.getElementById('feedbackTeaching').checked     = false;
+    document.getElementById('feedbackTeachingNote').value   = '';
+    window._feedbackRating = '';
+    document.querySelectorAll('.feedback-rating-btn').forEach(b => {
+        b.style.background  = '#f8fafc';
+        b.style.borderColor = '#e2e8f0';
+        b.style.color       = '#64748b';
+    });
     document.getElementById('feedbackModal').style.display = 'flex';
 }
 
+function selectFeedbackRating(rating, btn) {
+    window._feedbackRating = rating;
+    const ratingColors = { 'Excellent': '#16a34a', 'Good': '#2563eb', 'Needs Work': '#d97706' };
+    let col = ratingColors[rating] || '#2563eb';
+    document.querySelectorAll('.feedback-rating-btn').forEach(b => {
+        b.style.background  = '#f8fafc';
+        b.style.borderColor = '#e2e8f0';
+        b.style.color       = '#64748b';
+    });
+    btn.style.background  = col + '18';
+    btn.style.borderColor = col;
+    btn.style.color       = col;
+}
+
 async function submitFeedback() {
-    let caseId = document.getElementById('feedbackCaseId').value;
-    let text   = document.getElementById('feedbackText').value.trim();
-    if (!text) { showToast('⚠️ Enter feedback text', 'warning'); return; }
+    let caseId    = document.getElementById('feedbackCaseId').value;
+    let text      = document.getElementById('feedbackText').value.trim();
+    let rating    = window._feedbackRating || '';
+    let teaching  = document.getElementById('feedbackTeaching').checked;
+    let teachNote = document.getElementById('feedbackTeachingNote').value.trim();
 
-    let { data: existing } = await db.from('cases').select('notes').eq('id', caseId).single();
-    let oldNotes = existing ? (existing.notes || '') : '';
-    let newNotes = oldNotes + (oldNotes ? '\n' : '') + '[PD Feedback: ' + text + ']';
+    if (!text && !rating && !teaching) {
+        showToast('⚠️ Add a rating, note, or mark as teaching case', 'warning');
+        return;
+    }
 
-    let { error } = await db.from('cases').update({ notes: newNotes }).eq('id', caseId);
-    if (error) { showToast('❌ Failed to save feedback', 'error'); return; }
+    let updates = {};
+    if (text)    updates.pd_feedback    = text;
+    if (rating)  updates.pd_rating      = rating;
+    if (teaching) {
+        updates.is_teaching   = true;
+        if (teachNote) updates.teaching_note = teachNote;
+    }
+
+    let { error } = await db.from('cases').update(updates).eq('id', caseId);
+    if (error) {
+        // Fallback: columns may not exist yet — append to notes
+        let { data: existing } = await db.from('cases').select('notes').eq('id', caseId).single();
+        let old = existing?.notes || '';
+        let tag = rating ? `[PD ${rating}] ` : '';
+        let newNotes = old + (old ? '\n' : '') + tag + (text || '') + (teaching ? ' [Teaching Case]' : '');
+        await db.from('cases').update({ notes: newNotes }).eq('id', caseId);
+    }
 
     document.getElementById('feedbackModal').style.display = 'none';
-    showToast('✅ Feedback saved to case!');
+    showToast('✅ Feedback saved!');
     if (typeof loadAdminData === 'function') loadAdminData();
+}
+
+// ── Teaching Case Toggle (from resident's case list) ─────────────────────────
+async function toggleTeachingCase(caseId, currentValue) {
+    let newVal = !currentValue;
+    let { error } = await db.from('cases').update({ is_teaching: newVal }).eq('id', caseId);
+    if (error) { showToast('❌ Could not update teaching status', 'error'); return; }
+    // Refresh local copy
+    let c = allCases.find(x => x.id === caseId);
+    if (c) c.is_teaching = newVal;
+    showToast(newVal ? '📚 Marked as Teaching Case' : 'Teaching badge removed');
+    applyFilter();
 }
 
 // ── Workspace Sub-Tabs ───────────────────────────────────────────────────────
