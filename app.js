@@ -796,6 +796,11 @@ async function showApp() {
         checkPendingUsers();
     }
     if (currentUserRole === 'attending') {
+        // Hide resident-only tabs
+        ['tabBtnDashboard','tabBtnLogCase','tabBtnAnalytics','nav-dashboard','nav-logCase','nav-analytics'].forEach(id => {
+            let el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
         let at = document.getElementById('attendingTab');
         if (at) at.style.display = 'inline-block';
         showTab('attending', null);
