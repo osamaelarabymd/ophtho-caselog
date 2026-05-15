@@ -1,37 +1,18 @@
-const CACHE_NAME = 'eye-log-v3';
-const urlsToCache = [
-    '/',
-    '/index.html',
-    '/style.css',
-    '/app.js'
-];
+const CACHE_NAME = 'eye-log-v4';
 
-self.addEventListener('install', function(event) {
-    self.skipWaiting();
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', event => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then(function(cache) {
-            return cache.addAll(urlsToCache);
-        })
+        caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
+            .then(() => self.clients.claim())
     );
 });
 
-self.addEventListener('activate', function(event) {
-    event.waitUntil(
-        caches.keys().then(function(keys) {
-            return Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)));
-        }).then(() => self.clients.claim())
-    );
+// No caching — always fetch from network
+self.addEventListener('fetch', event => {
+    event.respondWith(fetch(event.request));
 });
 
-self.addEventListener('fetch', function(event) {
-    event.respondWith(
-        fetch(event.request).catch(function() {
-            return caches.match(event.request);
-        })
-    );
-});
-
-// Handle push notifications
 self.addEventListener('push', function(event) {
     const options = {
         body: event.data ? event.data.text() : 'Don\'t forget to log your cases today!',
@@ -45,10 +26,7 @@ self.addEventListener('push', function(event) {
     );
 });
 
-// Handle notification click
 self.addEventListener('notificationclick', function(event) {
     event.notification.close();
-    event.waitUntil(
-        clients.openWindow('/')
-    );
+    event.waitUntil(clients.openWindow('/'));
 });

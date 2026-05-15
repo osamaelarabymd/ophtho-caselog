@@ -814,11 +814,19 @@ async function showApp() {
 db.auth.getSession().then(async ({ data }) => {
     if (data.session) {
         let { data: { user } } = await db.auth.getUser();
-        let { data: profile }  = await db.from('profiles').select('*').eq('id', user.id).single();
-        if (profile?.role === 'admin') {
-            showApp();
-        } else if (!profile || profile.status === 'pending') {
+        let { data: profile, error: pErr } = await db.from('profiles').select('*').eq('id', user.id).single();
+        // If fetch failed entirely, let admin email bypass to avoid lockout
+        const adminEmails = ['elarabyo@stanford.edu'];
+        if (pErr || !profile) {
+            if (adminEmails.includes(user.email)) { showApp(); return; }
             showPendingScreen('');
+            await db.auth.signOut();
+            return;
+        }
+        if (profile.role === 'admin') {
+            showApp();
+        } else if (profile.status === 'pending') {
+            showPendingScreen(profile.preferred_name || profile.full_name || '');
             await db.auth.signOut();
         } else if (profile.status === 'rejected') {
             await db.auth.signOut();
