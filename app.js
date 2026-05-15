@@ -612,6 +612,7 @@ async function forgotPassword() {
 
 // Auth
 let _signupRole = 'resident';
+let _pendingEmail = '', _pendingPassword = '', _pendingFullName = '';
 
 function selectSignupRole(role) {
     _signupRole = role;
@@ -627,21 +628,21 @@ function selectSignupRole(role) {
 }
 
 async function signUp() {
-    let email    = document.getElementById('email').value.trim();
-    let password = document.getElementById('password').value;
-    let fullName = document.getElementById('fullName').value.trim();
-    if (!fullName) { showToast('⚠️ Please enter your full name', 'warning'); return; }
-    if (!email || !password) { showToast('⚠️ Enter email and password', 'warning'); return; }
-    if (password.length < 6) { showToast('⚠️ Password must be at least 6 characters', 'warning'); return; }
+    _pendingEmail    = document.getElementById('email').value.trim();
+    _pendingPassword = document.getElementById('password').value;
+    _pendingFullName = document.getElementById('fullName').value.trim();
+    if (!_pendingFullName) { showToast('⚠️ Please enter your full name', 'warning'); return; }
+    if (!_pendingEmail || !_pendingPassword) { showToast('⚠️ Enter email and password', 'warning'); return; }
+    if (_pendingPassword.length < 6) { showToast('⚠️ Password must be at least 6 characters', 'warning'); return; }
 
     // Pre-fill preferred name with first name, then show role modal
-    let firstNameGuess = fullName.split(' ')[0];
+    let firstNameGuess = _pendingFullName.split(' ')[0];
     let inp = document.getElementById('preferredNameInput');
-    if (inp && !inp.value) inp.value = firstNameGuess;
+    if (inp) { inp.value = firstNameGuess; }
 
     selectSignupRole('resident'); // reset to default selection
     document.getElementById('roleModal').style.display = 'flex';
-    setTimeout(() => { if (inp) inp.focus(); inp.select(); }, 150);
+    setTimeout(() => { if (inp) { inp.focus(); inp.select(); } }, 150);
 }
 
 async function completeSignUp() {
@@ -651,9 +652,9 @@ async function completeSignUp() {
     const resetBtn = () => { if (completeBtn) { completeBtn.textContent = 'Complete Registration →'; completeBtn.disabled = false; } };
 
     try {
-        let email         = document.getElementById('email').value.trim();
-        let password      = document.getElementById('password').value;
-        let fullName      = document.getElementById('fullName').value.trim();
+        let email         = _pendingEmail;
+        let password      = _pendingPassword;
+        let fullName      = _pendingFullName;
         let preferredName = (document.getElementById('preferredNameInput')?.value || '').trim() || fullName.split(' ')[0];
         let pgy           = _signupRole === 'resident' ? (document.getElementById('signupPgy')?.value || 'PGY-1') : null;
 
