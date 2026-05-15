@@ -785,8 +785,15 @@ async function showApp() {
     document.getElementById('pendingSection').style.display = 'none';
     let { data: { user } } = await db.auth.getUser();
     let { data: profile }  = await db.from('profiles').select('*').eq('id', user.id).single();
+    const adminEmails = ['elarabyo@stanford.edu'];
+    if (!profile && adminEmails.includes(user.email)) {
+        // Restore admin profile if missing
+        await db.from('profiles').upsert({ id: user.id, email: user.email, full_name: 'Dr. Elaraby', role: 'admin', status: 'approved' });
+        profile = { role: 'admin', status: 'approved', full_name: 'Dr. Elaraby', preferred_name: 'Osama' };
+    }
     currentUserRole = profile ? profile.role : 'resident';
-    if (currentUserRole === 'admin') {
+    if (currentUserRole === 'admin' || adminEmails.includes(user?.email)) {
+        currentUserRole = 'admin';
         document.getElementById('adminTab').style.display = 'inline-block';
         checkPendingUsers();
     }
