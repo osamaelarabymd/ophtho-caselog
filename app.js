@@ -398,10 +398,19 @@ function updateProfileDisplay() {
         let pct   = Math.min(Math.round((done / total) * 100), 100);
         let statsEl = document.getElementById('profileStats');
         if (statsEl) {
+            const _ps = (val, label, color) =>
+                `<div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 8px;gap:3px;border-right:1px solid #F3F4F6">
+                    <span style="font-size:18px;font-weight:800;color:${color};letter-spacing:-0.5px">${val}</span>
+                    <span style="font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px">${label}</span>
+                </div>`;
+            statsEl.style.display = 'flex';
             statsEl.innerHTML =
-                '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">📅</div><h3>' + profile.startYear + '</h3><p>Start Year</p></div>' +
-                '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">🎓</div><h3>' + profile.endYear + '</h3><p>End Year</p></div>' +
-                '<div class="summary-card"><div style="font-size:24px;margin-bottom:4px">⏳</div><h3>' + pct + '%</h3><p>Residency Done</p></div>';
+                _ps(profile.startYear, 'Started', '#2563eb') +
+                _ps(profile.endYear,   'Ends',    '#7c3aed') +
+                `<div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 8px;gap:3px">
+                    <span style="font-size:18px;font-weight:800;color:#16a34a;letter-spacing:-0.5px">${pct}%</span>
+                    <span style="font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px">Complete</span>
+                </div>`;
         }
     }
     let welcomeEl = document.getElementById('welcomeName');
@@ -436,6 +445,37 @@ function saveTemplate() {
     showToast('📋 Template saved!');
 }
 
+// ── Role & complexity radio helpers ──────────────────────────────────────────
+function updateRoleLabels(selectedVal) {
+    let val = selectedVal || document.getElementById('role').value;
+    let map = { 'Primary Surgeon': 'role-lbl-primary', 'Assistant': 'role-lbl-assistant', 'Observer': 'role-lbl-observer' };
+    let colors = { 'Primary Surgeon': '#2563eb', 'Assistant': '#16a34a', 'Observer': '#7c3aed' };
+    let bgs    = { 'Primary Surgeon': '#eff6ff', 'Assistant': '#f0fdf4', 'Observer': '#faf5ff' };
+    Object.keys(map).forEach(r => {
+        let el = document.getElementById(map[r]);
+        if (!el) return;
+        let active = r === val;
+        el.style.borderColor  = active ? colors[r] : '#E5E7EB';
+        el.style.background   = active ? bgs[r]    : 'white';
+        let radio = el.querySelector('input[type=radio]');
+        if (radio) radio.checked = active;
+    });
+}
+function updateCxLabels(selectedVal) {
+    let val = selectedVal || document.getElementById('complexity').value;
+    let map = { 'Routine': 'cx-lbl-routine', 'Complex': 'cx-lbl-complex', 'Challenging': 'cx-lbl-challenging' };
+    let colors = { 'Routine': '#16a34a', 'Complex': '#d97706', 'Challenging': '#dc2626' };
+    Object.keys(map).forEach(c => {
+        let el = document.getElementById(map[c]);
+        if (!el) return;
+        let active = c === val;
+        el.style.borderColor = active ? colors[c] : '#E5E7EB';
+        el.style.background  = active ? colors[c]+'12' : 'white';
+        let radio = el.querySelector('input[type=radio]');
+        if (radio) radio.checked = active;
+    });
+}
+
 function applyTemplate(index) {
     let t = JSON.parse(localStorage.getItem('caseTemplates'))[index];
     document.getElementById('procedure').value    = t.procedure;
@@ -444,6 +484,7 @@ function applyTemplate(index) {
     document.getElementById('residentName').value = t.resident_name;
     document.getElementById('attending').value    = t.attending;
     document.getElementById('hospital').value     = t.hospital;
+    updateRoleLabels(t.role);
     showToast('⚡ Template applied!');
 }
 
@@ -539,6 +580,8 @@ function showTab(tab, e) {
         refreshProcedureDropdowns();
         let dateEl = document.getElementById('date');
         if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
+        updateRoleLabels();
+        updateCxLabels();
     } else if (tab === 'caseList') {
         document.getElementById('caseListTab').style.display = 'block';
         displayCaseList(allCases);
@@ -589,6 +632,12 @@ function loadProfileCaseStats() {
     let totalReq = Object.values(acgme).reduce((a,b)=>a+b,0);
     let pct      = Math.min(Math.round((total/totalReq)*100),100);
     let streak   = localStorage.getItem('streak') || 0;
+    // Profile avatar initials
+    let avatarEl = document.getElementById('profileAvatar');
+    if (avatarEl && profile.name) {
+        let parts = profile.name.trim().split(' ');
+        avatarEl.textContent = parts.length >= 2 ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase() : parts[0].slice(0,2).toUpperCase();
+    }
     let statsEl  = document.getElementById('profileStats');
     if (statsEl) {
         statsEl.innerHTML =
@@ -1358,10 +1407,15 @@ function showAnalytics() {
     let primary    = allCases.filter(c => c.role === 'Primary Surgeon').length;
     let primaryPct = total > 0 ? Math.round((primary / total) * 100) : 0;
 
+    const _as = (val, label, color) =>
+        `<div style="background:white;border:1px solid #E5E7EB;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:4px;box-shadow:0 1px 4px rgba(0,0,0,0.04)">
+            <span style="font-size:24px;font-weight:800;color:${color};letter-spacing:-1px;line-height:1">${val}</span>
+            <span style="font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px">${label}</span>
+        </div>`;
     document.getElementById('analyticsSummary').innerHTML =
-        '<div class="summary-card"><h3>' + total + '</h3><p>Total Cases</p></div>' +
-        '<div class="summary-card"><h3>' + monthCount + '</h3><p>This Month</p></div>' +
-        '<div class="summary-card"><h3>' + primaryPct + '%</h3><p>As Primary Surgeon</p></div>';
+        _as(total,       'Total Cases',  '#2563eb') +
+        _as(monthCount,  'This Month',   '#0891b2') +
+        _as(primaryPct+'%', 'As Primary','#16a34a');
 
     let months = [], monthlyCounts = [];
     for (let i = 5; i >= 0; i--) {
@@ -1481,13 +1535,18 @@ function showAttendingBreakdown() {
     let html = '';
     for (let [name, count] of sorted) {
         let pct = Math.round((count / max) * 100);
-        html += `<div style="margin-bottom:12px">
-            <div style="display:flex; justify-content:space-between; margin-bottom:5px">
-                <span style="font-size:13px; font-weight:600; color:#0f172a">👨‍⚕️ ${name}</span>
-                <span style="font-size:13px; color:#64748b; font-weight:600">${count} case${count !== 1 ? 's' : ''}</span>
+        html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F9FAFB">
+            <div style="width:28px;height:28px;border-radius:8px;background:#faf5ff;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </div>
-            <div style="background:#f1f5f9; border-radius:99px; height:7px">
-                <div style="background:#7c3aed; width:${pct}%; height:7px; border-radius:99px"></div>
+            <div style="flex:1;min-width:0">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                    <span style="font-size:13px;font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</span>
+                    <span style="font-size:12px;font-weight:700;color:#7c3aed;flex-shrink:0;margin-left:8px">${count}</span>
+                </div>
+                <div style="background:#F3F4F6;border-radius:99px;height:4px;overflow:hidden">
+                    <div style="background:#7c3aed;width:${pct}%;height:4px;border-radius:99px"></div>
+                </div>
             </div>
         </div>`;
     }
