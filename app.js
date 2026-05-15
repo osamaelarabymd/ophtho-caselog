@@ -1153,22 +1153,62 @@ function updateDashboard(cases) {
     }
     document.getElementById('stats').innerHTML = statsHtml;
 
-    // ── Role breakdown donut
+    // ── Role breakdown (pure HTML — no Chart.js)
     let roleCounts = { 'Primary': 0, 'Assistant': 0, 'Observer': 0 };
     for (let c of cases) {
         if (c.role === 'Primary Surgeon') roleCounts['Primary']++;
         else if (c.role === 'Assistant')  roleCounts['Assistant']++;
         else if (c.role === 'Observer')   roleCounts['Observer']++;
     }
-    if (roleDashChart) { roleDashChart.destroy(); }
-    roleDashChart = new Chart(document.getElementById('roleDonut').getContext('2d'), {
-        type: 'doughnut',
-        data: {
-            labels: Object.keys(roleCounts),
-            datasets: [{ data: Object.values(roleCounts), backgroundColor: ['#2563eb','#16a34a','#d97706'], borderWidth: 0, borderRadius: 4 }]
-        },
-        options: { responsive: true, cutout: '74%', plugins: { legend: { position: 'bottom', labels: { font: { size: 11, family: 'Inter', weight: '600' }, padding: 10, boxWidth: 10, boxHeight: 10, borderRadius: 3 } } } }
-    });
+    let roleColors = { 'Primary': '#2563eb', 'Assistant': '#16a34a', 'Observer': '#d97706' };
+    let roleIcons  = {
+        'Primary':  '<path d="M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2z"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>',
+        'Assistant':'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/>',
+        'Observer': '<circle cx="12" cy="12" r="3"/><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/>'
+    };
+    let roleTotal = Object.values(roleCounts).reduce((a,b)=>a+b,0) || 1;
+    let roleEl = document.getElementById('roleBreakdown');
+    if (roleEl) {
+        // Stacked proportion bar
+        let barSegs = Object.entries(roleCounts).map(([role, count]) => {
+            let pct = Math.round((count / roleTotal) * 100);
+            return pct > 0
+                ? `<div title="${role}: ${count} (${pct}%)" style="flex:${count};background:${roleColors[role]};height:8px;border-radius:0;transition:flex 0.6s ease"></div>`
+                : '';
+        }).join('');
+
+        // Role rows
+        let rows = Object.entries(roleCounts).map(([role, count]) => {
+            let pct = Math.round((count / roleTotal) * 100);
+            let color = roleColors[role];
+            let icon  = roleIcons[role];
+            return `
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F9FAFB">
+                <div style="width:30px;height:30px;border-radius:8px;background:${color}14;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                        <span style="font-size:12px;font-weight:600;color:#111827">${role}</span>
+                        <span style="font-size:12px;font-weight:700;color:${color}">${count}</span>
+                    </div>
+                    <div style="background:#F3F4F6;border-radius:99px;height:4px;overflow:hidden">
+                        <div style="background:${color};width:${pct}%;height:4px;border-radius:99px;transition:width 0.8s ease"></div>
+                    </div>
+                </div>
+                <span style="font-size:11px;color:#9CA3AF;font-weight:600;min-width:28px;text-align:right">${pct}%</span>
+            </div>`;
+        }).join('');
+
+        roleEl.innerHTML = `
+            <div style="display:flex;border-radius:6px;overflow:hidden;margin-bottom:16px;gap:2px;background:#F3F4F6;padding:2px;border-radius:8px">
+                ${barSegs || `<div style="flex:1;background:#E5E7EB;height:8px;border-radius:6px"></div>`}
+            </div>
+            ${rows}
+            <div style="margin-top:12px;text-align:center">
+                <span style="font-size:11px;color:#9CA3AF;font-weight:500">${roleTotal} total case${roleTotal!==1?'s':''}</span>
+            </div>`;
+    }
 
     // ── Recent cases feed
     let recentEl = document.getElementById('recentCasesFeed');
