@@ -864,9 +864,19 @@ async function loadAdminData() {
         html += '<div style="background:#fff7ed; border:2px solid #f97316; border-radius:14px; padding:16px; margin-bottom:20px">';
         html += '<h3 style="color:#ea580c; margin-bottom:12px">⏳ Pending Approval (' + pending.length + ')</h3>';
         for (let p of pending) {
-            html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #fed7aa">';
-            html += '<div><strong>' + (p.full_name || 'Unknown') + '</strong><br><span style="font-size:12px; color:#64748b">' + p.email + '</span></div>';
-            html += '<div style="display:flex; gap:8px">';
+            let isAttending = p.role === 'attending';
+            let roleBadge   = isAttending
+                ? '<span style="font-size:10px;font-weight:700;background:#0891b218;color:#0891b2;padding:2px 8px;border-radius:20px;margin-left:6px">🩺 Attending</span>'
+                : '<span style="font-size:10px;font-weight:700;background:#2563eb18;color:#2563eb;padding:2px 8px;border-radius:20px;margin-left:6px">👨‍🎓 Resident</span>';
+            html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #fed7aa">';
+            html += '<div><div style="display:flex;align-items:center;flex-wrap:wrap"><strong>' + (p.full_name || 'Unknown') + '</strong>' + roleBadge + '</div>';
+            html += '<span style="font-size:12px; color:#64748b">' + p.email + '</span></div>';
+            html += '<div style="display:flex; gap:8px; flex-wrap:wrap">';
+            // Role override selector
+            html += '<select onchange="changeUserRole(\'' + p.id + '\',this.value)" style="width:auto;margin:0;padding:6px 8px;font-size:12px;border-radius:8px;border:1px solid #e2e8f0">'
+                  + '<option value="resident"' + (!isAttending?' selected':'') + '>Resident</option>'
+                  + '<option value="attending"' + (isAttending?' selected':'') + '>Attending</option>'
+                  + '</select>';
             html += '<button onclick="approveUser(\'' + p.id + '\')" style="background:#16a34a; width:auto; padding:8px 16px; font-size:12px; margin:0; border-radius:8px">✅ Approve</button>';
             html += '<button onclick="rejectUser(\'' + p.id + '\')" style="background:#dc2626; width:auto; padding:8px 16px; font-size:12px; margin:0; border-radius:8px">❌ Reject</button>';
             html += '</div></div>';
@@ -876,6 +886,7 @@ async function loadAdminData() {
         html += '<div style="background:#f0fdf4; border:2px solid #16a34a; border-radius:14px; padding:16px; margin-bottom:20px; color:#15803d; font-weight:600">✅ No pending requests</div>';
     }
 
+    // ── Approved Residents
     html += '<h3 style="margin-bottom:12px">✅ Approved Residents</h3>';
     html += '<table>';
     html += '<tr><th>Name</th><th>Email</th><th>PGY</th><th>Total</th><th>Cataract</th><th>VR</th><th>Glaucoma</th><th>Progress</th><th>Action</th></tr>';
@@ -907,7 +918,28 @@ async function loadAdminData() {
         }
     }
     html += '</table>';
+
+    // ── Approved Attendings
+    let approvedAttending = profiles ? profiles.filter(p => p.role === 'attending' && p.status === 'approved') : [];
+    if (approvedAttending.length > 0) {
+        html += '<h3 style="margin:20px 0 12px">🩺 Approved Attendings</h3>';
+        html += '<div style="display:flex;flex-direction:column;gap:10px">';
+        for (let p of approvedAttending) {
+            let supervisedCount = cases ? cases.filter(c => c.attending && p.full_name && c.attending.toLowerCase().includes(p.full_name.split(' ').pop().toLowerCase())).length : 0;
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px">';
+            html += '<div><strong style="font-size:14px">Dr. ' + (p.preferred_name || p.full_name?.split(' ')[0] || p.full_name || '—') + '</strong>';
+            html += '<br><span style="font-size:12px;color:#64748b">' + p.email + ' · ' + supervisedCount + ' cases supervised</span></div>';
+            html += '<button onclick="revokeUser(\'' + p.id + '\')" style="background:#dc2626;padding:6px 10px;font-size:11px;margin:0;width:auto;border-radius:6px">Revoke</button>';
+            html += '</div>';
+        }
+        html += '</div>';
+    }
+
     document.getElementById('adminPanel').innerHTML = html;
+}
+
+async function changeUserRole(userId, role) {
+    await db.from('profiles').update({ role }).eq('id', userId);
 }
 
 async function approveUser(userId) {
