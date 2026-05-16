@@ -4222,6 +4222,10 @@ function _renderJLinkPills() {
 function openJournalModal(id) {
     let entry = id ? getJournalEntries().find(e => e.id === id) : null;
 
+    // Update header title
+    let hdr = document.querySelector('#journalModal h2');
+    if (hdr) hdr.textContent = entry ? 'Edit Entry' : 'New Entry';
+
     document.getElementById('journalEntryId').value = entry ? entry.id : '';
     document.getElementById('journalDate').value    = entry ? entry.date : new Date().toISOString().slice(0,10);
     document.getElementById('journalTitle').value   = entry ? (entry.title || '') : '';
@@ -4266,15 +4270,19 @@ function selectMood(mood) {
 
 function updateMoodButtons() {
     document.querySelectorAll('.mood-btn').forEach(btn => {
-        btn.style.borderColor = '#e2e8f0';
-        btn.style.transform   = 'scale(1)';
-        btn.style.boxShadow   = 'none';
+        btn.style.borderColor  = '#e2e8f0';
+        btn.style.background   = '#f8fafc';
+        btn.style.transform    = 'scale(1)';
+        btn.style.boxShadow    = 'none';
+        btn.style.opacity      = '0.55';
     });
     let active = document.getElementById('mood-' + selectedMood);
     if (active) {
-        active.style.borderColor = '#7c3aed';
-        active.style.transform   = 'scale(1.12)';
-        active.style.boxShadow   = '0 4px 12px rgba(124,58,237,0.25)';
+        active.style.borderColor = '#0f172a';
+        active.style.background  = '#f1f5f9';
+        active.style.transform   = 'scale(1.15)';
+        active.style.boxShadow   = '0 2px 8px rgba(0,0,0,0.12)';
+        active.style.opacity     = '1';
     }
 }
 

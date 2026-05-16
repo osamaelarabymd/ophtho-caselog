@@ -1311,70 +1311,89 @@
         </div>
 
         <!-- Journal Entry Modal -->
-        <div id="journalModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
-            <div style="background:white;border-radius:20px;padding:28px;width:92%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.25)">
+        <div id="journalModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(6px)">
+            <div style="background:white;border-radius:20px;padding:24px 26px;width:92%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,0.22)">
+
+                <!-- Header -->
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-                    <h2 style="margin:0;font-size:18px;font-weight:700">Journal Entry</h2>
-                    <button onclick="closeJournalModal()" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b">✕</button>
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <h2 style="margin:0;font-size:16px;font-weight:700;color:#0f172a">New Entry</h2>
+                        <!-- Mood chips — compact, inline -->
+                        <div style="display:flex;gap:4px">
+                            <button onclick="selectMood('💪')" id="mood-💪" class="mood-btn" title="Great" style="width:30px;height:30px;padding:0;margin:0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;font-size:16px;line-height:1;box-shadow:none">💪</button>
+                            <button onclick="selectMood('😊')" id="mood-😊" class="mood-btn" title="Good" style="width:30px;height:30px;padding:0;margin:0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;font-size:16px;line-height:1;box-shadow:none">😊</button>
+                            <button onclick="selectMood('😐')" id="mood-😐" class="mood-btn" title="Neutral" style="width:30px;height:30px;padding:0;margin:0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;font-size:16px;line-height:1;box-shadow:none">😐</button>
+                            <button onclick="selectMood('😤')" id="mood-😤" class="mood-btn" title="Tough" style="width:30px;height:30px;padding:0;margin:0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;font-size:16px;line-height:1;box-shadow:none">😤</button>
+                            <button onclick="selectMood('🤔')" id="mood-🤔" class="mood-btn" title="Reflective" style="width:30px;height:30px;padding:0;margin:0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;font-size:16px;line-height:1;box-shadow:none">🤔</button>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <!-- Template picker — single small select -->
+                        <select onchange="if(this.value){applyJournalTemplate(this.value);this.value=''}" style="margin:0;padding:5px 10px;font-size:11px;font-weight:600;color:#64748b;border:1.5px solid #e2e8f0;border-radius:8px;background:#f8fafc;height:30px;width:auto;box-shadow:none">
+                            <option value="">Template…</option>
+                            <option value="postcall">Post-Call</option>
+                            <option value="grandrounds">Grand Rounds</option>
+                            <option value="rotation">End of Rotation</option>
+                            <option value="weekly">Weekly Review</option>
+                        </select>
+                        <button onclick="closeJournalModal()" style="width:30px;height:30px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:15px;color:#94a3b8;border:none;box-shadow:none;line-height:1">✕</button>
+                    </div>
                 </div>
+
                 <input type="hidden" id="journalEntryId">
-                <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
-                    <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;align-self:center">Template:</span>
-                    <button onclick="applyJournalTemplate('postcall')" style="width:auto;padding:4px 12px;margin:0;font-size:11px;font-weight:600;background:#f1f5f9;color:#374151;border-radius:20px;box-shadow:none;border:1px solid #e2e8f0">Post-Call</button>
-                    <button onclick="applyJournalTemplate('grandrounds')" style="width:auto;padding:4px 12px;margin:0;font-size:11px;font-weight:600;background:#f1f5f9;color:#374151;border-radius:20px;box-shadow:none;border:1px solid #e2e8f0">Grand Rounds</button>
-                    <button onclick="applyJournalTemplate('rotation')" style="width:auto;padding:4px 12px;margin:0;font-size:11px;font-weight:600;background:#f1f5f9;color:#374151;border-radius:20px;box-shadow:none;border:1px solid #e2e8f0">End of Rotation</button>
-                    <button onclick="applyJournalTemplate('weekly')" style="width:auto;padding:4px 12px;margin:0;font-size:11px;font-weight:600;background:#f1f5f9;color:#374151;border-radius:20px;box-shadow:none;border:1px solid #e2e8f0">Weekly Review</button>
+
+                <!-- Date + Title on one row -->
+                <div style="display:grid;grid-template-columns:140px 1fr;gap:10px;margin-bottom:14px;align-items:end">
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block">Date</label>
+                        <input type="date" id="journalDate" style="margin:0;font-size:13px">
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block">Title <span style="font-weight:400;text-transform:none">(optional)</span></label>
+                        <div style="display:flex;gap:6px;align-items:center">
+                            <input type="text" id="journalTitle" placeholder="e.g. First solo phaco…" style="flex:1;margin:0;font-size:13px">
+                            <button onclick="startVoiceFill('journalTitle',this)" title="Voice" style="width:34px;height:34px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;box-shadow:none;border:1.5px solid #e2e8f0;flex-shrink:0;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+                        </div>
+                    </div>
                 </div>
-                <label>Date</label><input type="date" id="journalDate">
-                <label>How did it go?</label>
-                <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-                    <button onclick="selectMood('💪')" id="mood-💪" class="mood-btn" style="flex:1;min-width:52px;margin:0;background:#f0fdf4;color:#15803d;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">💪</button>
-                    <button onclick="selectMood('😊')" id="mood-😊" class="mood-btn" style="flex:1;min-width:52px;margin:0;background:#eff6ff;color:#1d4ed8;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">😊</button>
-                    <button onclick="selectMood('😐')" id="mood-😐" class="mood-btn" style="flex:1;min-width:52px;margin:0;background:#f8fafc;color:#64748b;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">😐</button>
-                    <button onclick="selectMood('😤')" id="mood-😤" class="mood-btn" style="flex:1;min-width:52px;margin:0;background:#fff7ed;color:#c2410c;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">😤</button>
-                    <button onclick="selectMood('🤔')" id="mood-🤔" class="mood-btn" style="flex:1;min-width:52px;margin:0;background:#faf5ff;color:#7c3aed;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:20px">🤔</button>
+
+                <!-- Entry -->
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                    <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin:0">Entry</label>
+                    <div style="display:flex;gap:2px;align-items:center">
+                        <button onclick="rtFmt('bold')" title="Bold" style="width:26px;height:26px;padding:0;margin:0;background:#f8fafc;border-radius:6px;box-shadow:none;border:1px solid #e2e8f0;font-size:12px;font-weight:800;color:#374151;font-family:Georgia,serif">B</button>
+                        <button onclick="rtFmt('italic')" title="Italic" style="width:26px;height:26px;padding:0;margin:0;background:#f8fafc;border-radius:6px;box-shadow:none;border:1px solid #e2e8f0;font-size:12px;font-weight:600;color:#374151;font-style:italic;font-family:Georgia,serif">I</button>
+                        <button onclick="rtFmt('h3')" title="Heading" style="width:26px;height:26px;padding:0;margin:0;background:#f8fafc;border-radius:6px;box-shadow:none;border:1px solid #e2e8f0;font-size:10px;font-weight:800;color:#374151">H</button>
+                        <button onclick="rtFmt('ul')" title="Bullet list" style="width:26px;height:26px;padding:0;margin:0;background:#f8fafc;border-radius:6px;box-shadow:none;border:1px solid #e2e8f0;font-size:13px;color:#374151">≡</button>
+                        <button onclick="startVoiceFill('journalBody',this)" title="Voice" style="width:26px;height:26px;padding:0;margin:0;background:#f8fafc;border-radius:6px;box-shadow:none;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+                    </div>
                 </div>
-                <label>Title <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
-                <div style="display:flex;gap:8px;align-items:center">
-                    <input type="text" id="journalTitle" placeholder="e.g. First solo cataract, Tough VR case…" style="flex:1;margin:0">
-                    <button onclick="startVoiceFill('journalTitle',this)" title="Voice input" style="width:38px;height:38px;padding:0;margin:0;background:#eff6ff;border-radius:10px;box-shadow:none;border:1.5px solid #bfdbfe;flex-shrink:0;display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
-                </div>
-                <label style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:6px">
-    <span style="font-weight:600;font-size:13px;color:#374151">Entry</span>
-    <div style="display:flex;gap:3px;align-items:center">
-        <button onclick="rtFmt('bold')" title="Bold" style="width:28px;height:28px;padding:0;margin:0;background:#f8fafc;border-radius:7px;box-shadow:none;border:1px solid #e2e8f0;font-size:12px;font-weight:800;color:#374151;font-family:Georgia,serif">B</button>
-        <button onclick="rtFmt('italic')" title="Italic" style="width:28px;height:28px;padding:0;margin:0;background:#f8fafc;border-radius:7px;box-shadow:none;border:1px solid #e2e8f0;font-size:12px;font-weight:600;color:#374151;font-style:italic;font-family:Georgia,serif">I</button>
-        <button onclick="rtFmt('h3')" title="Heading" style="width:28px;height:28px;padding:0;margin:0;background:#f8fafc;border-radius:7px;box-shadow:none;border:1px solid #e2e8f0;font-size:10px;font-weight:800;color:#374151;letter-spacing:-0.5px">H2</button>
-        <button onclick="rtFmt('ul')" title="Bullet list" style="width:28px;height:28px;padding:0;margin:0;background:#f8fafc;border-radius:7px;box-shadow:none;border:1px solid #e2e8f0;font-size:14px;color:#374151">≡</button>
-        <button onclick="rtFmt('todo')" title="Task" style="width:28px;height:28px;padding:0;margin:0;background:#f8fafc;border-radius:7px;box-shadow:none;border:1px solid #e2e8f0;font-size:11px;color:#374151">☐</button>
-        <button onclick="startVoiceFill('journalBody',this)" title="Voice input" style="width:28px;height:28px;padding:0;margin:0;background:#eff6ff;border-radius:7px;box-shadow:none;border:1.5px solid #bfdbfe;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
-    </div>
-</label>
-<div id="journalBody" contenteditable="true"
-    data-placeholder="What happened today? What did you learn? What would you do differently?"
-    style="min-height:140px;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:14px;color:#374151;line-height:1.7;outline:none;font-family:inherit;background:white;cursor:text;transition:border-color 0.15s"
-    onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'"></div>
-                <label>Link to a case <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
-                <select id="journalCaseLink" style="margin-bottom:16px"><option value="">— No case linked —</option></select>
+                <div id="journalBody" contenteditable="true"
+                    data-placeholder="What happened today? What did you learn? What would you do differently?"
+                    style="min-height:160px;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px 16px;font-size:14px;color:#374151;line-height:1.75;outline:none;font-family:inherit;background:white;cursor:text;transition:border-color 0.15s;margin-bottom:16px"
+                    onfocus="this.style.borderColor='#0f172a'" onblur="this.style.borderColor='#e2e8f0'"></div>
 
                 <!-- Linked Records -->
-                <label style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                    Linked Records <span style="font-size:11px;color:#94a3b8;font-weight:400">(cases &amp; study items)</span>
-                </label>
-                <div style="position:relative;margin-bottom:8px">
-                    <input type="text" id="jLinkSearch" placeholder="Search cases or study items to link…"
-                        style="margin:0;padding-right:36px"
-                        oninput="searchJournalLinks(this.value)"
-                        onkeydown="if(event.key==='Escape'){document.getElementById('jLinkDropdown').style.display='none'}"
-                        autocomplete="off">
-                    <div id="jLinkDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid #e2e8f0;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:10;max-height:180px;overflow-y:auto;margin-top:4px"></div>
+                <div style="margin-bottom:16px">
+                    <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;display:block">Link Cases or Study Items</label>
+                    <div style="position:relative">
+                        <input type="text" id="jLinkSearch" placeholder="Search to link…"
+                            style="margin:0;font-size:13px"
+                            oninput="searchJournalLinks(this.value)"
+                            onkeydown="if(event.key==='Escape'){document.getElementById('jLinkDropdown').style.display='none'}"
+                            autocomplete="off">
+                        <div id="jLinkDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid #e2e8f0;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:10;max-height:180px;overflow-y:auto;margin-top:4px"></div>
+                    </div>
+                    <div id="jLinkPills" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:0"></div>
                 </div>
-                <div id="jLinkPills" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;min-height:0"></div>
 
-                <div style="display:flex;gap:10px">
-                    <button onclick="saveJournalEntry()" style="flex:1;margin:0;background:linear-gradient(135deg,#7c3aed,#2563eb)">Save</button>
-                    <button onclick="closeJournalModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
+                <!-- hidden for JS compatibility -->
+                <select id="journalCaseLink" style="display:none"><option value="">— No case linked —</option></select>
+
+                <!-- Actions -->
+                <div style="display:flex;gap:8px;padding-top:4px;border-top:1px solid #f1f5f9">
+                    <button onclick="saveJournalEntry()" style="flex:1;margin:0;background:#0f172a;color:white;border-radius:10px;font-size:14px;font-weight:700;padding:11px">Save Entry</button>
+                    <button onclick="closeJournalModal()" style="width:auto;padding:11px 18px;margin:0;background:#f1f5f9;color:#64748b;border-radius:10px;font-size:14px;font-weight:600;box-shadow:none;border:none">Cancel</button>
                 </div>
             </div>
         </div>
