@@ -1215,6 +1215,7 @@
                     <button id="ws-tab-study"      onclick="showWorkspaceTab('study')"      class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>Study</button>
                     <button id="ws-tab-fellowship" onclick="showWorkspaceTab('fellowship')" class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>Match</button>
                     <button id="ws-tab-duty"       onclick="showWorkspaceTab('duty')"       class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Hours</button>
+                    <button id="ws-tab-ite"        onclick="showWorkspaceTab('ite')"        class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>OKAP</button>
                 </div>
             </div>
             <!-- Calendar section -->
@@ -1335,6 +1336,98 @@
                 <div id="dutyWeekBar" style="margin-bottom:16px"></div>
                 <!-- Shift history -->
                 <div id="dutyHistory"></div>
+            </div>
+
+            <!-- ITE / OKAP Tracker -->
+            <div id="ws-ite" style="display:none">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                    <div>
+                        <h3 style="margin:0 0 2px;font-size:16px;font-weight:800;color:#0f172a">OKAP / ITE Scores</h3>
+                        <p style="margin:0;font-size:12px;color:#94a3b8">Annual in-training exam — track your progress</p>
+                    </div>
+                    <button onclick="openIteModal()" style="width:auto;margin:0;padding:9px 14px;font-size:12px;font-weight:700;border-radius:12px;background:#0f172a;color:white;display:flex;align-items:center;gap:6px">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Score
+                    </button>
+                </div>
+                <!-- Trend chart -->
+                <div id="iteChartCard" style="display:none" class="dash-card" style="margin-bottom:16px;padding:16px">
+                    <canvas id="iteChart" height="140"></canvas>
+                </div>
+                <!-- Score cards row -->
+                <div id="iteStatCards" style="margin-bottom:16px"></div>
+                <!-- Score history list -->
+                <div id="iteHistory"></div>
+            </div>
+        </div>
+
+        <!-- ITE / OKAP Modal -->
+        <div id="iteModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+            <div style="background:white;border-radius:20px;padding:24px 26px;width:92%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.22)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                    <h2 style="margin:0;font-size:16px;font-weight:700;color:#0f172a">OKAP / ITE Score</h2>
+                    <button onclick="closeIteModal()" style="width:30px;height:30px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:15px;color:#94a3b8;border:none;box-shadow:none">✕</button>
+                </div>
+                <input type="hidden" id="iteId">
+
+                <!-- Year + PGY row -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block">Exam Year</label>
+                        <input type="number" id="iteYear" min="2010" max="2040" placeholder="2025" style="margin:0;font-size:13px">
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block">PGY Year</label>
+                        <select id="itePgy" style="margin:0;font-size:13px">
+                            <option value="PGY-1">PGY-1</option>
+                            <option value="PGY-2">PGY-2</option>
+                            <option value="PGY-3">PGY-3</option>
+                            <option value="PGY-4">PGY-4</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Score + Percentile row -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block">Score (%)</label>
+                        <input type="number" id="iteScore" min="0" max="100" step="0.1" placeholder="e.g. 62" style="margin:0;font-size:13px">
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block">Percentile</label>
+                        <input type="number" id="itePercentile" min="1" max="99" placeholder="e.g. 68" style="margin:0;font-size:13px">
+                    </div>
+                </div>
+
+                <!-- Subject scores (collapsible) -->
+                <details style="margin-bottom:14px">
+                    <summary style="font-size:12px;font-weight:700;color:#64748b;cursor:pointer;padding:8px 0;list-style:none;display:flex;align-items:center;gap:6px">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                        Subject Scores <span style="font-weight:400;opacity:0.6">(optional)</span>
+                    </summary>
+                    <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                        <div><label style="font-size:10px;color:#94a3b8;font-weight:600;display:block;margin-bottom:3px">Optics &amp; Refraction</label><input type="number" id="ite-optics" min="0" max="100" placeholder="%" style="margin:0;font-size:12px;padding:6px 10px"></div>
+                        <div><label style="font-size:10px;color:#94a3b8;font-weight:600;display:block;margin-bottom:3px">Fundamentals</label><input type="number" id="ite-fundamentals" min="0" max="100" placeholder="%" style="margin:0;font-size:12px;padding:6px 10px"></div>
+                        <div><label style="font-size:10px;color:#94a3b8;font-weight:600;display:block;margin-bottom:3px">Glaucoma</label><input type="number" id="ite-glaucoma" min="0" max="100" placeholder="%" style="margin:0;font-size:12px;padding:6px 10px"></div>
+                        <div><label style="font-size:10px;color:#94a3b8;font-weight:600;display:block;margin-bottom:3px">Cornea / Anterior</label><input type="number" id="ite-cornea" min="0" max="100" placeholder="%" style="margin:0;font-size:12px;padding:6px 10px"></div>
+                        <div><label style="font-size:10px;color:#94a3b8;font-weight:600;display:block;margin-bottom:3px">Retina / Vitreous</label><input type="number" id="ite-retina" min="0" max="100" placeholder="%" style="margin:0;font-size:12px;padding:6px 10px"></div>
+                        <div><label style="font-size:10px;color:#94a3b8;font-weight:600;display:block;margin-bottom:3px">Oculoplastics</label><input type="number" id="ite-oculoplastics" min="0" max="100" placeholder="%" style="margin:0;font-size:12px;padding:6px 10px"></div>
+                        <div><label style="font-size:10px;color:#94a3b8;font-weight:600;display:block;margin-bottom:3px">Neuro-Ophthalmology</label><input type="number" id="ite-neuro" min="0" max="100" placeholder="%" style="margin:0;font-size:12px;padding:6px 10px"></div>
+                        <div><label style="font-size:10px;color:#94a3b8;font-weight:600;display:block;margin-bottom:3px">Pediatrics / Strabismus</label><input type="number" id="ite-peds" min="0" max="100" placeholder="%" style="margin:0;font-size:12px;padding:6px 10px"></div>
+                        <div><label style="font-size:10px;color:#94a3b8;font-weight:600;display:block;margin-bottom:3px">Uveitis / Oncology</label><input type="number" id="ite-uveitis" min="0" max="100" placeholder="%" style="margin:0;font-size:12px;padding:6px 10px"></div>
+                        <div><label style="font-size:10px;color:#94a3b8;font-weight:600;display:block;margin-bottom:3px">Cataract</label><input type="number" id="ite-cataract" min="0" max="100" placeholder="%" style="margin:0;font-size:12px;padding:6px 10px"></div>
+                    </div>
+                </details>
+
+                <!-- Notes -->
+                <div style="margin-bottom:20px">
+                    <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block">Notes <span style="font-weight:400;text-transform:none">(optional)</span></label>
+                    <input type="text" id="iteNotes" placeholder="e.g. Weak in retina, will focus on AAO BSC vol 12…" style="margin:0;font-size:13px">
+                </div>
+
+                <div style="display:flex;gap:8px">
+                    <button onclick="saveIteScore()" style="flex:1;margin:0;background:#0f172a;color:white;border-radius:10px;font-size:14px;font-weight:700;padding:11px">Save Score</button>
+                    <button onclick="closeIteModal()" style="width:auto;padding:11px 18px;margin:0;background:#f1f5f9;color:#64748b;border-radius:10px;font-size:14px;font-weight:600;box-shadow:none;border:none">Cancel</button>
+                </div>
             </div>
         </div>
 

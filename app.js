@@ -124,6 +124,7 @@ const _CP_COMMANDS = [
     { section:'Navigate', label:'Study List',   sub:'Reading list & resources',icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>', action:"showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch()" },
     { section:'Navigate', label:'Calendar',     sub:'Plan & events view',     icon:'#fef9c3', iconColor:'#ca8a04', iconPath:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', action:"showTab('journal',null);showWorkspaceTab('calendar');closeGlobalSearch()" },
     { section:'Navigate', label:'Duty Hours',    sub:'ACGME 80-hour compliance',icon:'#fef9c3', iconColor:'#d97706', iconPath:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>', action:"showTab('journal',null);showWorkspaceTab('duty');closeGlobalSearch()" },
+    { section:'Navigate', label:'OKAP / ITE',   sub:'In-training exam scores', icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>', action:"showTab('journal',null);showWorkspaceTab('ite');closeGlobalSearch()" },
     { section:'Navigate', label:'Settings',     sub:'App settings',           icon:'#f1f5f9', iconColor:'#64748b', iconPath:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', action:"showTab('settings',null);closeGlobalSearch()" },
     // Create
     { section:'Create', label:'New Journal Entry',  sub:'Write a reflection',             icon:'#faf5ff', iconColor:'#7c3aed', iconPath:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/>', action:"showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch();setTimeout(()=>openJournalModal(),100)" },
@@ -3647,7 +3648,7 @@ let activeWorkspaceTab = 'journal';
 
 function showWorkspaceTab(tab) {
     activeWorkspaceTab = tab;
-    ['calendar','journal','todo','notes','study','fellowship','duty'].forEach(t => {
+    ['calendar','journal','todo','notes','study','fellowship','duty','ite'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = t === tab ? 'block' : 'none';
         let btn = document.getElementById('ws-tab-'+t);
@@ -3670,6 +3671,7 @@ function showWorkspaceTab(tab) {
     if (tab === 'study')      renderStudyList();
     if (tab === 'fellowship') renderFellowshipBoard();
     if (tab === 'duty')       renderDutyHours();
+    if (tab === 'ite')        renderIteScores();
 }
 
 // ── Workspace Cloud Sync ──────────────────────────────────────────────────────
@@ -5513,6 +5515,247 @@ function renderDutyHours() {
             </div>`;
         });
         html += `</div>`;
+    });
+    histEl.innerHTML = html;
+}
+
+// ── ITE / OKAP Score Tracker ──────────────────────────────────────────────────
+function getIteScores()     { return JSON.parse(localStorage.getItem('eyeIteScores')||'[]'); }
+function saveIteScores(arr) { localStorage.setItem('eyeIteScores', JSON.stringify(arr)); }
+
+// National OKAP averages by PGY year (approximate historical data)
+const OKAP_NATIONAL_AVG = { 'PGY-1': 44, 'PGY-2': 52, 'PGY-3': 60, 'PGY-4': 67 };
+
+const ITE_SUBJECTS = ['optics','fundamentals','glaucoma','cornea','retina','oculoplastics','neuro','peds','uveitis','cataract'];
+const ITE_SUBJECT_LABELS = {
+    optics:'Optics & Refraction', fundamentals:'Fundamentals', glaucoma:'Glaucoma',
+    cornea:'Cornea / Anterior', retina:'Retina / Vitreous', oculoplastics:'Oculoplastics',
+    neuro:'Neuro-Ophthalmology', peds:'Pediatrics / Strabismus', uveitis:'Uveitis / Oncology', cataract:'Cataract'
+};
+
+let iteChartInstance = null;
+
+function openIteModal(id) {
+    let scores = getIteScores();
+    let s = id ? scores.find(x => x.id === id) : null;
+    document.getElementById('iteId').value          = s ? s.id : '';
+    document.getElementById('iteYear').value        = s ? s.year : new Date().getFullYear();
+    document.getElementById('itePgy').value         = s ? s.pgy : 'PGY-2';
+    document.getElementById('iteScore').value       = s ? s.score : '';
+    document.getElementById('itePercentile').value  = s ? (s.percentile || '') : '';
+    document.getElementById('iteNotes').value       = s ? (s.notes || '') : '';
+    ITE_SUBJECTS.forEach(sub => {
+        let el = document.getElementById('ite-' + sub);
+        if (el) el.value = (s && s.subjects && s.subjects[sub] != null) ? s.subjects[sub] : '';
+    });
+    document.getElementById('iteModal').style.display = 'flex';
+}
+
+function closeIteModal() {
+    document.getElementById('iteModal').style.display = 'none';
+}
+
+function saveIteScore() {
+    let year  = parseInt(document.getElementById('iteYear').value);
+    let score = parseFloat(document.getElementById('iteScore').value);
+    if (!year || isNaN(score)) { showToast('Enter exam year and score', 'warning'); return; }
+
+    let subjects = {};
+    ITE_SUBJECTS.forEach(sub => {
+        let v = document.getElementById('ite-' + sub).value;
+        if (v !== '') subjects[sub] = parseFloat(v);
+    });
+
+    // Auto-calculate cases at time of exam (cases logged up to Dec of that year)
+    let cutoff = year + '-12-31';
+    let casesAtTime = allCases.filter(c => c.date && c.date <= cutoff).length;
+
+    let scores = getIteScores();
+    let id     = document.getElementById('iteId').value;
+    let entry  = {
+        id:          id || crypto.randomUUID(),
+        year,
+        pgy:         document.getElementById('itePgy').value,
+        score,
+        percentile:  parseFloat(document.getElementById('itePercentile').value) || null,
+        subjects:    Object.keys(subjects).length ? subjects : null,
+        notes:       document.getElementById('iteNotes').value.trim(),
+        casesAtTime,
+        savedAt:     new Date().toISOString()
+    };
+    if (id) {
+        let idx = scores.findIndex(s => s.id === id);
+        if (idx !== -1) scores[idx] = entry; else scores.unshift(entry);
+    } else {
+        scores.unshift(entry);
+    }
+    saveIteScores(scores);
+    closeIteModal();
+    renderIteScores();
+    showToast('✅ Score saved!');
+}
+
+function deleteIteScore(id) {
+    if (!confirm('Delete this score?')) return;
+    saveIteScores(getIteScores().filter(s => s.id !== id));
+    renderIteScores();
+}
+
+function renderIteScores() {
+    let scores = getIteScores().sort((a,b) => a.year - b.year);
+
+    // ── Stat cards ──
+    let cardsEl = document.getElementById('iteStatCards');
+    if (cardsEl && scores.length > 0) {
+        let latest  = scores[scores.length - 1];
+        let prev    = scores.length > 1 ? scores[scores.length - 2] : null;
+        let delta   = prev ? (latest.score - prev.score) : null;
+        let natAvg  = OKAP_NATIONAL_AVG[latest.pgy] || 55;
+        let vsNat   = latest.score - natAvg;
+        let best    = Math.max(...scores.map(s => s.score));
+
+        let card = (label, val, sub, colClass) => {
+            let cols = { blue:'#2563eb:#eff6ff:#dbeafe', green:'#16a34a:#f0fdf4:#dcfce7', amber:'#d97706:#fffbeb:#fef3c7', red:'#dc2626:#fef2f2:#fee2e2' };
+            let [txt, bg, bd] = (cols[colClass]||cols.blue).split(':');
+            return `<div style="background:${bg};border:1.5px solid ${bd};border-radius:14px;padding:12px 14px;text-align:center">
+                <div style="font-size:22px;font-weight:800;color:${txt};line-height:1">${val}</div>
+                <div style="font-size:10px;font-weight:700;color:${txt};text-transform:uppercase;letter-spacing:0.6px;margin-top:3px">${label}</div>
+                <div style="font-size:10px;color:${txt};opacity:0.7;margin-top:2px">${sub}</div>
+            </div>`;
+        };
+
+        cardsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+            ${card('Latest', latest.score+'%', latest.pgy+' · '+latest.year, latest.score>=natAvg?'green':'amber')}
+            ${card('vs National', (vsNat>=0?'+':'')+vsNat.toFixed(1)+'%', 'Avg: ~'+natAvg+'% ('+latest.pgy+')', vsNat>=0?'green':'red')}
+            ${delta!==null ? card('Trend', (delta>=0?'+':'')+delta.toFixed(1)+'%', 'vs prior year', delta>=0?'green':'red') : card('Best Ever', best+'%', scores.length+' exam'+(scores.length>1?'s':''), 'blue')}
+        </div>`;
+    } else if (cardsEl) {
+        cardsEl.innerHTML = '';
+    }
+
+    // ── Trend chart ──
+    let chartCard = document.getElementById('iteChartCard');
+    if (chartCard) chartCard.style.display = scores.length >= 2 ? 'block' : 'none';
+
+    if (scores.length >= 2) {
+        let labels   = scores.map(s => s.pgy + ' (' + s.year + ')');
+        let myScores = scores.map(s => s.score);
+        let natAvgs  = scores.map(s => OKAP_NATIONAL_AVG[s.pgy] || 55);
+        let pctiles  = scores.map(s => s.percentile);
+        let ctx      = document.getElementById('iteChart');
+        if (ctx) {
+            if (iteChartInstance) iteChartInstance.destroy();
+            iteChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'My Score (%)',
+                            data: myScores,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37,99,235,0.08)',
+                            borderWidth: 2.5,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#2563eb',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'National Avg (%)',
+                            data: natAvgs,
+                            borderColor: '#94a3b8',
+                            borderWidth: 1.5,
+                            borderDash: [5, 4],
+                            pointRadius: 3,
+                            pointBackgroundColor: '#94a3b8',
+                            tension: 0.3,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: (ctx) => {
+                                    if (ctx.datasetIndex === 0) {
+                                        let s = scores[ctx.dataIndex];
+                                        let lines = [];
+                                        if (s.percentile) lines.push('Percentile: ' + s.percentile + 'th');
+                                        if (s.casesAtTime) lines.push('Cases logged: ' + s.casesAtTime);
+                                        return lines;
+                                    }
+                                    return [];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { min: 30, max: 100, ticks: { font: { size: 10 } }, grid: { color: '#f1f5f9' } },
+                        x: { ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+    }
+
+    // ── History list ──
+    let histEl = document.getElementById('iteHistory');
+    if (!histEl) return;
+    if (scores.length === 0) {
+        histEl.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#9ca3af">
+            <div style="font-size:32px;margin-bottom:12px">📊</div>
+            <div style="font-size:14px;font-weight:600">No OKAP scores yet</div>
+            <div style="font-size:12px;margin-top:4px">Add your first score to start tracking progress</div>
+        </div>`;
+        return;
+    }
+
+    let html = '';
+    [...scores].reverse().forEach(s => {
+        let natAvg = OKAP_NATIONAL_AVG[s.pgy] || 55;
+        let vs     = s.score - natAvg;
+        let vsCol  = vs >= 0 ? '#16a34a' : '#dc2626';
+        let scoreCol = s.score >= 70 ? '#16a34a' : s.score >= 55 ? '#2563eb' : '#d97706';
+
+        // Subject breakdown bars
+        let subjectHtml = '';
+        if (s.subjects && Object.keys(s.subjects).length) {
+            let subEntries = Object.entries(s.subjects).sort((a,b) => a[1]-b[1]);
+            subjectHtml = `<div style="margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9">
+                <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Subject Breakdown</div>
+                ${subEntries.map(([k,v]) => `
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+                        <div style="font-size:11px;color:#64748b;width:130px;flex-shrink:0">${ITE_SUBJECT_LABELS[k]||k}</div>
+                        <div style="flex:1;height:6px;background:#f1f5f9;border-radius:99px;overflow:hidden">
+                            <div style="height:100%;width:${v}%;background:${v>=60?'#16a34a':v>=45?'#2563eb':'#dc2626'};border-radius:99px"></div>
+                        </div>
+                        <div style="font-size:11px;font-weight:700;color:#374151;width:32px;text-align:right">${v}%</div>
+                    </div>`).join('')}
+            </div>`;
+        }
+
+        html += `<div class="dash-card" style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+                <div>
+                    <span style="font-size:14px;font-weight:800;color:#0f172a">${s.pgy}</span>
+                    <span style="font-size:12px;color:#94a3b8;margin-left:6px">${s.year}</span>
+                    ${s.percentile ? `<span style="font-size:11px;font-weight:700;background:#eff6ff;color:#2563eb;border-radius:6px;padding:2px 7px;margin-left:6px">${s.percentile}th %ile</span>` : ''}
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:22px;font-weight:800;color:${scoreCol}">${s.score}%</span>
+                    <span style="font-size:12px;font-weight:700;color:${vsCol}">${vs>=0?'+':''}${vs.toFixed(1)}% vs avg</span>
+                    <button onclick="openIteModal('${s.id}')" style="width:26px;height:26px;padding:0;margin:0;background:#f1f5f9;border-radius:6px;font-size:11px;color:#64748b;border:none;box-shadow:none">✏️</button>
+                    <button onclick="deleteIteScore('${s.id}')" style="width:26px;height:26px;padding:0;margin:0;background:#fef2f2;border-radius:6px;font-size:13px;color:#dc2626;border:1px solid #fecaca;box-shadow:none">×</button>
+                </div>
+            </div>
+            ${s.casesAtTime ? `<div style="font-size:11px;color:#94a3b8">📋 ${s.casesAtTime} cases logged by end of ${s.year}</div>` : ''}
+            ${s.notes ? `<div style="font-size:12px;color:#64748b;margin-top:4px;font-style:italic">"${s.notes}"</div>` : ''}
+            ${subjectHtml}
+        </div>`;
     });
     histEl.innerHTML = html;
 }
