@@ -4464,57 +4464,46 @@ function renderTodayWidget() {
     let el = document.getElementById('todayFocus');
     if (!el) return;
     let today = new Date().toISOString().slice(0,10);
-    let todayCases  = allCases.filter(c => c.date === today);
-    let todos       = JSON.parse(localStorage.getItem('eyeTodos')||'[]').filter(t => !t.done && t.due === today);
-    let events      = JSON.parse(localStorage.getItem('calEvents')||'[]').filter(ev => ev.date === today);
-    let prompt      = JOURNAL_PROMPTS[new Date().getDay() % JOURNAL_PROMPTS.length];
-    let dateLabel   = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+    let todayCases = allCases.filter(c => c.date === today);
+    let todos      = JSON.parse(localStorage.getItem('eyeTodos')||'[]').filter(t => !t.done && t.due === today);
+    let events     = JSON.parse(localStorage.getItem('calEvents')||'[]').filter(ev => ev.date === today);
+    let dateLabel  = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+    let isSunday   = new Date().getDay() === 0;
 
-    let casesHTML = todayCases.length
-        ? todayCases.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f1f5f9">
-            <div style="width:7px;height:7px;border-radius:50%;background:#22c55e;flex-shrink:0"></div>
+    // Build rows
+    let rows = '';
+    if (events.length) rows += events.map(ev =>
+        `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9">
+            <div style="width:8px;height:8px;border-radius:50%;background:#2563eb;flex-shrink:0"></div>
+            <span style="font-size:13px;color:#0f172a;font-weight:500">${ev.title}</span>
+            <span style="font-size:11px;color:#94a3b8;margin-left:auto">Event</span>
+         </div>`).join('');
+
+    if (todayCases.length) rows += todayCases.map(c =>
+        `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9">
+            <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0"></div>
             <span style="font-size:13px;color:#0f172a;font-weight:500">${c.procedure||'Case'}</span>
             <span style="font-size:11px;color:#94a3b8;margin-left:auto">${c.role||''}</span>
-          </div>`).join('')
-        : `<div style="font-size:13px;color:#94a3b8;padding:6px 0">No cases logged today yet</div>`;
+         </div>`).join('');
+    else rows += `<div style="font-size:13px;color:#94a3b8;padding:8px 0;border-bottom:1px solid #f1f5f9">No cases logged today yet</div>`;
 
-    let todosHTML = todos.length
-        ? todos.map(t=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f1f5f9">
-            <div style="width:7px;height:7px;border-radius:2px;border:2px solid #f59e0b;flex-shrink:0"></div>
+    if (todos.length) rows += todos.map(t =>
+        `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9">
+            <div style="width:8px;height:8px;border-radius:2px;border:2px solid #f59e0b;flex-shrink:0"></div>
             <span style="font-size:13px;color:#0f172a">${t.text}</span>
-          </div>`).join('')
-        : '';
-
-    let eventsHTML = events.length
-        ? events.map(ev=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f1f5f9">
-            <div style="width:7px;height:7px;border-radius:50%;background:#2563eb;flex-shrink:0"></div>
-            <span style="font-size:13px;color:#0f172a">${ev.title}</span>
-          </div>`).join('')
-        : '';
-
-    let isSunday = new Date().getDay() === 0;
-    let weeklyBtn = `<button onclick="showTab('journal',null);showWorkspaceTab('journal');setTimeout(()=>{openJournalModal();setTimeout(()=>applyJournalTemplate('weekly'),80)},100)"
-        style="width:auto;padding:5px 12px;margin:0;background:${isSunday?'#f59e0b':'#f1f5f9'};color:${isSunday?'white':'#64748b'};border-radius:9px;font-size:11px;font-weight:700;box-shadow:none;border:none"
-        title="Open weekly review template">
-        ${isSunday?'📋 Weekly Review':'📋'}
-    </button>`;
+            <span style="font-size:11px;color:#94a3b8;margin-left:auto">Due today</span>
+         </div>`).join('');
 
     el.innerHTML = `<div class="dash-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
             <div>
-                <h3 style="margin:0 0 2px;font-size:14px;font-weight:700">Today${isSunday?' 🌅':''}</h3>
+                <h3 style="margin:0 0 1px;font-size:14px;font-weight:700">Today</h3>
                 <p style="margin:0;font-size:11px;color:#94a3b8">${dateLabel}</p>
             </div>
-            <div style="display:flex;gap:6px;align-items:center">
-                ${weeklyBtn}
-                <button onclick="showTab('journal',null);showWorkspaceTab('journal');setTimeout(()=>openJournalModal(),100)" style="width:auto;padding:5px 12px;margin:0;background:#7c3aed;color:white;border-radius:9px;font-size:11px;font-weight:700;box-shadow:none">+ Journal</button>
-            </div>
+            <button onclick="showTab('logCase',null)" style="width:auto;padding:5px 14px;margin:0;background:#0f172a;color:white;border-radius:9px;font-size:12px;font-weight:700;box-shadow:none">+ Log Case</button>
         </div>
-        ${eventsHTML}${casesHTML}${todosHTML}
-        <div style="margin-top:12px;padding:10px 12px;background:#f8fafc;border-radius:10px;border-left:3px solid #7c3aed">
-            <p style="margin:0;font-size:11px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Today's Prompt</p>
-            <p style="margin:0;font-size:13px;color:#374151;line-height:1.5;font-style:italic">${prompt}</p>
-        </div>
+        ${rows}
+        ${isSunday ? `<div style="margin-top:10px"><button onclick="showTab('journal',null);showWorkspaceTab('journal');setTimeout(()=>{openJournalModal();setTimeout(()=>applyJournalTemplate('weekly'),80)},100)" style="width:100%;margin:0;background:#fffbeb;color:#92400e;border:1.5px solid #fde68a;border-radius:10px;font-size:12px;font-weight:700;padding:9px;box-shadow:none">📋 Write your weekly review</button></div>` : ''}
     </div>`;
 }
 

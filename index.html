@@ -389,23 +389,18 @@
                 </div>
             </div>
 
-            <!-- Inline Stats Row (hidden — stats moved to hero) -->
+            <!-- hidden legacy containers (JS still writes to them but they're invisible) -->
             <div id="summaryCards" style="display:none"></div>
-            <div id="goalsWidget" style="margin-bottom:16px"></div>
-
-            <!-- Smart Alerts -->
-            <div id="smartAlertBox" style="margin-bottom:16px"></div>
-
-            <!-- Achievement Badges -->
-            <div id="achievementBadges" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"></div>
-
-            <!-- Readiness Score -->
-            <div id="readinessWidget" style="margin-bottom:16px"></div>
+            <div id="smartAlertBox" style="display:none"></div>
+            <div id="achievementBadges" style="display:none"></div>
+            <div id="roleBreakdown" style="display:none"></div>
+            <div id="recentCasesFeed" style="display:none"></div>
+            <div id="activityHeatmap" style="display:none"></div>
 
             <!-- Today's Focus -->
             <div id="todayFocus" style="margin-bottom:16px"></div>
 
-            <!-- ACGME Progress — Notion-style bars -->
+            <!-- ACGME Progress -->
             <div class="dash-card" style="margin-bottom:16px">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
                     <h3 style="margin:0;font-size:14px;font-weight:700">ACGME Progress</h3>
@@ -414,31 +409,11 @@
                 <div id="stats"></div>
             </div>
 
-            <!-- Two-col: Role breakdown + Recent Cases -->
-            <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:14px;margin-bottom:16px">
-                <div class="dash-card">
-                    <h3 style="font-size:14px;font-weight:700;margin-bottom:14px">Role Breakdown</h3>
-                    <div id="roleBreakdown"></div>
-                </div>
-                <div class="dash-card">
-                    <h3 style="font-size:14px;font-weight:700;margin-bottom:14px">Recent Cases</h3>
-                    <div id="recentCasesFeed"></div>
-                </div>
-            </div>
+            <!-- Readiness Score -->
+            <div id="readinessWidget" style="margin-bottom:16px"></div>
 
-            <div class="dash-card" style="margin-bottom:16px">
-                <h3 style="margin:0 0 16px;font-size:14px;font-weight:700">Activity</h3>
-                <div id="activityHeatmap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"></div>
-                <div style="display:flex;align-items:center;gap:6px;margin-top:10px;justify-content:flex-end">
-                    <span style="font-size:11px;color:#94a3b8">Less</span>
-                    <div style="width:11px;height:11px;border-radius:3px;background:#f1f5f9"></div>
-                    <div style="width:11px;height:11px;border-radius:3px;background:#bfdbfe"></div>
-                    <div style="width:11px;height:11px;border-radius:3px;background:#60a5fa"></div>
-                    <div style="width:11px;height:11px;border-radius:3px;background:#2563eb"></div>
-                    <div style="width:11px;height:11px;border-radius:3px;background:#1e40af"></div>
-                    <span style="font-size:11px;color:#94a3b8">More</span>
-                </div>
-            </div>
+            <!-- Annual Goals -->
+            <div id="goalsWidget" style="margin-bottom:16px"></div>
 
         </div>
 
