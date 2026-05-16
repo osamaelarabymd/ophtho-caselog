@@ -3772,7 +3772,7 @@ function renderJournalList() {
     if (entries.length === 0) {
         el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:#94a3b8">
             <div style="width:52px;height:52px;background:#f1f5f9;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/></svg>
             </div>
             <p style="font-size:15px;font-weight:600;color:#64748b;margin-bottom:6px">${search || moodFilter ? 'No entries match' : 'No entries yet'}</p>
             <p style="font-size:13px">${search || moodFilter ? 'Try a different search' : 'Tap <strong>New Entry</strong> to start journaling'}</p>
