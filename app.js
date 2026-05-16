@@ -556,8 +556,8 @@ window.addEventListener('load', function() {
 function updateStreak(cases) {
     if (cases.length === 0) return;
     let dates     = [...new Set(cases.map(c => c.date))].filter(Boolean).sort().reverse();
-    let today     = new Date().toISOString().slice(0, 10);
-    let yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    let today     = getTodayStr();
+    let yesterday = getYesterdayStr();
     if (dates[0] !== today && dates[0] !== yesterday) {
         localStorage.setItem('streak', 0);
         return;
@@ -654,6 +654,24 @@ function updateTzPreview() {
 // Helper: get user's preferred timezone
 function getUserTz() {
     return localStorage.getItem('eyeTimezone') || Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+// Helper: today as YYYY-MM-DD in user's timezone
+function getTodayStr() {
+    return new Date().toLocaleDateString('en-CA', { timeZone: getUserTz() }); // en-CA = YYYY-MM-DD
+}
+// Helper: this month as YYYY-MM in user's timezone
+function getThisMonthStr() {
+    return getTodayStr().slice(0, 7);
+}
+// Helper: yesterday as YYYY-MM-DD in user's timezone
+function getYesterdayStr() {
+    let d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d.toLocaleDateString('en-CA', { timeZone: getUserTz() });
+}
+// Helper: current hour (0-23) in user's timezone
+function getNowHour() {
+    return parseInt(new Date().toLocaleString('en-US', { timeZone: getUserTz(), hour: 'numeric', hour12: false }), 10);
 }
 
 // ── Pronouns radio helper ────────────────────────────────────────────────────
@@ -906,7 +924,7 @@ async function duplicateCase(id) {
     let { error } = await db.from('cases').insert({
         procedure:     c.procedure,
         role:          c.role,
-        date:          new Date().toISOString().slice(0, 10),
+        date:          getTodayStr(),
         notes:         c.notes,
         resident_name: c.resident_name,
         pgy_year:      c.pgy_year,
@@ -941,7 +959,7 @@ function showTab(tab, e) {
         loadCustomProcList();
         refreshProcedureDropdowns();
         let dateEl = document.getElementById('date');
-        if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
+        if (dateEl && !dateEl.value) dateEl.value = getTodayStr();
         updateRoleLabels();
         updateCxLabels();
     } else if (tab === 'caseList') {
@@ -1153,7 +1171,7 @@ async function loadProfileEmail() {
 function loadProfileCaseStats() {
     let total   = allCases.length;
     let primary = allCases.filter(c => c.role === 'Primary Surgeon').length;
-    let thisMonth = new Date().toISOString().slice(0,7);
+    let thisMonth = getThisMonthStr();
     let monthly = allCases.filter(c => c.date && c.date.startsWith(thisMonth)).length;
     let el = document.getElementById('profileCaseStats');
     if (!el) return;
@@ -1627,14 +1645,14 @@ async function revokeUser(userId) {
 }
 
 function updateDashboard(cases) {
-    let thisMonth      = new Date().toISOString().slice(0, 7);
+    let thisMonth      = getThisMonthStr();
     let monthCases     = cases.filter(c => c.date && c.date.startsWith(thisMonth));
     let totalRequired  = Object.values(acgme).reduce((a, b) => a + b, 0);
     let totalDone      = cases.length;
     let overallPercent = Math.min(Math.round((totalDone / totalRequired) * 100), 100);
     let streak         = localStorage.getItem('streak') || 0;
 
-    let hour     = new Date().getHours();
+    let hour     = getNowHour();
     let greeting = hour < 12 ? 'GOOD MORNING' : hour < 17 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
     let greetEl  = document.getElementById('greetingText');
     if (greetEl) greetEl.textContent = greeting;
@@ -1852,7 +1870,7 @@ function importCSV() {
         for (let i = 1; i < lines.length; i++) {
             let cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
             let row  = {
-                date:          cols[0] || new Date().toISOString().slice(0,10),
+                date:          cols[0] || getTodayStr(),
                 procedure:     cols[1] || 'Cataract / Phaco',
                 role:          cols[2] || 'Primary Surgeon',
                 attending:     cols[3] || '',
@@ -1884,7 +1902,7 @@ function downloadCSVTemplate() {
 
 function showAnalytics() {
     let total      = allCases.length;
-    let thisMonth  = new Date().toISOString().slice(0, 7);
+    let thisMonth  = getThisMonthStr();
     let monthCount = allCases.filter(c => c.date && c.date.startsWith(thisMonth)).length;
     let primary    = allCases.filter(c => c.role === 'Primary Surgeon').length;
     let primaryPct = total > 0 ? Math.round((primary / total) * 100) : 0;
@@ -2395,7 +2413,7 @@ function exportPDF() {
 
     let totalReq   = Object.values(acgme).reduce((a,b)=>a+b,0);
     let overallPct = Math.min(Math.round((allCases.length/totalReq)*100),100);
-    let thisMonth  = new Date().toISOString().slice(0,7);
+    let thisMonth  = getThisMonthStr();
     let monthCount = allCases.filter(c => c.date && c.date.startsWith(thisMonth)).length;
     let primary    = allCases.filter(c => c.role === 'Primary Surgeon').length;
 
@@ -2712,7 +2730,7 @@ async function showPeerBenchmark() {
 
     let { data: { user } } = await db.auth.getUser();
     let domain   = user.email.split('@')[1] || '';
-    let thisMonth = new Date().toISOString().slice(0, 7);
+    let thisMonth = getThisMonthStr();
     let myTotal   = allCases.length;
     let myMonthly = allCases.filter(c => c.date && c.date.startsWith(thisMonth)).length;
     let myPrimary = allCases.filter(c => c.role === 'Primary Surgeon').length;
@@ -3309,8 +3327,8 @@ function parseVoiceInput(text) {
     for (let kw in procedureMap) { if (t.includes(kw)) { matched.procedure = procedureMap[kw]; break; } }
     for (let kw in roleMap)      { if (t.includes(kw)) { matched.role = roleMap[kw]; break; } }
 
-    if (t.includes('today') || t.includes('tonight')) matched.date = new Date().toISOString().slice(0, 10);
-    else if (t.includes('yesterday')) { let d = new Date(); d.setDate(d.getDate()-1); matched.date = d.toISOString().slice(0,10); }
+    if (t.includes('today') || t.includes('tonight')) matched.date = getTodayStr();
+    else if (t.includes('yesterday')) matched.date = getYesterdayStr();
 
     let drMatch = t.match(/(?:dr\.?|doctor)\s+([a-z]+)/i);
     if (drMatch) matched.attending = 'Dr. ' + drMatch[1].charAt(0).toUpperCase() + drMatch[1].slice(1);
@@ -3812,7 +3830,7 @@ function renderWeekView() {
     let events  = getEvents();
     let todos   = getTodos();
     let journal = getJournalEntries();
-    let today   = new Date().toISOString().slice(0,10);
+    let today   = getTodayStr();
     let dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     let typeColors = { clinic:'#0891b2', meeting:'#7c3aed', or:'#16a34a', education:'#d97706', personal:'#ec4899' };
 
@@ -3885,7 +3903,7 @@ function renderCalendar() {
     if (cg) cg.style.display = 'block';
 
     let now         = new Date();
-    let today       = now.toISOString().slice(0,10);
+    let today       = getTodayStr();
     let firstDay    = new Date(calYear, calMonth, 1).getDay();
     let daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
     let monthLabel  = new Date(calYear, calMonth, 1).toLocaleString('default', { month: 'long', year: 'numeric' });
@@ -4087,7 +4105,7 @@ function openEventModal(date, id) {
     let ev = id ? getEvents().find(e => e.id === id) : null;
     document.getElementById('eventId').value    = ev ? ev.id : '';
     document.getElementById('eventTitle').value = ev ? ev.title : '';
-    document.getElementById('eventDate').value  = ev ? ev.date : (date || (selectedCalDate || new Date().toISOString().slice(0,10)));
+    document.getElementById('eventDate').value  = ev ? ev.date : (date || (selectedCalDate || getTodayStr()));
     document.getElementById('eventTime').value  = ev ? (ev.time || '') : '';
     document.getElementById('eventNotes').value = ev ? (ev.notes || '') : '';
     selectedEventType = ev ? ev.type : 'clinic';
@@ -4227,7 +4245,7 @@ function openJournalModal(id) {
     if (hdr) hdr.textContent = entry ? 'Edit Entry' : 'New Entry';
 
     document.getElementById('journalEntryId').value = entry ? entry.id : '';
-    document.getElementById('journalDate').value    = entry ? entry.date : new Date().toISOString().slice(0,10);
+    document.getElementById('journalDate').value    = entry ? entry.date : getTodayStr();
     document.getElementById('journalTitle').value   = entry ? (entry.title || '') : '';
     document.getElementById('journalBody').innerHTML = entry ? (entry.body || '') : '';
 
@@ -4302,6 +4320,7 @@ function renderActivityHeatmap() {
     allCases.forEach(c => { if (c.date) activity[c.date] = (activity[c.date]||0) + 1; });
     getJournalEntries().forEach(e => { if (e.date) activity[e.date] = (activity[e.date]||0) + 1; });
     let today = new Date();
+    let todayStr = getTodayStr();
     let startDate = new Date(today);
     startDate.setDate(startDate.getDate() - 52*7 - today.getDay());
     let dayLabels = ['S','M','T','W','T','F','S'];
@@ -4321,7 +4340,7 @@ function renderActivityHeatmap() {
             let ds = cur.toISOString().slice(0,10);
             let count = activity[ds] || 0;
             let isFuture = cur > today;
-            let isToday = ds === today.toISOString().slice(0,10);
+            let isToday = ds === todayStr;
             week.push({ ds, count, isFuture, isToday });
             cur.setDate(cur.getDate() + 1);
         }
@@ -4460,7 +4479,7 @@ function renderReadinessScore(cases) {
 function renderTodayWidget() {
     let el = document.getElementById('todayFocus');
     if (!el) return;
-    let today = new Date().toISOString().slice(0,10);
+    let today = getTodayStr();
     let todayCases = allCases.filter(c => c.date === today);
     let todos      = JSON.parse(localStorage.getItem('eyeTodos')||'[]').filter(t => !t.done && t.due === today);
     let events     = JSON.parse(localStorage.getItem('calEvents')||'[]').filter(ev => ev.date === today);
@@ -4583,7 +4602,7 @@ function saveJournalEntry() {
     let id      = document.getElementById('journalEntryId').value;
     let entry   = {
         id:        id || crypto.randomUUID(),
-        date:      document.getElementById('journalDate').value || new Date().toISOString().slice(0,10),
+        date:      document.getElementById('journalDate').value || getTodayStr(),
         mood:      selectedMood,
         title:     document.getElementById('journalTitle').value.trim(),
         body,
@@ -4755,7 +4774,7 @@ function toggleTodo(id) {
     let todo  = todos.find(t => t.id === id);
     if (todo) {
         todo.done = !todo.done;
-        todo.doneAt = todo.done ? new Date().toISOString().slice(0,10) : null;
+        todo.doneAt = todo.done ? getTodayStr() : null;
         saveTodos(todos);
         renderTodos();
         _cloudUpsert('workspace_todos', todo, _wsMap.todos);
