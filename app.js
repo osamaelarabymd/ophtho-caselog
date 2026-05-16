@@ -123,6 +123,7 @@ const _CP_COMMANDS = [
     { section:'Navigate', label:'Notes',        sub:'Clinical pearls & notes',icon:'#ecfdf5', iconColor:'#059669', iconPath:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>', action:"showTab('journal',null);showWorkspaceTab('notes');closeGlobalSearch()" },
     { section:'Navigate', label:'Study List',   sub:'Reading list & resources',icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>', action:"showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch()" },
     { section:'Navigate', label:'Calendar',     sub:'Plan & events view',     icon:'#fef9c3', iconColor:'#ca8a04', iconPath:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', action:"showTab('journal',null);showWorkspaceTab('calendar');closeGlobalSearch()" },
+    { section:'Navigate', label:'Duty Hours',    sub:'ACGME 80-hour compliance',icon:'#fef9c3', iconColor:'#d97706', iconPath:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>', action:"showTab('journal',null);showWorkspaceTab('duty');closeGlobalSearch()" },
     { section:'Navigate', label:'Settings',     sub:'App settings',           icon:'#f1f5f9', iconColor:'#64748b', iconPath:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', action:"showTab('settings',null);closeGlobalSearch()" },
     // Create
     { section:'Create', label:'New Journal Entry',  sub:'Write a reflection',             icon:'#faf5ff', iconColor:'#7c3aed', iconPath:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/>', action:"showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch();setTimeout(()=>openJournalModal(),100)" },
@@ -3646,7 +3647,7 @@ let activeWorkspaceTab = 'journal';
 
 function showWorkspaceTab(tab) {
     activeWorkspaceTab = tab;
-    ['calendar','journal','todo','notes','study','fellowship'].forEach(t => {
+    ['calendar','journal','todo','notes','study','fellowship','duty'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = t === tab ? 'block' : 'none';
         let btn = document.getElementById('ws-tab-'+t);
@@ -3668,6 +3669,7 @@ function showWorkspaceTab(tab) {
     if (tab === 'notes')      renderNotes();
     if (tab === 'study')      renderStudyList();
     if (tab === 'fellowship') renderFellowshipBoard();
+    if (tab === 'duty')       renderDutyHours();
 }
 
 // ── Workspace Cloud Sync ──────────────────────────────────────────────────────
@@ -5277,6 +5279,242 @@ function renderStudyList() {
                 </div>
             </div>
         </div>`).join('');
+}
+
+// ── Duty Hours ────────────────────────────────────────────────────────────────
+function getDutyShifts()      { return JSON.parse(localStorage.getItem('eyeDutyShifts')||'[]'); }
+function saveDutyShifts(arr)  { localStorage.setItem('eyeDutyShifts', JSON.stringify(arr)); }
+
+let selectedShiftType = 'Clinic';
+
+function selectShiftType(type) {
+    selectedShiftType = type;
+    document.querySelectorAll('.shift-type-btn').forEach(b => {
+        b.style.background   = '#f8fafc';
+        b.style.color        = '#64748b';
+        b.style.borderColor  = '#e2e8f0';
+    });
+    let active = document.getElementById('stype-' + type);
+    if (active) {
+        active.style.background  = '#eff6ff';
+        active.style.color       = '#2563eb';
+        active.style.borderColor = '#93c5fd';
+    }
+}
+
+function calcShiftHours() {
+    let start = document.getElementById('shiftStart').value;
+    let end   = document.getElementById('shiftEnd').value;
+    let prev  = document.getElementById('shiftHoursPreview');
+    if (!start || !end) { if (prev) prev.textContent = '— h'; return null; }
+    let [sh, sm] = start.split(':').map(Number);
+    let [eh, em] = end.split(':').map(Number);
+    let mins = (eh * 60 + em) - (sh * 60 + sm);
+    let overnight = document.getElementById('shiftOvernight').checked;
+    if (mins <= 0 || overnight) mins += 24 * 60;
+    let hrs = Math.round(mins / 60 * 10) / 10;
+    if (prev) {
+        prev.textContent  = hrs + ' h';
+        prev.style.color  = hrs > 24 ? '#dc2626' : hrs > 16 ? '#d97706' : '#2563eb';
+    }
+    return hrs;
+}
+
+function openShiftModal(id) {
+    let shifts = getDutyShifts();
+    let s = id ? shifts.find(x => x.id === id) : null;
+    document.getElementById('shiftId').value    = s ? s.id : '';
+    document.getElementById('shiftDate').value  = s ? s.date : getTodayStr();
+    document.getElementById('shiftStart').value = s ? s.startTime : '';
+    document.getElementById('shiftEnd').value   = s ? s.endTime : '';
+    document.getElementById('shiftOvernight').checked = s ? s.overnight : false;
+    document.getElementById('shiftNotes').value = s ? (s.notes || '') : '';
+    selectShiftType(s ? s.type : 'Clinic');
+    calcShiftHours();
+    let m = document.getElementById('shiftModal');
+    m.style.display = 'flex';
+}
+
+function closeShiftModal() {
+    document.getElementById('shiftModal').style.display = 'none';
+}
+
+function saveShift() {
+    let date  = document.getElementById('shiftDate').value;
+    let start = document.getElementById('shiftStart').value;
+    let end   = document.getElementById('shiftEnd').value;
+    if (!date || !start || !end) { showToast('Fill in date, start and end time', 'warning'); return; }
+    let hours = calcShiftHours();
+    if (!hours || hours <= 0) { showToast('Invalid time range', 'warning'); return; }
+    let shifts = getDutyShifts();
+    let id     = document.getElementById('shiftId').value;
+    let shift  = {
+        id:        id || crypto.randomUUID(),
+        date,
+        startTime: start,
+        endTime:   end,
+        overnight: document.getElementById('shiftOvernight').checked,
+        type:      selectedShiftType,
+        notes:     document.getElementById('shiftNotes').value.trim(),
+        hours
+    };
+    if (id) {
+        let idx = shifts.findIndex(s => s.id === id);
+        if (idx !== -1) shifts[idx] = shift; else shifts.unshift(shift);
+    } else {
+        shifts.unshift(shift);
+    }
+    saveDutyShifts(shifts);
+    closeShiftModal();
+    renderDutyHours();
+    showToast('✅ Shift logged!');
+}
+
+function deleteShift(id) {
+    if (!confirm('Delete this shift?')) return;
+    saveDutyShifts(getDutyShifts().filter(s => s.id !== id));
+    renderDutyHours();
+}
+
+function _dutyWeekBounds(offsetWeeks) {
+    let todayStr = getTodayStr();
+    let today    = new Date(todayStr + 'T12:00:00');
+    let dow      = today.getDay();
+    let monday   = new Date(today);
+    monday.setDate(today.getDate() - ((dow + 6) % 7) - offsetWeeks * 7);
+    let sunday   = new Date(monday); sunday.setDate(monday.getDate() + 6);
+    let toISO    = d => d.toLocaleDateString('en-CA');
+    return { mon: toISO(monday), sun: toISO(sunday), monday, sunday };
+}
+
+function renderDutyHours() {
+    let shifts = getDutyShifts();
+
+    // ── Current week ──
+    let { mon, sun, monday, sunday } = _dutyWeekBounds(0);
+    let fmt = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    let weekShifts = shifts.filter(s => s.date >= mon && s.date <= sun);
+    let weekHours  = weekShifts.reduce((a,s) => a + s.hours, 0);
+    weekHours      = Math.round(weekHours * 10) / 10;
+
+    // ── 4-week rolling avg ──
+    let fourWeekTotal = 0, fourWeekDaysWorked = new Set();
+    for (let w = 0; w < 4; w++) {
+        let { mon: wm, sun: ws } = _dutyWeekBounds(w);
+        let wShifts = shifts.filter(s => s.date >= wm && s.date <= ws);
+        fourWeekTotal += wShifts.reduce((a,s) => a + s.hours, 0);
+        wShifts.forEach(s => fourWeekDaysWorked.add(s.date));
+    }
+    let fourWeekAvg = Math.round(fourWeekTotal / 4 * 10) / 10;
+
+    // ── 4-week days off (need ≥1 day off per 7, so ≥4 in 28 days) ──
+    // Days in the past 28 days
+    let { mon: m4 } = _dutyWeekBounds(3);
+    let totalDays28 = 28;
+    let daysWorked28 = new Set();
+    shifts.filter(s => s.date >= m4 && s.date <= sun).forEach(s => daysWorked28.add(s.date));
+    let daysOff28 = totalDays28 - daysWorked28.size;
+
+    // ── Compliance status ──
+    let wkOk    = weekHours <= 80;
+    let avgOk   = fourWeekAvg <= 80;
+    let doffOk  = daysOff28 >= 4;
+
+    // ── Render compliance cards ──
+    let cardsEl = document.getElementById('dutyComplianceCards');
+    if (cardsEl) {
+        let card = (label, val, sub, ok) => {
+            let col = ok ? '#16a34a' : '#dc2626';
+            let bg  = ok ? '#f0fdf4' : '#fef2f2';
+            let bd  = ok ? '#86efac' : '#fca5a5';
+            return `<div style="background:${bg};border:1.5px solid ${bd};border-radius:14px;padding:12px 14px;text-align:center">
+                <div style="font-size:22px;font-weight:800;color:${col};line-height:1">${val}</div>
+                <div style="font-size:10px;font-weight:700;color:${col};text-transform:uppercase;letter-spacing:0.6px;margin-top:3px">${label}</div>
+                <div style="font-size:10px;color:${ok?'#4ade80':'#f87171'};margin-top:2px">${sub}</div>
+            </div>`;
+        };
+        cardsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+            ${card('This Week', weekHours+'h', weekHours<=80?'✅ ≤80h':'❌ >80h limit', wkOk)}
+            ${card('4-Wk Avg', fourWeekAvg+'h', fourWeekAvg<=80?'✅ Compliant':'❌ Over limit', avgOk)}
+            ${card('Days Off', daysOff28+' days', daysOff28>=4?'✅ ≥4 in 28d':'❌ Need '+Math.max(0,4-daysOff28)+' more', doffOk)}
+        </div>`;
+    }
+
+    // ── Weekly progress bar ──
+    let barEl = document.getElementById('dutyWeekBar');
+    if (barEl) {
+        let pct     = Math.min(weekHours / 80 * 100, 100);
+        let barCol  = weekHours > 80 ? '#dc2626' : weekHours > 70 ? '#d97706' : '#2563eb';
+        let remaining = Math.max(0, 80 - weekHours);
+        barEl.innerHTML = `<div class="dash-card" style="padding:14px 16px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-size:12px;font-weight:700;color:#374151">${fmt(monday)} – ${fmt(sunday)}</div>
+                <div style="font-size:12px;font-weight:700;color:${barCol}">${weekHours}h / 80h ${remaining>0?'('+remaining+'h left)':'⚠️ LIMIT'}</div>
+            </div>
+            <div style="height:10px;background:#f1f5f9;border-radius:99px;overflow:hidden">
+                <div style="height:100%;width:${pct}%;background:${barCol};border-radius:99px;transition:width 0.4s ease"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:5px">
+                <span style="font-size:10px;color:#9ca3af">0h</span>
+                <span style="font-size:10px;color:#9ca3af;position:relative;left:-2px">80h limit</span>
+            </div>
+        </div>`;
+    }
+
+    // ── Shift history grouped by week ──
+    let histEl = document.getElementById('dutyHistory');
+    if (!histEl) return;
+    if (shifts.length === 0) {
+        histEl.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#9ca3af">
+            <div style="font-size:32px;margin-bottom:12px">⏰</div>
+            <div style="font-size:14px;font-weight:600">No shifts logged yet</div>
+            <div style="font-size:12px;margin-top:4px">Tap Log Shift to start tracking</div>
+        </div>`;
+        return;
+    }
+
+    // Group by week
+    let weekMap = {};
+    shifts.forEach(s => {
+        let d   = new Date(s.date + 'T12:00:00');
+        let dow = d.getDay();
+        let m   = new Date(d); m.setDate(d.getDate() - ((dow + 6) % 7));
+        let key = m.toLocaleDateString('en-CA');
+        if (!weekMap[key]) weekMap[key] = { monday: m, shifts: [] };
+        weekMap[key].shifts.push(s);
+    });
+
+    let typeColor = { 'Clinic':'#0891b2','OR':'#7c3aed','Night Call':'#1e40af','Post-Call':'#d97706','Admin':'#64748b','Education':'#16a34a' };
+    let typeEmoji = { 'Clinic':'🏥','OR':'🔪','Night Call':'🌙','Post-Call':'😴','Admin':'📋','Education':'📚' };
+
+    let html = '<div style="margin-bottom:8px"><h3 style="font-size:13px;font-weight:700;color:#374151;margin:0 0 10px">Shift History</h3></div>';
+    Object.keys(weekMap).sort().reverse().forEach(wk => {
+        let { monday: wMon, shifts: wShifts } = weekMap[wk];
+        let wSun = new Date(wMon); wSun.setDate(wMon.getDate() + 6);
+        let wTotal = Math.round(wShifts.reduce((a,s)=>a+s.hours,0)*10)/10;
+        let wCol   = wTotal > 80 ? '#dc2626' : wTotal > 70 ? '#d97706' : '#64748b';
+        html += `<div class="dash-card" style="margin-bottom:10px;padding:12px 14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                <div style="font-size:12px;font-weight:700;color:#0f172a">${fmt(wMon)} – ${fmt(wSun)}</div>
+                <div style="font-size:13px;font-weight:800;color:${wCol}">${wTotal}h</div>
+            </div>`;
+        wShifts.sort((a,b)=>a.date>b.date?-1:1).forEach(s => {
+            let col = typeColor[s.type] || '#64748b';
+            let emo = typeEmoji[s.type] || '⏰';
+            let d   = new Date(s.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+            html += `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #f9fafb">
+                <div style="width:32px;height:32px;border-radius:8px;background:${col}18;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">${emo}</div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-size:12px;font-weight:700;color:#374151">${s.type} <span style="font-weight:400;color:#94a3b8">· ${d}</span></div>
+                    <div style="font-size:11px;color:#94a3b8">${s.startTime} – ${s.endTime}${s.overnight?' (overnight)':''}${s.notes?' · '+s.notes:''}</div>
+                </div>
+                <div style="font-size:13px;font-weight:800;color:${col};flex-shrink:0">${s.hours}h</div>
+                <button onclick="deleteShift('${s.id}')" style="width:26px;height:26px;padding:0;margin:0;background:#fef2f2;border-radius:6px;font-size:13px;color:#dc2626;border:1px solid #fecaca;box-shadow:none;flex-shrink:0">×</button>
+            </div>`;
+        });
+        html += `</div>`;
+    });
+    histEl.innerHTML = html;
 }
 
 // ── Fellowship Pipeline ───────────────────────────────────────────────────────
