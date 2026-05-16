@@ -217,6 +217,11 @@ document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openGlobalSearch(); return; }
     if (e.key === 'Escape') closeGlobalSearch();
 });
+document.addEventListener('click', e => {
+    let dd = document.getElementById('jLinkDropdown');
+    let inp = document.getElementById('jLinkSearch');
+    if (dd && inp && !dd.contains(e.target) && e.target !== inp) dd.style.display = 'none';
+});
 
 function runGlobalSearch() {
     let q   = (document.getElementById('globalSearchInput')?.value || '').trim().toLowerCase();
@@ -4049,6 +4054,77 @@ function saveJournalEntries(entries) {
     localStorage.setItem(JOURNAL_KEY, JSON.stringify(entries));
 }
 
+// ── Journal linked records ─────────────────────────────────────────────────────
+let _jLinks = []; // [{type:'case'|'study', id, label}]
+
+function searchJournalLinks(q) {
+    let dd = document.getElementById('jLinkDropdown');
+    if (!q || q.length < 1) { dd.style.display = 'none'; return; }
+    let ql = q.toLowerCase();
+
+    // Collect candidates: cases + study items
+    let results = [];
+    allCases.forEach(c => {
+        let label = [c.procedure, c.date, c.attending].filter(Boolean).join(' · ');
+        if (label.toLowerCase().includes(ql)) {
+            results.push({ type:'case', id:c.id, label, color:'#7c3aed', bg:'#faf5ff', icon:'🔬' });
+        }
+    });
+    getStudyItems().forEach(s => {
+        let label = s.title || s.author || '';
+        if (label.toLowerCase().includes(ql)) {
+            results.push({ type:'study', id:s.id, label, color:'#2563eb', bg:'#eff6ff', icon:'📚' });
+        }
+    });
+
+    // Filter out already-linked
+    results = results.filter(r => !_jLinks.some(l => l.id === r.id));
+    results = results.slice(0, 8);
+
+    if (!results.length) { dd.style.display = 'none'; return; }
+
+    dd.innerHTML = results.map(r => `
+        <div onclick="addJournalLink('${r.type}','${r.id}',${JSON.stringify(r.label)},${JSON.stringify(r.color)},${JSON.stringify(r.bg)},${JSON.stringify(r.icon)})"
+            style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:13px;transition:background 0.1s"
+            onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+            <span style="font-size:16px">${r.icon}</span>
+            <div>
+                <div style="font-weight:600;color:#0f172a">${r.label}</div>
+                <div style="font-size:11px;color:#94a3b8;text-transform:capitalize">${r.type}</div>
+            </div>
+        </div>`).join('');
+    dd.style.display = 'block';
+}
+
+function addJournalLink(type, id, label, color, bg, icon) {
+    if (!_jLinks.some(l => l.id === id)) {
+        _jLinks.push({ type, id, label, color, bg, icon });
+    }
+    let inp = document.getElementById('jLinkSearch');
+    if (inp) inp.value = '';
+    document.getElementById('jLinkDropdown').style.display = 'none';
+    _renderJLinkPills();
+}
+
+function removeJournalLink(id) {
+    _jLinks = _jLinks.filter(l => l.id !== id);
+    _renderJLinkPills();
+}
+
+function _renderJLinkPills() {
+    let el = document.getElementById('jLinkPills');
+    if (!el) return;
+    if (!_jLinks.length) { el.innerHTML = ''; return; }
+    el.innerHTML = _jLinks.map(l => `
+        <span style="display:inline-flex;align-items:center;gap:5px;background:${l.bg||'#f1f5f9'};color:${l.color||'#374151'};border:1.5px solid ${l.color||'#e2e8f0'}33;border-radius:20px;padding:4px 10px 4px 8px;font-size:12px;font-weight:600">
+            <span>${l.icon||'🔗'}</span>
+            <span style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.label}</span>
+            <button onclick="removeJournalLink('${l.id}')" style="background:none;border:none;cursor:pointer;padding:0;margin:0;width:auto;min-width:0;line-height:0;color:${l.color||'#94a3b8'};opacity:0.6" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </span>`).join('');
+}
+
 function openJournalModal(id) {
     let entry = id ? getJournalEntries().find(e => e.id === id) : null;
 
@@ -4071,11 +4147,22 @@ function openJournalModal(id) {
         sel.appendChild(opt);
     });
 
+    // Load linked records
+    _jLinks = entry && Array.isArray(entry.links) ? [...entry.links] : [];
+    let inp = document.getElementById('jLinkSearch');
+    if (inp) inp.value = '';
+    let dd = document.getElementById('jLinkDropdown');
+    if (dd) dd.style.display = 'none';
+    _renderJLinkPills();
+
     document.getElementById('journalModal').style.display = 'flex';
 }
 
 function closeJournalModal() {
     document.getElementById('journalModal').style.display = 'none';
+    let dd = document.getElementById('jLinkDropdown');
+    if (dd) dd.style.display = 'none';
+    _jLinks = [];
 }
 
 function selectMood(mood) {
@@ -4256,6 +4343,7 @@ function saveJournalEntry() {
         title:     document.getElementById('journalTitle').value.trim(),
         body,
         caseId:    document.getElementById('journalCaseLink').value || null,
+        links:     _jLinks.length ? [..._jLinks] : [],
         updatedAt: new Date().toISOString()
     };
 
@@ -4341,8 +4429,9 @@ function renderJournalList() {
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
                     </button>
                 </div>
-                <p style="font-size:13px;color:#374151;line-height:1.6;margin:0 0 ${linkedCase?'8px':'0'}">${preview}</p>
-                ${linkedCase ? `<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#7c3aed;font-weight:600;margin-top:6px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>${linkedCase.procedure} · ${linkedCase.date}</div>` : ''}
+                <p style="font-size:13px;color:#374151;line-height:1.6;margin:0 0 ${(linkedCase||e.links?.length)?'8px':'0'}">${preview}</p>
+                ${linkedCase ? `<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#7c3aed;font-weight:600;margin-top:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>${linkedCase.procedure} · ${linkedCase.date}</div>` : ''}
+                ${e.links && e.links.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${e.links.map(l=>`<span onclick="event.stopPropagation();_jLinkNavigate('${l.type}','${l.id}')" style="display:inline-flex;align-items:center;gap:4px;background:${l.bg||'#f1f5f9'};color:${l.color||'#374151'};border:1px solid ${l.color||'#e2e8f0'}33;border-radius:20px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer" title="Go to ${l.type}">${l.icon||'🔗'} ${l.label.length>28?l.label.slice(0,28)+'…':l.label}</span>`).join('')}</div>` : ''}
             </div>`;
         }
     }
@@ -4355,6 +4444,20 @@ function renderJournalList() {
     </div>`;
 
     el.innerHTML = html;
+}
+
+function _jLinkNavigate(type, id) {
+    if (type === 'case') {
+        // Navigate to case list and open that case
+        showTab('caseList', null);
+        setTimeout(() => {
+            let c = allCases.find(x => x.id === id);
+            if (c) viewCaseDetail(c.id);
+        }, 150);
+    } else if (type === 'study') {
+        showTab('journal', null);
+        showWorkspaceTab('study');
+    }
 }
 
 // ── To-Do ─────────────────────────────────────────────────────────────────────

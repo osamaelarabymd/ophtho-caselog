@@ -1293,7 +1293,23 @@
     style="min-height:140px;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:14px;color:#374151;line-height:1.7;outline:none;font-family:inherit;background:white;cursor:text;transition:border-color 0.15s"
     onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'"></div>
                 <label>Link to a case <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
-                <select id="journalCaseLink" style="margin-bottom:20px"><option value="">— No case linked —</option></select>
+                <select id="journalCaseLink" style="margin-bottom:16px"><option value="">— No case linked —</option></select>
+
+                <!-- Linked Records -->
+                <label style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    Linked Records <span style="font-size:11px;color:#94a3b8;font-weight:400">(cases &amp; study items)</span>
+                </label>
+                <div style="position:relative;margin-bottom:8px">
+                    <input type="text" id="jLinkSearch" placeholder="Search cases or study items to link…"
+                        style="margin:0;padding-right:36px"
+                        oninput="searchJournalLinks(this.value)"
+                        onkeydown="if(event.key==='Escape'){document.getElementById('jLinkDropdown').style.display='none'}"
+                        autocomplete="off">
+                    <div id="jLinkDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid #e2e8f0;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:10;max-height:180px;overflow-y:auto;margin-top:4px"></div>
+                </div>
+                <div id="jLinkPills" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;min-height:0"></div>
+
                 <div style="display:flex;gap:10px">
                     <button onclick="saveJournalEntry()" style="flex:1;margin:0;background:linear-gradient(135deg,#7c3aed,#2563eb)">Save</button>
                     <button onclick="closeJournalModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
