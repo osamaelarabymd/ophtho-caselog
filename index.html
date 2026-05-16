@@ -439,6 +439,9 @@
             <!-- Readiness Score -->
             <div id="readinessWidget" style="margin-bottom:16px"></div>
 
+            <!-- Weekly Review -->
+            <div id="weeklyReviewWidget" style="margin-bottom:16px"></div>
+
             <!-- Annual Goals -->
             <div id="goalsWidget" style="margin-bottom:16px"></div>
 
@@ -1392,6 +1395,23 @@
 
                 <!-- hidden for JS compatibility -->
                 <select id="journalCaseLink" style="display:none"><option value="">— No case linked —</option></select>
+
+                <!-- Weekly Rating (visible only for weekly review template) -->
+                <div id="weeklyRatingRow" style="display:none;margin-bottom:16px;padding:14px 16px;background:#fffbeb;border-radius:12px;border:1.5px solid #fde68a">
+                    <label style="font-size:11px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;display:block">Rate This Week</label>
+                    <div style="display:flex;gap:5px;flex-wrap:wrap" id="weeklyRatingBtns">
+                        <button onclick="setWeeklyRating(1)"  id="wr-1"  style="width:32px;height:32px;padding:0;margin:0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:600;color:#94a3b8;box-shadow:none">1</button>
+                        <button onclick="setWeeklyRating(2)"  id="wr-2"  style="width:32px;height:32px;padding:0;margin:0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:600;color:#94a3b8;box-shadow:none">2</button>
+                        <button onclick="setWeeklyRating(3)"  id="wr-3"  style="width:32px;height:32px;padding:0;margin:0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:600;color:#94a3b8;box-shadow:none">3</button>
+                        <button onclick="setWeeklyRating(4)"  id="wr-4"  style="width:32px;height:32px;padding:0;margin:0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:600;color:#94a3b8;box-shadow:none">4</button>
+                        <button onclick="setWeeklyRating(5)"  id="wr-5"  style="width:32px;height:32px;padding:0;margin:0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:600;color:#94a3b8;box-shadow:none">5</button>
+                        <button onclick="setWeeklyRating(6)"  id="wr-6"  style="width:32px;height:32px;padding:0;margin:0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:600;color:#94a3b8;box-shadow:none">6</button>
+                        <button onclick="setWeeklyRating(7)"  id="wr-7"  style="width:32px;height:32px;padding:0;margin:0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:600;color:#94a3b8;box-shadow:none">7</button>
+                        <button onclick="setWeeklyRating(8)"  id="wr-8"  style="width:32px;height:32px;padding:0;margin:0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:600;color:#94a3b8;box-shadow:none">8</button>
+                        <button onclick="setWeeklyRating(9)"  id="wr-9"  style="width:32px;height:32px;padding:0;margin:0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:600;color:#94a3b8;box-shadow:none">9</button>
+                        <button onclick="setWeeklyRating(10)" id="wr-10" style="width:32px;height:32px;padding:0;margin:0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:600;color:#94a3b8;box-shadow:none">10</button>
+                    </div>
+                </div>
 
                 <!-- Actions -->
                 <div style="display:flex;gap:8px;padding-top:4px;border-top:1px solid #f1f5f9">

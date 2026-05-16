@@ -1779,6 +1779,7 @@ function updateDashboard(cases) {
     // ── New feature widgets
     renderGoalsWidget();
     renderReadinessScore(cases);
+    renderWeeklyReviewWidget(cases);
     renderTodayWidget();
     renderActivityHeatmap();
 }
@@ -4279,6 +4280,10 @@ function closeJournalModal() {
     let dd = document.getElementById('jLinkDropdown');
     if (dd) dd.style.display = 'none';
     _jLinks = [];
+    // Reset weekly rating
+    let ratingRow = document.getElementById('weeklyRatingRow');
+    if (ratingRow) ratingRow.style.display = 'none';
+    selectedWeeklyRating = 0;
 }
 
 function selectMood(mood) {
@@ -4523,42 +4528,151 @@ function renderTodayWidget() {
     </div>`;
 }
 
+// ── Weekly Rating ─────────────────────────────────────────────────────────────
+let selectedWeeklyRating = 0;
+function setWeeklyRating(n) {
+    selectedWeeklyRating = n;
+    for (let i = 1; i <= 10; i++) {
+        let btn = document.getElementById('wr-' + i);
+        if (!btn) continue;
+        if (i <= n) {
+            let col = n <= 4 ? { bg:'#fef2f2', txt:'#dc2626', bd:'#fca5a5' }
+                     : n <= 6 ? { bg:'#fffbeb', txt:'#d97706', bd:'#fde68a' }
+                     : { bg:'#f0fdf4', txt:'#16a34a', bd:'#86efac' };
+            btn.style.background   = col.bg;
+            btn.style.color        = col.txt;
+            btn.style.borderColor  = col.bd;
+            btn.style.fontWeight   = '800';
+            btn.style.transform    = 'scale(1.05)';
+        } else {
+            btn.style.background   = '#f8fafc';
+            btn.style.color        = '#94a3b8';
+            btn.style.borderColor  = '#e2e8f0';
+            btn.style.fontWeight   = '600';
+            btn.style.transform    = 'scale(1)';
+        }
+    }
+}
+
+// ── Weekly Review Dashboard Widget ────────────────────────────────────────────
+function renderWeeklyReviewWidget(cases) {
+    let el = document.getElementById('weeklyReviewWidget');
+    if (!el) return;
+
+    // Timezone-aware week (Mon–Sun)
+    let todayStr = getTodayStr();
+    let today    = new Date(todayStr + 'T12:00:00');
+    let dow      = today.getDay();
+    let monday   = new Date(today); monday.setDate(today.getDate() - ((dow + 6) % 7));
+    let sunday   = new Date(monday); sunday.setDate(monday.getDate() + 6);
+    let fmt      = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    let toISO    = d => d.toLocaleDateString('en-CA');
+    let monISO   = toISO(monday), sunISO = toISO(sunday);
+
+    let weekCases    = cases.filter(c => c.date && c.date >= monISO && c.date <= sunISO);
+    let primaryCount = weekCases.filter(c => c.role === 'Primary Surgeon').length;
+    let procCounts   = {};
+    weekCases.forEach(c => { procCounts[c.procedure||'?'] = (procCounts[c.procedure||'?']||0)+1; });
+    let topProcs = Object.entries(procCounts).sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+    let journals    = getJournalEntries();
+    let reviewEntry = journals.find(j => j.date >= monISO && j.date <= sunISO
+        && j.body && j.body.includes('Weekly Review'));
+
+    if (reviewEntry) {
+        el.innerHTML = `
+        <div class="dash-card" style="border-left:3px solid #16a34a">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                    <div style="font-size:10px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px">✅ Weekly Review</div>
+                    <div style="font-size:14px;font-weight:700;color:#0f172a">${fmt(monday)} – ${fmt(sunday)}</div>
+                    <div style="font-size:12px;color:#64748b;margin-top:3px">${weekCases.length} case${weekCases.length!==1?'s':''} · ${primaryCount} primary · Review written</div>
+                </div>
+                <button onclick="editJournalEntry('${reviewEntry.id}')" style="width:auto;padding:7px 14px;margin:0;background:#f0fdf4;color:#16a34a;border:1.5px solid #86efac;border-radius:9px;font-size:12px;font-weight:700;box-shadow:none">View →</button>
+            </div>
+        </div>`;
+    } else {
+        el.innerHTML = `
+        <div class="dash-card" style="border-left:3px solid #f59e0b">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <div>
+                    <div style="font-size:10px;font-weight:700;color:#d97706;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px">📋 Weekly Review</div>
+                    <div style="font-size:14px;font-weight:700;color:#0f172a">${fmt(monday)} – ${fmt(sunday)}</div>
+                    <div style="font-size:12px;color:#94a3b8;margin-top:2px">Not written yet</div>
+                </div>
+                <button onclick="showTab('journal',null);showWorkspaceTab('journal');setTimeout(()=>{openJournalModal();setTimeout(()=>applyJournalTemplate('weekly'),80)},100)"
+                    style="width:auto;padding:7px 14px;margin:0;background:#fffbeb;color:#92400e;border:1.5px solid #fde68a;border-radius:9px;font-size:12px;font-weight:700;box-shadow:none">
+                    Write Review
+                </button>
+            </div>
+            <div style="display:flex;gap:20px;align-items:center">
+                <div style="text-align:center">
+                    <div style="font-size:22px;font-weight:800;color:#0f172a;line-height:1">${weekCases.length}</div>
+                    <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px">Cases</div>
+                </div>
+                <div style="text-align:center">
+                    <div style="font-size:22px;font-weight:800;color:#0f172a;line-height:1">${primaryCount}</div>
+                    <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px">Primary</div>
+                </div>
+                ${topProcs.length ? `<div style="flex:1;border-left:1px solid #f1f5f9;padding-left:18px">
+                    ${topProcs.map(([p,n])=>`<div style="font-size:11px;color:#64748b;margin-bottom:2px">${p.split('/')[0].trim()} <strong style="color:#0f172a">×${n}</strong></div>`).join('')}
+                </div>` : ''}
+            </div>
+        </div>`;
+    }
+}
+
 function applyJournalTemplate(tpl) {
     let el = document.getElementById('journalBody');
     if (!el) return;
 
     let content = '';
     if (tpl === 'weekly') {
-        // Build smart weekly review with real case data
-        let today = new Date();
-        let dow = today.getDay(); // 0=Sun
-        let monday = new Date(today); monday.setDate(today.getDate() - ((dow + 6) % 7));
-        let sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
-        let fmt = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
-        let toISO = d => d.toISOString().slice(0,10);
-        let monISO = toISO(monday), sunISO = toISO(sunday);
+        // Timezone-aware week (Mon–Sun)
+        let todayStr = getTodayStr();
+        let today    = new Date(todayStr + 'T12:00:00');
+        let dow      = today.getDay();
+        let monday   = new Date(today); monday.setDate(today.getDate() - ((dow + 6) % 7));
+        let sunday   = new Date(monday); sunday.setDate(monday.getDate() + 6);
+        let fmt      = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+        let toISO    = d => d.toLocaleDateString('en-CA');
+        let monISO   = toISO(monday), sunISO = toISO(sunday);
 
         let weekCases = allCases.filter(c => c.date && c.date >= monISO && c.date <= sunISO);
-        let procCounts = {};
-        weekCases.forEach(c => { procCounts[c.procedure||'Unknown'] = (procCounts[c.procedure||'Unknown']||0)+1; });
-        let procList = Object.entries(procCounts).sort((a,b)=>b[1]-a[1]);
 
-        let caseSummary = weekCases.length === 0
+        // Build detailed case list: one line per case with date + role + attending
+        let caseLines = weekCases.length === 0
             ? '<li>No cases logged this week</li>'
-            : procList.map(([p,n]) => `<li>${p}${n>1?' (×'+n+')':''}</li>`).join('');
+            : weekCases
+                .sort((a,b) => a.date > b.date ? 1 : -1)
+                .map(c => {
+                    let d   = new Date(c.date + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+                    let att = c.attending ? ` · ${c.attending}` : '';
+                    let role = c.role === 'Primary Surgeon' ? ' 🔵' : c.role === 'Assistant' ? ' ⚪' : ' 👁️';
+                    return `<li>${c.procedure||'Unknown'}${role} — ${d}${att}</li>`;
+                }).join('');
 
+        let primary = weekCases.filter(c => c.role === 'Primary Surgeon').length;
         let weekJournals = getJournalEntries().filter(j => j.date && j.date >= monISO && j.date <= sunISO);
-        let journalNote = weekJournals.length ? `${weekJournals.length} journal entr${weekJournals.length>1?'ies':'y'} this week` : '';
+
+        // Set title automatically
+        let titleEl = document.getElementById('journalTitle');
+        if (titleEl && !titleEl.value) titleEl.value = `Weekly Review — ${fmt(monday)} to ${fmt(sunday)}`;
+
+        // Show interactive rating row
+        let ratingRow = document.getElementById('weeklyRatingRow');
+        if (ratingRow) ratingRow.style.display = 'block';
+        selectedWeeklyRating = 0;
+        setWeeklyRating(0);
 
         content = `<h3>Weekly Review — ${fmt(monday)} to ${fmt(sunday)}</h3>
-<p><strong>📊 Cases this week:</strong> ${weekCases.length}${journalNote ? ' &nbsp;·&nbsp; ' + journalNote : ''}</p>
-<h3>Cases Logged</h3><ul>${caseSummary}</ul>
+<p><strong>📊 Stats:</strong> ${weekCases.length} case${weekCases.length!==1?'s':''} · ${primary} primary · ${weekJournals.length} journal entr${weekJournals.length!==1?'ies':'y'}</p>
+<h3>Cases Logged</h3><ul>${caseLines}</ul>
 <h3>🏆 Biggest Win This Week</h3><p></p>
 <h3>😤 Hardest Moment</h3><p></p>
 <h3>🔁 What I'd Do Differently</h3><p></p>
 <h3>📚 What I Learned</h3><p></p>
-<h3>🎯 Next Week's Focus</h3><p></p>
-<h3>Overall Rating</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 10</p>`;
+<h3>🎯 Next Week's Focus</h3><p></p>`;
     } else {
         const templates = {
             postcall: `<h3>Post-Call Reflection</h3><p>Sleep hours: </p><p>Energy level today: </p><h3>Hardest Case</h3><p></p><h3>What I'd Do Differently</h3><p></p><h3>Win of the Call</h3><p></p>`,
@@ -4597,6 +4711,13 @@ function saveJournalEntry() {
     let bodyEl = document.getElementById('journalBody');
     let body = bodyEl.innerHTML.trim();
     if (!body || bodyEl.textContent.trim() === '') { showToast('Write something first!', 'warning'); return; }
+
+    // Append weekly rating to body if set
+    if (selectedWeeklyRating > 0) {
+        let stars = '⭐'.repeat(selectedWeeklyRating) + (selectedWeeklyRating < 10 ? '☆'.repeat(10 - selectedWeeklyRating) : '');
+        let col   = selectedWeeklyRating <= 4 ? '#dc2626' : selectedWeeklyRating <= 6 ? '#d97706' : '#16a34a';
+        body += `<h3>Overall Rating</h3><p><strong style="color:${col};font-size:18px">${selectedWeeklyRating}/10</strong> &nbsp; <span style="font-size:14px;letter-spacing:1px">${stars}</span></p>`;
+    }
 
     let entries = getJournalEntries();
     let id      = document.getElementById('journalEntryId').value;
