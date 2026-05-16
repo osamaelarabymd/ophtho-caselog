@@ -125,10 +125,11 @@ const _CP_COMMANDS = [
     { section:'Navigate', label:'Calendar',     sub:'Plan & events view',     icon:'#fef9c3', iconColor:'#ca8a04', iconPath:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', action:"showTab('journal',null);showWorkspaceTab('calendar');closeGlobalSearch()" },
     { section:'Navigate', label:'Settings',     sub:'App settings',           icon:'#f1f5f9', iconColor:'#64748b', iconPath:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', action:"showTab('settings',null);closeGlobalSearch()" },
     // Create
-    { section:'Create', label:'New Journal Entry', sub:'Write a reflection',    icon:'#faf5ff', iconColor:'#7c3aed', iconPath:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/>', action:"showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch();setTimeout(()=>openJournalModal(),100)" },
-    { section:'Create', label:'Add Task',          sub:'Create a to-do item',   icon:'#fff7ed', iconColor:'#ea580c', iconPath:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>', action:"showTab('journal',null);showWorkspaceTab('todo');closeGlobalSearch();setTimeout(()=>openTodoModal(),100)" },
-    { section:'Create', label:'Add Note',          sub:'Quick clinical pearl',  icon:'#ecfdf5', iconColor:'#059669', iconPath:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>', action:"showTab('journal',null);showWorkspaceTab('notes');closeGlobalSearch();setTimeout(()=>openNoteModal(),100)" },
-    { section:'Create', label:'Add Study Item',    sub:'Add to reading list',   icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>', action:"showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch();setTimeout(()=>openStudyModal(),100)" },
+    { section:'Create', label:'New Journal Entry',  sub:'Write a reflection',             icon:'#faf5ff', iconColor:'#7c3aed', iconPath:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/>', action:"showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch();setTimeout(()=>openJournalModal(),100)" },
+    { section:'Create', label:'Weekly Review',       sub:'Structured weekly reflection',    icon:'#fffbeb', iconColor:'#f59e0b', iconPath:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', action:"showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch();setTimeout(()=>{openJournalModal();setTimeout(()=>applyJournalTemplate('weekly'),80)},100)" },
+    { section:'Create', label:'Add Task',            sub:'Create a to-do item',             icon:'#fff7ed', iconColor:'#ea580c', iconPath:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>', action:"showTab('journal',null);showWorkspaceTab('todo');closeGlobalSearch();setTimeout(()=>openTodoModal(),100)" },
+    { section:'Create', label:'Add Note',            sub:'Quick clinical pearl',            icon:'#ecfdf5', iconColor:'#059669', iconPath:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>', action:"showTab('journal',null);showWorkspaceTab('notes');closeGlobalSearch();setTimeout(()=>openNoteModal(),100)" },
+    { section:'Create', label:'Add Study Item',      sub:'Add to reading list',             icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>', action:"showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch();setTimeout(()=>openStudyModal(),100)" },
 ];
 
 function openGlobalSearch() {
@@ -4279,13 +4280,23 @@ function renderTodayWidget() {
           </div>`).join('')
         : '';
 
+    let isSunday = new Date().getDay() === 0;
+    let weeklyBtn = `<button onclick="showTab('journal',null);showWorkspaceTab('journal');setTimeout(()=>{openJournalModal();setTimeout(()=>applyJournalTemplate('weekly'),80)},100)"
+        style="width:auto;padding:5px 12px;margin:0;background:${isSunday?'#f59e0b':'#f1f5f9'};color:${isSunday?'white':'#64748b'};border-radius:9px;font-size:11px;font-weight:700;box-shadow:none;border:none"
+        title="Open weekly review template">
+        ${isSunday?'📋 Weekly Review':'📋'}
+    </button>`;
+
     el.innerHTML = `<div class="dash-card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
             <div>
-                <h3 style="margin:0 0 2px;font-size:14px;font-weight:700">Today</h3>
+                <h3 style="margin:0 0 2px;font-size:14px;font-weight:700">Today${isSunday?' 🌅':''}</h3>
                 <p style="margin:0;font-size:11px;color:#94a3b8">${dateLabel}</p>
             </div>
-            <button onclick="openJournalModal();showWorkspaceTab('journal')" style="width:auto;padding:5px 12px;margin:0;background:#7c3aed;color:white;border-radius:9px;font-size:11px;font-weight:700;box-shadow:none">+ Journal</button>
+            <div style="display:flex;gap:6px;align-items:center">
+                ${weeklyBtn}
+                <button onclick="showTab('journal',null);showWorkspaceTab('journal');setTimeout(()=>openJournalModal(),100)" style="width:auto;padding:5px 12px;margin:0;background:#7c3aed;color:white;border-radius:9px;font-size:11px;font-weight:700;box-shadow:none">+ Journal</button>
+            </div>
         </div>
         ${eventsHTML}${casesHTML}${todosHTML}
         <div style="margin-top:12px;padding:10px 12px;background:#f8fafc;border-radius:10px;border-left:3px solid #7c3aed">
@@ -4298,14 +4309,50 @@ function renderTodayWidget() {
 function applyJournalTemplate(tpl) {
     let el = document.getElementById('journalBody');
     if (!el) return;
-    const templates = {
-        postcall: `<h3>Post-Call Reflection</h3><p>Sleep hours: </p><p>Energy level today: </p><h3>Hardest Case</h3><p></p><h3>What I'd Do Differently</h3><p></p><h3>Win of the Call</h3><p></p>`,
-        grandrounds: `<h3>Grand Rounds Notes</h3><p><strong>Topic:</strong> </p><p><strong>Speaker:</strong> </p><h3>Key Learnings</h3><ul><li></li><li></li></ul><h3>Follow-Up Action</h3><p></p>`,
-        rotation: `<h3>End of Rotation Summary</h3><p><strong>Rotation:</strong> </p><p><strong>Dates:</strong> </p><h3>Cases Highlights</h3><p></p><h3>Skills Gained</h3><ul><li></li><li></li></ul><h3>What to Work On Next</h3><p></p><h3>Overall Rating</h3><p> / 10</p>`,
-        weekly: `<h3>Weekly Review</h3><p><strong>Week of:</strong> </p><h3>This Week's Wins</h3><ul><li></li></ul><h3>Challenges</h3><p></p><h3>What I Learned</h3><p></p><h3>Next Week's Focus</h3><p></p><h3>How I'm Feeling</h3><p> / 10</p>`
-    };
-    if (templates[tpl]) {
-        el.innerHTML = templates[tpl];
+
+    let content = '';
+    if (tpl === 'weekly') {
+        // Build smart weekly review with real case data
+        let today = new Date();
+        let dow = today.getDay(); // 0=Sun
+        let monday = new Date(today); monday.setDate(today.getDate() - ((dow + 6) % 7));
+        let sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+        let fmt = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+        let toISO = d => d.toISOString().slice(0,10);
+        let monISO = toISO(monday), sunISO = toISO(sunday);
+
+        let weekCases = allCases.filter(c => c.date && c.date >= monISO && c.date <= sunISO);
+        let procCounts = {};
+        weekCases.forEach(c => { procCounts[c.procedure||'Unknown'] = (procCounts[c.procedure||'Unknown']||0)+1; });
+        let procList = Object.entries(procCounts).sort((a,b)=>b[1]-a[1]);
+
+        let caseSummary = weekCases.length === 0
+            ? '<li>No cases logged this week</li>'
+            : procList.map(([p,n]) => `<li>${p}${n>1?' (×'+n+')':''}</li>`).join('');
+
+        let weekJournals = getJournalEntries().filter(j => j.date && j.date >= monISO && j.date <= sunISO);
+        let journalNote = weekJournals.length ? `${weekJournals.length} journal entr${weekJournals.length>1?'ies':'y'} this week` : '';
+
+        content = `<h3>Weekly Review — ${fmt(monday)} to ${fmt(sunday)}</h3>
+<p><strong>📊 Cases this week:</strong> ${weekCases.length}${journalNote ? ' &nbsp;·&nbsp; ' + journalNote : ''}</p>
+<h3>Cases Logged</h3><ul>${caseSummary}</ul>
+<h3>🏆 Biggest Win This Week</h3><p></p>
+<h3>😤 Hardest Moment</h3><p></p>
+<h3>🔁 What I'd Do Differently</h3><p></p>
+<h3>📚 What I Learned</h3><p></p>
+<h3>🎯 Next Week's Focus</h3><p></p>
+<h3>Overall Rating</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 10</p>`;
+    } else {
+        const templates = {
+            postcall: `<h3>Post-Call Reflection</h3><p>Sleep hours: </p><p>Energy level today: </p><h3>Hardest Case</h3><p></p><h3>What I'd Do Differently</h3><p></p><h3>Win of the Call</h3><p></p>`,
+            grandrounds: `<h3>Grand Rounds Notes</h3><p><strong>Topic:</strong> </p><p><strong>Speaker:</strong> </p><h3>Key Learnings</h3><ul><li></li><li></li></ul><h3>Follow-Up Action</h3><p></p>`,
+            rotation: `<h3>End of Rotation Summary</h3><p><strong>Rotation:</strong> </p><p><strong>Dates:</strong> </p><h3>Cases Highlights</h3><p></p><h3>Skills Gained</h3><ul><li></li><li></li></ul><h3>What to Work On Next</h3><p></p><h3>Overall Rating</h3><p> / 10</p>`
+        };
+        content = templates[tpl] || '';
+    }
+
+    if (content) {
+        el.innerHTML = content;
         el.focus();
         let range = document.createRange();
         range.selectNodeContents(el);
