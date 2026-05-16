@@ -1711,6 +1711,7 @@ function updateDashboard(cases) {
 
     // ── New feature widgets
     renderGoalsWidget();
+    renderReadinessScore(cases);
     renderTodayWidget();
     renderActivityHeatmap();
 }
@@ -4248,6 +4249,114 @@ function renderActivityHeatmap() {
     el.innerHTML = html;
 }
 
+function renderReadinessScore(cases) {
+    let el = document.getElementById('readinessWidget');
+    if (!el) return;
+
+    let now = new Date();
+    let toISO = d => d.toISOString().slice(0,10);
+    let sevenAgo = new Date(now); sevenAgo.setDate(now.getDate() - 7);
+    let fourteenAgo = new Date(now); fourteenAgo.setDate(now.getDate() - 14);
+    let sevenISO = toISO(sevenAgo), fourteenISO = toISO(fourteenAgo), todayISO = toISO(now);
+
+    // ── Factor 1: Cases this week (max 30 pts, 5 cases = full)
+    let weekCases = cases.filter(c => c.date && c.date >= sevenISO && c.date <= todayISO);
+    let casePts   = Math.min(weekCases.length / 5, 1) * 30;
+
+    // ── Factor 2: Journal activity this week (max 20 pts, 3 entries = full)
+    let weekJournal = getJournalEntries().filter(j => j.date && j.date >= sevenISO && j.date <= todayISO);
+    let journalPts  = Math.min(weekJournal.length / 3, 1) * 20;
+
+    // ── Factor 3: Todos completed this week (max 20 pts, 5 done = full)
+    let todos = JSON.parse(localStorage.getItem('eyeTodos') || '[]');
+    let doneTodos = todos.filter(t => t.done && t.doneAt && t.doneAt >= sevenISO);
+    let todoPts   = Math.min(doneTodos.length / 5, 1) * 20;
+
+    // ── Factor 4: Phaco recency (max 30 pts — decays over 14 days)
+    let phacos = cases.filter(c => c.procedure && c.procedure.toLowerCase().includes('phaco') && c.date)
+        .sort((a,b) => b.date.localeCompare(a.date));
+    let lastPhaco = phacos[0];
+    let phacoPts  = 0;
+    let phacoLabel = 'No phaco logged';
+    if (lastPhaco) {
+        let daysSince = Math.floor((now - new Date(lastPhaco.date+'T12:00:00')) / 86400000);
+        phacoPts  = Math.max(0, (1 - daysSince / 14)) * 30;
+        phacoLabel = daysSince === 0 ? 'Phaco today 🎯' : `Last phaco ${daysSince}d ago`;
+    }
+
+    let score = Math.round(casePts + journalPts + todoPts + phacoPts);
+
+    // ── Last week score for trend
+    let prevWeekCases   = cases.filter(c => c.date && c.date >= fourteenISO && c.date < sevenISO);
+    let prevJournal     = getJournalEntries().filter(j => j.date && j.date >= fourteenISO && j.date < sevenISO);
+    let prevScore = Math.round(
+        Math.min(prevWeekCases.length / 5, 1) * 30 +
+        Math.min(prevJournal.length / 3, 1) * 20
+    );
+    let trend = score > prevScore ? '↑' : score < prevScore ? '↓' : '→';
+    let trendColor = score > prevScore ? '#16a34a' : score < prevScore ? '#dc2626' : '#94a3b8';
+
+    // ── Color
+    let scoreColor = score >= 75 ? '#16a34a' : score >= 50 ? '#d97706' : '#dc2626';
+    let scoreBg    = score >= 75 ? '#f0fdf4' : score >= 50 ? '#fffbeb' : '#fef2f2';
+    let scoreLabel = score >= 75 ? 'Peak' : score >= 50 ? 'Moderate' : 'Low Activity';
+
+    // ── SVG ring (280° arc, r=36)
+    let r = 36, cx = 52, cy = 52;
+    let circumference = 2 * Math.PI * r;
+    let filled = (score / 100) * circumference * 0.78; // 0.78 ≈ 280°/360°
+    let ring = `<svg width="104" height="104" viewBox="0 0 104 104">
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#f1f5f9" stroke-width="10" stroke-dasharray="${circumference*0.78} ${circumference}" stroke-dashoffset="${-circumference*0.11}" stroke-linecap="round" transform="rotate(140 ${cx} ${cy})"/>
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${scoreColor}" stroke-width="10"
+            stroke-dasharray="${filled} ${circumference}" stroke-dashoffset="${-circumference*0.11}" stroke-linecap="round"
+            transform="rotate(140 ${cx} ${cy})" style="transition:stroke-dasharray 1s ease"/>
+        <text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="22" font-weight="800" fill="${scoreColor}" font-family="Inter,sans-serif">${score}</text>
+        <text x="${cx}" y="${cy+14}" text-anchor="middle" font-size="9" font-weight="700" fill="#94a3b8" font-family="Inter,sans-serif" letter-spacing="0.5">/ 100</text>
+    </svg>`;
+
+    const factor = (label, pts, max, icon, detail) => {
+        let pct = Math.round((pts / max) * 100);
+        let fc  = pct >= 80 ? '#16a34a' : pct >= 40 ? '#d97706' : '#dc2626';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f8fafc">
+            <span style="font-size:16px;width:22px;text-align:center">${icon}</span>
+            <div style="flex:1;min-width:0">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+                    <span style="font-size:12px;font-weight:600;color:#374151">${label}</span>
+                    <span style="font-size:11px;font-weight:700;color:${fc}">${Math.round(pts)}/${max}</span>
+                </div>
+                <div style="background:#f1f5f9;border-radius:99px;height:4px;overflow:hidden">
+                    <div style="background:${fc};width:${Math.round(pts/max*100)}%;height:4px;border-radius:99px;transition:width 0.8s ease"></div>
+                </div>
+                <span style="font-size:10px;color:#94a3b8">${detail}</span>
+            </div>
+        </div>`;
+    };
+
+    el.innerHTML = `<div class="dash-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div>
+                <h3 style="margin:0 0 2px;font-size:14px;font-weight:700">Readiness Score</h3>
+                <p style="margin:0;font-size:11px;color:#94a3b8">Based on last 7 days of activity</p>
+            </div>
+            <span style="font-size:12px;font-weight:700;color:${trendColor};padding:3px 10px;border-radius:20px;background:${trendColor}14">${trend} vs last week</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:20px">
+            <div style="flex-shrink:0;position:relative">
+                ${ring}
+                <div style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px">
+                    <span style="font-size:9px;font-weight:800;color:${scoreColor};text-transform:uppercase;letter-spacing:0.5px">${scoreLabel}</span>
+                </div>
+            </div>
+            <div style="flex:1;min-width:0">
+                ${factor('Cases this week', casePts, 30, '🔬', `${weekCases.length} case${weekCases.length!==1?'s':''} (goal: 5)`)}
+                ${factor('Phaco recency', phacoPts, 30, '👁️', phacoLabel)}
+                ${factor('Journal entries', journalPts, 20, '📔', `${weekJournal.length} entr${weekJournal.length!==1?'ies':'y'} (goal: 3)`)}
+                ${factor('Tasks completed', todoPts, 20, '✅', `${doneTodos.length} done this week`)}
+            </div>
+        </div>
+    </div>`;
+}
+
 function renderTodayWidget() {
     let el = document.getElementById('todayFocus');
     if (!el) return;
@@ -4555,7 +4664,13 @@ function saveTodo() {
 function toggleTodo(id) {
     let todos = getTodos();
     let todo  = todos.find(t => t.id === id);
-    if (todo) { todo.done = !todo.done; saveTodos(todos); renderTodos(); _cloudUpsert('workspace_todos', todo, _wsMap.todos); }
+    if (todo) {
+        todo.done = !todo.done;
+        todo.doneAt = todo.done ? new Date().toISOString().slice(0,10) : null;
+        saveTodos(todos);
+        renderTodos();
+        _cloudUpsert('workspace_todos', todo, _wsMap.todos);
+    }
 }
 
 function deleteTodo(id) {
