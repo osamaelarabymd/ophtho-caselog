@@ -127,6 +127,7 @@ const _CP_COMMANDS = [
     { section:'Navigate', label:'OKAP / ITE',   sub:'In-training exam scores', icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>', action:"showTab('journal',null);showWorkspaceTab('ite');closeGlobalSearch()" },
     { section:'Navigate', label:'Didactics',     sub:'Grand rounds · conferences',icon:'#f0fdf4', iconColor:'#059669', iconPath:'<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>', action:"showTab('journal',null);showWorkspaceTab('didactics');closeGlobalSearch()" },
     { section:'Navigate', label:'Complications', sub:'Private intraop log',     icon:'#fef2f2', iconColor:'#dc2626', iconPath:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>', action:"showTab('journal',null);showWorkspaceTab('compl');closeGlobalSearch()" },
+    { section:'Navigate', label:'Wellness',      sub:'Wellbeing check-in tracker', icon:'#fdf4ff', iconColor:'#ec4899', iconPath:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>', action:"showTab('journal',null);showWorkspaceTab('wellness');closeGlobalSearch()" },
     { section:'Navigate', label:'Settings',     sub:'App settings',           icon:'#f1f5f9', iconColor:'#64748b', iconPath:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', action:"showTab('settings',null);closeGlobalSearch()" },
     // Create
     { section:'Create', label:'New Journal Entry',  sub:'Write a reflection',             icon:'#faf5ff', iconColor:'#7c3aed', iconPath:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/>', action:"showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch();setTimeout(()=>openJournalModal(),100)" },
@@ -134,6 +135,7 @@ const _CP_COMMANDS = [
     { section:'Create', label:'Add Task',            sub:'Create a to-do item',             icon:'#fff7ed', iconColor:'#ea580c', iconPath:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>', action:"showTab('journal',null);showWorkspaceTab('todo');closeGlobalSearch();setTimeout(()=>openTodoModal(),100)" },
     { section:'Create', label:'Add Note',            sub:'Quick clinical pearl',            icon:'#ecfdf5', iconColor:'#059669', iconPath:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>', action:"showTab('journal',null);showWorkspaceTab('notes');closeGlobalSearch();setTimeout(()=>openNoteModal(),100)" },
     { section:'Create', label:'Add Study Item',      sub:'Add to reading list',             icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>', action:"showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch();setTimeout(()=>openStudyModal(),100)" },
+    { section:'Create', label:'Wellness Check-in',   sub:'Log how you\'re feeling today',   icon:'#fdf4ff', iconColor:'#ec4899', iconPath:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>', action:"showTab('journal',null);showWorkspaceTab('wellness');closeGlobalSearch();setTimeout(()=>openWellnessModal(),100)" },
 ];
 
 function openGlobalSearch() {
@@ -3650,7 +3652,7 @@ let activeWorkspaceTab = 'journal';
 
 function showWorkspaceTab(tab) {
     activeWorkspaceTab = tab;
-    ['calendar','journal','todo','notes','study','fellowship','duty','ite','compl','didactics'].forEach(t => {
+    ['calendar','journal','todo','notes','study','fellowship','duty','ite','compl','didactics','wellness'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = t === tab ? 'block' : 'none';
         let btn = document.getElementById('ws-tab-'+t);
@@ -3676,6 +3678,7 @@ function showWorkspaceTab(tab) {
     if (tab === 'ite')        renderIteScores();
     if (tab === 'compl')      renderCompls();
     if (tab === 'didactics')  renderDidactics();
+    if (tab === 'wellness')   renderWellness();
 }
 
 // ── Workspace Cloud Sync ──────────────────────────────────────────────────────
@@ -6250,6 +6253,307 @@ function renderFellowshipBoard() {
         </div>`).join('')}
     </div>` + html;
     el.innerHTML = html;
+}
+
+// ── Wellness Check-in ─────────────────────────────────────────────────────────
+function getWellness()      { return JSON.parse(localStorage.getItem('eyeWellness')||'[]'); }
+function saveWellness_(arr) { localStorage.setItem('eyeWellness', JSON.stringify(arr)); }
+
+let selectedWellbeing  = 0;
+let selectedStressors  = [];
+let wellnessChartInst  = null;
+
+const WELLBEING_LABELS = {
+    1:'Terrible 😞', 2:'Very low 😔', 3:'Struggling 😟', 4:'Below average 😕',
+    5:'Okay 😐', 6:'Decent 🙂', 7:'Good 😊', 8:'Really good 😄', 9:'Great 🌟', 10:'Amazing 🚀'
+};
+
+function setWellbeing(n) {
+    selectedWellbeing = n;
+    for (let i = 1; i <= 10; i++) {
+        let btn = document.getElementById('wb-'+i);
+        if (!btn) continue;
+        let active = i === n;
+        let col = i <= 3 ? '#dc2626' : i <= 5 ? '#f59e0b' : i <= 7 ? '#2563eb' : '#16a34a';
+        btn.style.background  = active ? col : '#f1f5f9';
+        btn.style.color       = active ? 'white' : '#64748b';
+        btn.style.borderColor = active ? col : '#e2e8f0';
+        btn.style.fontWeight  = active ? '800' : '600';
+    }
+    let lbl = document.getElementById('wellbeingLabel');
+    if (lbl) lbl.textContent = WELLBEING_LABELS[n] || '';
+}
+
+function toggleStressor(btn, label) {
+    let idx = selectedStressors.indexOf(label);
+    if (idx >= 0) {
+        selectedStressors.splice(idx, 1);
+        btn.style.background  = '#f1f5f9';
+        btn.style.color       = '#64748b';
+        btn.style.borderColor = '#e2e8f0';
+    } else {
+        selectedStressors.push(label);
+        btn.style.background  = '#fef2f2';
+        btn.style.color       = '#dc2626';
+        btn.style.borderColor = '#fca5a5';
+    }
+}
+
+function openWellnessModal(id) {
+    let entries = getWellness();
+    let w = id ? entries.find(x => x.id === id) : null;
+    document.getElementById('wellnessId').value   = w ? w.id : '';
+    document.getElementById('wellnessDate').value = w ? w.date : getTodayStr();
+    document.getElementById('wellnessSleep').value = w ? (w.sleep || '') : '';
+    document.getElementById('wellnessPostCall').checked = w ? !!w.postCall : false;
+    document.getElementById('wellnessWin').value   = w ? (w.win || '') : '';
+    document.getElementById('wellnessNotes').value = w ? (w.notes || '') : '';
+
+    // Reset wellbeing buttons
+    selectedWellbeing = w ? (w.wellbeing || 0) : 0;
+    for (let i = 1; i <= 10; i++) {
+        let btn = document.getElementById('wb-'+i);
+        if (!btn) continue;
+        btn.style.background  = '#f1f5f9';
+        btn.style.color       = '#64748b';
+        btn.style.borderColor = '#e2e8f0';
+        btn.style.fontWeight  = '600';
+    }
+    let lbl = document.getElementById('wellbeingLabel');
+    if (lbl) lbl.textContent = '';
+    if (selectedWellbeing) setWellbeing(selectedWellbeing);
+
+    // Reset stressors
+    selectedStressors = w ? (w.stressors ? [...w.stressors] : []) : [];
+    document.querySelectorAll('.stressor-btn').forEach(btn => {
+        let label = btn.dataset.stressor;
+        let active = selectedStressors.includes(label);
+        btn.style.background  = active ? '#fef2f2' : '#f1f5f9';
+        btn.style.color       = active ? '#dc2626' : '#64748b';
+        btn.style.borderColor = active ? '#fca5a5' : '#e2e8f0';
+    });
+
+    document.getElementById('wellnessModal').style.display = 'flex';
+}
+
+function closeWellnessModal() {
+    document.getElementById('wellnessModal').style.display = 'none';
+    selectedWellbeing = 0;
+    selectedStressors = [];
+}
+
+function saveWellness() {
+    let date = document.getElementById('wellnessDate').value;
+    if (!date) { alert('Please select a date.'); return; }
+    if (!selectedWellbeing) { alert('Please rate your wellbeing.'); return; }
+
+    let entries = getWellness();
+    let id  = document.getElementById('wellnessId').value;
+    let obj = {
+        id:       id || crypto.randomUUID(),
+        date,
+        wellbeing: selectedWellbeing,
+        sleep:     parseFloat(document.getElementById('wellnessSleep').value) || null,
+        postCall:  document.getElementById('wellnessPostCall').checked,
+        stressors: [...selectedStressors],
+        win:       document.getElementById('wellnessWin').value.trim(),
+        notes:     document.getElementById('wellnessNotes').value.trim(),
+        createdAt: id ? (entries.find(x=>x.id===id)||{}).createdAt : new Date().toISOString()
+    };
+
+    if (id) {
+        let i = entries.findIndex(x => x.id === id);
+        if (i >= 0) entries[i] = obj; else entries.push(obj);
+    } else {
+        entries.push(obj);
+    }
+    entries.sort((a,b) => b.date.localeCompare(a.date));
+    saveWellness_(entries);
+    closeWellnessModal();
+    renderWellness();
+}
+
+function deleteWellness(id) {
+    if (!confirm('Delete this check-in?')) return;
+    saveWellness_(getWellness().filter(x => x.id !== id));
+    renderWellness();
+}
+
+function _wellnessStreak(entries) {
+    if (!entries.length) return 0;
+    let today = getTodayStr();
+    let streak = 0;
+    let cur = new Date(today);
+    let dates = new Set(entries.map(e => e.date));
+    while (true) {
+        let ds = cur.toLocaleDateString('en-CA', { timeZone: getUserTz() });
+        if (dates.has(ds)) { streak++; cur.setDate(cur.getDate()-1); }
+        else break;
+    }
+    return streak;
+}
+
+function renderWellness() {
+    let el = document.getElementById('ws-wellness');
+    if (!el) return;
+    let entries = getWellness();
+    let today   = getTodayStr();
+    let thisWeekStart = _dutyWeekBounds(0).monday; // reuse week bounds helper
+
+    // Stats
+    let avgWellbeing = entries.length ? (entries.reduce((s,e)=>s+e.wellbeing,0)/entries.length).toFixed(1) : '—';
+    let sleepEntries = entries.filter(e=>e.sleep!=null);
+    let avgSleep     = sleepEntries.length ? (sleepEntries.reduce((s,e)=>s+e.sleep,0)/sleepEntries.length).toFixed(1) : '—';
+    let streak       = _wellnessStreak(entries);
+    let weekEntries  = entries.filter(e => e.date >= thisWeekStart && e.date <= today);
+
+    // Wins gallery — last 5 wins
+    let wins = entries.filter(e=>e.win).slice(0,5);
+
+    // Wellbeing color helper
+    let wbColor = v => v >= 8 ? '#16a34a' : v >= 6 ? '#2563eb' : v >= 4 ? '#f59e0b' : '#dc2626';
+
+    // Stressor frequency
+    let stressorMap = {};
+    entries.forEach(e => (e.stressors||[]).forEach(s => { stressorMap[s] = (stressorMap[s]||0)+1; }));
+    let topStressors = Object.entries(stressorMap).sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+    let statsHtml = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+        ${[
+            { label:'Avg Wellbeing', val: avgWellbeing !== '—' ? avgWellbeing+'/10' : '—', col: avgWellbeing !== '—' ? wbColor(parseFloat(avgWellbeing)) : '#94a3b8' },
+            { label:'Avg Sleep',     val: avgSleep !== '—' ? avgSleep+'h' : '—',           col: avgSleep!=='—' && parseFloat(avgSleep)>=7 ? '#16a34a' : avgSleep!=='—' ? '#f59e0b' : '#94a3b8' },
+            { label:'Check-in Streak', val: streak ? streak+'d 🔥' : '0d',                col: streak >= 7 ? '#16a34a' : streak >= 3 ? '#f59e0b' : '#94a3b8' },
+            { label:'This Week',     val: weekEntries.length+'/7',                         col: '#7c3aed' }
+        ].map(s=>`<div style="background:white;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;text-align:center">
+            <div style="font-size:20px;font-weight:800;color:${s.col}">${s.val}</div>
+            <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px">${s.label}</div>
+        </div>`).join('')}
+    </div>`;
+
+    // Trend chart
+    let chartHtml = '';
+    if (entries.length >= 3) {
+        chartHtml = `<div style="background:white;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:16px">
+            <div style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Wellbeing Trend</div>
+            <canvas id="wellnessChart" height="90"></canvas>
+        </div>`;
+    }
+
+    // Top stressors
+    let stressorHtml = '';
+    if (topStressors.length) {
+        stressorHtml = `<div style="background:white;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:16px">
+            <div style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Top Stressors</div>
+            ${topStressors.map(([s,n])=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                <div style="flex:1;font-size:12px;font-weight:600;color:#374151">${s}</div>
+                <div style="background:#fef2f2;color:#dc2626;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px">${n}×</div>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    // Wins gallery
+    let winsHtml = '';
+    if (wins.length) {
+        winsHtml = `<div style="background:linear-gradient(135deg,#fdf4ff,#fce7f3);border:1.5px solid #f0abfc;border-radius:14px;padding:16px;margin-bottom:16px">
+            <div style="font-size:12px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">🏆 Highlight Reel</div>
+            ${wins.map(e=>`<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">
+                <div style="font-size:16px;flex-shrink:0">⭐</div>
+                <div>
+                    <div style="font-size:12px;font-weight:600;color:#1e1b4b">${e.win}</div>
+                    <div style="font-size:10px;color:#7c3aed;margin-top:1px">${e.date}</div>
+                </div>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    // History
+    let histHtml = '';
+    if (!entries.length) {
+        histHtml = `<div style="text-align:center;padding:40px 20px;color:#94a3b8">
+            <div style="font-size:36px;margin-bottom:8px">💆</div>
+            <div style="font-size:14px;font-weight:600">No check-ins yet</div>
+            <div style="font-size:12px;margin-top:4px">Tap "Check In" to start tracking your wellness</div>
+        </div>`;
+    } else {
+        histHtml = entries.map(e => {
+            let col = wbColor(e.wellbeing);
+            return `<div style="background:white;border:1.5px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:10px;border-left:4px solid ${col}">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+                    <div style="flex:1">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                            <div style="font-size:20px;font-weight:900;color:${col}">${e.wellbeing}/10</div>
+                            <div style="font-size:12px;font-weight:600;color:#374151">${WELLBEING_LABELS[e.wellbeing]||''}</div>
+                            ${e.postCall ? '<span style="background:#fef2f2;color:#dc2626;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;border:1px solid #fecaca">POST-CALL</span>' : ''}
+                        </div>
+                        <div style="font-size:11px;color:#64748b;margin-bottom:4px">${e.date}${e.sleep != null ? ` · 💤 ${e.sleep}h sleep` : ''}</div>
+                        ${e.stressors&&e.stressors.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">${e.stressors.map(s=>`<span style="background:#fef2f2;color:#dc2626;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;border:1px solid #fecaca">${s}</span>`).join('')}</div>` : ''}
+                        ${e.win ? `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:7px 10px;margin-bottom:5px;font-size:12px;color:#78350f"><span style="font-weight:700">⭐ Win:</span> ${e.win}</div>` : ''}
+                        ${e.notes ? `<div style="font-size:12px;color:#475569;font-style:italic">${e.notes}</div>` : ''}
+                    </div>
+                    <div style="display:flex;gap:4px;flex-shrink:0">
+                        <button onclick="openWellnessModal('${e.id}')" style="width:26px;height:26px;padding:0;margin:0;background:#f1f5f9;border-radius:7px;box-shadow:none;display:flex;align-items:center;justify-content:center;border:1px solid #e2e8f0">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
+                        <button onclick="deleteWellness('${e.id}')" style="width:26px;height:26px;padding:0;margin:0;background:#fef2f2;border-radius:7px;box-shadow:none;display:flex;align-items:center;justify-content:center;border:1px solid #fecaca">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    let mainEl = document.getElementById('ws-wellness');
+    if (!mainEl) return;
+    mainEl.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+            <div style="font-size:18px;font-weight:800;color:#1e1b4b">Wellness Check-in 💆</div>
+            <div style="font-size:12px;color:#94a3b8;margin-top:2px">Track how you're doing — mind, body, burnout</div>
+        </div>
+        <button onclick="openWellnessModal()" style="background:linear-gradient(135deg,#ec4899,#8b5cf6);color:white;font-size:12px;font-weight:700;padding:9px 16px;border-radius:12px;border:none;box-shadow:0 4px 12px rgba(139,92,246,0.3)">+ Check In</button>
+    </div>
+    ${statsHtml}
+    ${chartHtml}
+    ${stressorHtml}
+    ${winsHtml}
+    <div id="wellnessList">${histHtml}</div>`;
+
+    // Draw chart if enough data
+    if (entries.length >= 3) {
+        setTimeout(() => {
+            let canvas = document.getElementById('wellnessChart');
+            if (!canvas) return;
+            if (wellnessChartInst) { wellnessChartInst.destroy(); wellnessChartInst = null; }
+            let recent = [...entries].reverse().slice(-30); // oldest first, max 30
+            wellnessChartInst = new Chart(canvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: recent.map(e => e.date.slice(5)),
+                    datasets: [{
+                        label: 'Wellbeing',
+                        data: recent.map(e => e.wellbeing),
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139,92,246,0.08)',
+                        borderWidth: 2.5,
+                        pointRadius: 4,
+                        pointBackgroundColor: recent.map(e => wbColor(e.wellbeing)),
+                        tension: 0.35,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => WELLBEING_LABELS[ctx.raw] || ctx.raw+'/10' } } },
+                    scales: {
+                        y: { min: 0, max: 10, ticks: { stepSize: 2, font: { size: 10 } }, grid: { color: '#f1f5f9' } },
+                        x: { ticks: { font: { size: 9 }, maxRotation: 45 }, grid: { display: false } }
+                    }
+                }
+            });
+        }, 50);
+    }
 }
 
 if ('serviceWorker' in navigator) {
