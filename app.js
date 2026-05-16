@@ -125,6 +125,7 @@ const _CP_COMMANDS = [
     { section:'Navigate', label:'Calendar',     sub:'Plan & events view',     icon:'#fef9c3', iconColor:'#ca8a04', iconPath:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', action:"showTab('journal',null);showWorkspaceTab('calendar');closeGlobalSearch()" },
     { section:'Navigate', label:'Duty Hours',    sub:'ACGME 80-hour compliance',icon:'#fef9c3', iconColor:'#d97706', iconPath:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>', action:"showTab('journal',null);showWorkspaceTab('duty');closeGlobalSearch()" },
     { section:'Navigate', label:'OKAP / ITE',   sub:'In-training exam scores', icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>', action:"showTab('journal',null);showWorkspaceTab('ite');closeGlobalSearch()" },
+    { section:'Navigate', label:'Didactics',     sub:'Grand rounds · conferences',icon:'#f0fdf4', iconColor:'#059669', iconPath:'<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>', action:"showTab('journal',null);showWorkspaceTab('didactics');closeGlobalSearch()" },
     { section:'Navigate', label:'Complications', sub:'Private intraop log',     icon:'#fef2f2', iconColor:'#dc2626', iconPath:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>', action:"showTab('journal',null);showWorkspaceTab('compl');closeGlobalSearch()" },
     { section:'Navigate', label:'Settings',     sub:'App settings',           icon:'#f1f5f9', iconColor:'#64748b', iconPath:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', action:"showTab('settings',null);closeGlobalSearch()" },
     // Create
@@ -3649,7 +3650,7 @@ let activeWorkspaceTab = 'journal';
 
 function showWorkspaceTab(tab) {
     activeWorkspaceTab = tab;
-    ['calendar','journal','todo','notes','study','fellowship','duty','ite','compl'].forEach(t => {
+    ['calendar','journal','todo','notes','study','fellowship','duty','ite','compl','didactics'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = t === tab ? 'block' : 'none';
         let btn = document.getElementById('ws-tab-'+t);
@@ -3674,6 +3675,7 @@ function showWorkspaceTab(tab) {
     if (tab === 'duty')       renderDutyHours();
     if (tab === 'ite')        renderIteScores();
     if (tab === 'compl')      renderCompls();
+    if (tab === 'didactics')  renderDidactics();
 }
 
 // ── Workspace Cloud Sync ──────────────────────────────────────────────────────
@@ -5519,6 +5521,200 @@ function renderDutyHours() {
         html += `</div>`;
     });
     histEl.innerHTML = html;
+}
+
+// ── Didactics Log ─────────────────────────────────────────────────────────────
+function getDidactics()     { return JSON.parse(localStorage.getItem('eyeDidactics')||'[]'); }
+function saveDidactics_(arr){ localStorage.setItem('eyeDidactics', JSON.stringify(arr)); }
+
+const DIDACTICS_TYPES = ['Grand Rounds','Journal Club','Conference','Lecture','Simulation','Teaching'];
+const DIDACTICS_EMOJI = { 'Grand Rounds':'🏛️','Journal Club':'📖','Conference':'🌐','Lecture':'🎓','Simulation':'🔬','Teaching':'👨‍🏫' };
+const DIDACTICS_COLOR = { 'Grand Rounds':'#2563eb','Journal Club':'#7c3aed','Conference':'#059669','Lecture':'#d97706','Simulation':'#0891b2','Teaching':'#16a34a' };
+const DIDACTICS_BG    = { 'Grand Rounds':'#eff6ff','Journal Club':'#faf5ff','Conference':'#ecfdf5','Lecture':'#fffbeb','Simulation':'#f0f9ff','Teaching':'#f0fdf4' };
+
+let selectedDidacticsType = 'Grand Rounds';
+
+function selectDidacticsType(type) {
+    selectedDidacticsType = type;
+    document.querySelectorAll('.didactics-type-btn').forEach(b => {
+        b.style.background  = '#f8fafc';
+        b.style.color       = '#64748b';
+        b.style.borderColor = '#e2e8f0';
+    });
+    let col = DIDACTICS_COLOR[type] || '#2563eb';
+    let bg  = DIDACTICS_BG[type]    || '#eff6ff';
+    let btn = document.getElementById('dtype-' + type);
+    if (btn) { btn.style.background = bg; btn.style.color = col; btn.style.borderColor = col + '80'; }
+}
+
+function openDidacticsModal(id) {
+    let items = getDidactics();
+    let d = id ? items.find(x => x.id === id) : null;
+    document.getElementById('didacticsId').value      = d ? d.id : '';
+    document.getElementById('didacticsTitle').value   = d ? d.title : '';
+    document.getElementById('didacticsSpeaker').value = d ? (d.speaker||'') : '';
+    document.getElementById('didacticsHours').value   = d ? d.hours : '';
+    document.getElementById('didacticsDate').value    = d ? d.date : getTodayStr();
+    document.getElementById('didacticsCme').value     = d ? (d.cme||'') : '';
+    document.getElementById('didacticsNotes').value   = d ? (d.notes||'') : '';
+    selectDidacticsType(d ? d.type : 'Grand Rounds');
+    document.getElementById('didacticsModal').style.display = 'flex';
+}
+
+function closeDidacticsModal() {
+    document.getElementById('didacticsModal').style.display = 'none';
+}
+
+function saveDidactics() {
+    let title = document.getElementById('didacticsTitle').value.trim();
+    let hours = parseFloat(document.getElementById('didacticsHours').value);
+    let date  = document.getElementById('didacticsDate').value;
+    if (!title) { showToast('Enter a title or topic', 'warning'); return; }
+    if (!date)  { showToast('Enter a date', 'warning'); return; }
+
+    let items = getDidactics();
+    let id    = document.getElementById('didacticsId').value;
+    let entry = {
+        id:      id || crypto.randomUUID(),
+        date,
+        type:    selectedDidacticsType,
+        title,
+        speaker: document.getElementById('didacticsSpeaker').value.trim(),
+        hours:   isNaN(hours) ? 1 : hours,
+        cme:     parseFloat(document.getElementById('didacticsCme').value) || null,
+        notes:   document.getElementById('didacticsNotes').value.trim(),
+        createdAt: new Date().toISOString()
+    };
+    if (id) {
+        let idx = items.findIndex(x => x.id === id);
+        if (idx !== -1) items[idx] = entry; else items.unshift(entry);
+    } else {
+        items.unshift(entry);
+    }
+    saveDidactics_(items);
+    closeDidacticsModal();
+    renderDidactics();
+    showToast('✅ Session logged!');
+}
+
+function deleteDidactics(id) {
+    if (!confirm('Delete this session?')) return;
+    saveDidactics_(getDidactics().filter(x => x.id !== id));
+    renderDidactics();
+}
+
+function renderDidactics() {
+    let items   = getDidactics();
+    let statsEl = document.getElementById('didacticsStats');
+    let listEl  = document.getElementById('didacticsList');
+
+    // ── Stats ──
+    if (statsEl) {
+        if (items.length === 0) { statsEl.innerHTML = ''; }
+        else {
+            let totalHours = Math.round(items.reduce((a,x) => a + (x.hours||0), 0) * 10) / 10;
+            let totalCme   = Math.round(items.reduce((a,x) => a + (x.cme||0), 0) * 10) / 10;
+            let thisMonth  = getThisMonthStr();
+            let monthItems = items.filter(x => x.date && x.date.startsWith(thisMonth));
+            let monthHours = Math.round(monthItems.reduce((a,x) => a + (x.hours||0), 0) * 10) / 10;
+
+            // Per-type breakdown
+            let typeCounts = {};
+            DIDACTICS_TYPES.forEach(t => { typeCounts[t] = items.filter(x=>x.type===t).length; });
+
+            // Stat cards
+            statsEl.innerHTML = `
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+                <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:12px;text-align:center">
+                    <div style="font-size:22px;font-weight:800;color:#2563eb;line-height:1">${totalHours}h</div>
+                    <div style="font-size:9px;color:#2563eb;font-weight:700;text-transform:uppercase;margin-top:3px">Total Hours</div>
+                </div>
+                <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:12px;text-align:center">
+                    <div style="font-size:22px;font-weight:800;color:#16a34a;line-height:1">${items.length}</div>
+                    <div style="font-size:9px;color:#16a34a;font-weight:700;text-transform:uppercase;margin-top:3px">Sessions</div>
+                </div>
+                <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:12px;text-align:center">
+                    <div style="font-size:22px;font-weight:800;color:#d97706;line-height:1">${monthHours}h</div>
+                    <div style="font-size:9px;color:#d97706;font-weight:700;text-transform:uppercase;margin-top:3px">This Month</div>
+                </div>
+            </div>
+            <div class="dash-card" style="padding:12px 14px;margin-bottom:14px">
+                <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">By Type</div>
+                ${DIDACTICS_TYPES.filter(t=>typeCounts[t]>0).map(t => {
+                    let pct = Math.round(typeCounts[t]/items.length*100);
+                    let col = DIDACTICS_COLOR[t]||'#64748b';
+                    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                        <span style="font-size:12px">${DIDACTICS_EMOJI[t]||''}</span>
+                        <span style="font-size:11px;color:#374151;width:90px;flex-shrink:0">${t}</span>
+                        <div style="flex:1;height:6px;background:#f1f5f9;border-radius:99px;overflow:hidden">
+                            <div style="height:100%;width:${pct}%;background:${col};border-radius:99px"></div>
+                        </div>
+                        <span style="font-size:11px;font-weight:700;color:#374151;width:20px;text-align:right">${typeCounts[t]}</span>
+                    </div>`;
+                }).join('')}
+                ${totalCme > 0 ? `<div style="margin-top:8px;padding-top:8px;border-top:1px solid #f1f5f9;font-size:12px;color:#7c3aed;font-weight:700">🏅 ${totalCme} CME credits earned</div>` : ''}
+            </div>`;
+        }
+    }
+
+    // ── List ──
+    if (!listEl) return;
+    if (items.length === 0) {
+        listEl.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#9ca3af">
+            <div style="font-size:32px;margin-bottom:12px">📚</div>
+            <div style="font-size:14px;font-weight:600">No sessions logged yet</div>
+            <div style="font-size:12px;margin-top:4px">Log grand rounds, journal clubs, conferences and more</div>
+        </div>`;
+        return;
+    }
+
+    // Group by month
+    let monthMap = {};
+    items.forEach(x => {
+        let m = x.date ? x.date.slice(0,7) : 'Unknown';
+        if (!monthMap[m]) monthMap[m] = [];
+        monthMap[m].push(x);
+    });
+
+    let html = '';
+    Object.keys(monthMap).sort().reverse().forEach(m => {
+        let mItems = monthMap[m];
+        let mHours = Math.round(mItems.reduce((a,x) => a+(x.hours||0), 0)*10)/10;
+        let label  = m !== 'Unknown' ? new Date(m+'-15').toLocaleDateString('en-US',{month:'long',year:'numeric'}) : 'Unknown';
+        html += `<div style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-size:12px;font-weight:700;color:#374151">${label}</div>
+                <div style="font-size:11px;color:#94a3b8">${mItems.length} session${mItems.length>1?'s':''} · ${mHours}h</div>
+            </div>`;
+        mItems.forEach(x => {
+            let col = DIDACTICS_COLOR[x.type]||'#64748b';
+            let bg  = DIDACTICS_BG[x.type]||'#f8fafc';
+            let emo = DIDACTICS_EMOJI[x.type]||'📋';
+            let d   = x.date ? new Date(x.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) : '';
+            html += `<div class="dash-card" style="margin-bottom:8px;padding:12px 14px;border-left:3px solid ${col}">
+                <div style="display:flex;align-items:flex-start;gap:10px">
+                    <div style="width:34px;height:34px;border-radius:9px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${emo}</div>
+                    <div style="flex:1;min-width:0">
+                        <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:2px">${x.title}</div>
+                        <div style="font-size:11px;color:#94a3b8">
+                            <span style="background:${bg};color:${col};border-radius:5px;padding:1px 6px;font-size:10px;font-weight:700">${x.type}</span>
+                            ${x.speaker?' · '+x.speaker:''}
+                            ${d?' · '+d:''}
+                            · <strong style="color:#374151">${x.hours}h</strong>
+                            ${x.cme?` · <span style="color:#7c3aed;font-weight:700">${x.cme} CME</span>`:''}
+                        </div>
+                        ${x.notes?`<div style="font-size:12px;color:#64748b;margin-top:6px;padding:6px 8px;background:#f8fafc;border-radius:7px;font-style:italic">${x.notes}</div>`:''}
+                    </div>
+                    <div style="display:flex;gap:4px;flex-shrink:0">
+                        <button onclick="openDidacticsModal('${x.id}')" style="width:26px;height:26px;padding:0;margin:0;background:#f1f5f9;border-radius:6px;font-size:11px;color:#64748b;border:none;box-shadow:none">✏️</button>
+                        <button onclick="deleteDidactics('${x.id}')" style="width:26px;height:26px;padding:0;margin:0;background:#fef2f2;border-radius:6px;font-size:13px;color:#dc2626;border:1px solid #fecaca;box-shadow:none">×</button>
+                    </div>
+                </div>
+            </div>`;
+        });
+        html += `</div>`;
+    });
+    listEl.innerHTML = html;
 }
 
 // ── Intraoperative Complications (Private — localStorage only, never synced) ──
