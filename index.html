@@ -1216,6 +1216,7 @@
                     <button id="ws-tab-fellowship" onclick="showWorkspaceTab('fellowship')" class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>Match</button>
                     <button id="ws-tab-duty"       onclick="showWorkspaceTab('duty')"       class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Hours</button>
                     <button id="ws-tab-ite"        onclick="showWorkspaceTab('ite')"        class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>OKAP</button>
+                    <button id="ws-tab-compl"      onclick="showWorkspaceTab('compl')"      class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Compl.</button>
                 </div>
             </div>
             <!-- Calendar section -->
@@ -1357,6 +1358,113 @@
                 <div id="iteStatCards" style="margin-bottom:16px"></div>
                 <!-- Score history list -->
                 <div id="iteHistory"></div>
+            </div>
+
+            <!-- Intraoperative Complications -->
+            <div id="ws-compl" style="display:none">
+                <!-- Private data notice + header -->
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <div>
+                        <div style="display:flex;align-items:center;gap:7px;margin-bottom:2px">
+                            <h3 style="margin:0;font-size:16px;font-weight:800;color:#0f172a">Intraop Complications</h3>
+                            <span style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:6px;font-size:10px;font-weight:700;padding:2px 7px;display:flex;align-items:center;gap:3px"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Private</span>
+                        </div>
+                        <p style="margin:0;font-size:12px;color:#94a3b8">Stored only on this device — never synced</p>
+                    </div>
+                    <button onclick="openComplModal()" style="width:auto;margin:0;padding:9px 14px;font-size:12px;font-weight:700;border-radius:12px;background:#dc2626;color:white;display:flex;align-items:center;gap:6px">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Log
+                    </button>
+                </div>
+                <!-- Complication rate stats -->
+                <div id="complStats" style="margin-bottom:16px"></div>
+                <!-- History -->
+                <div id="complHistory"></div>
+            </div>
+        </div>
+
+        <!-- Complication Log Modal -->
+        <div id="complModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+            <div style="background:white;border-radius:20px;padding:24px 26px;width:92%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.22)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                    <h2 style="margin:0;font-size:16px;font-weight:700;color:#0f172a">Log Complication</h2>
+                    <button onclick="closeComplModal()" style="width:30px;height:30px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:15px;color:#94a3b8;border:none;box-shadow:none">✕</button>
+                </div>
+                <p style="font-size:11px;color:#dc2626;margin:0 0 18px;display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Private — stays on this device only</p>
+                <input type="hidden" id="complId">
+
+                <!-- Date + Procedure -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block">Date</label>
+                        <input type="date" id="complDate" style="margin:0;font-size:13px">
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block">Procedure</label>
+                        <select id="complProcedure" style="margin:0;font-size:13px">
+                            <option>Cataract / Phaco</option>
+                            <option>Vitreoretinal (PPV)</option>
+                            <option>Glaucoma</option>
+                            <option>Cornea / Keratoplasty</option>
+                            <option>Oculoplastics</option>
+                            <option>Strabismus</option>
+                            <option>Laser</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Complication type -->
+                <div style="margin-bottom:14px">
+                    <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;display:block">Complication</label>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px" id="complTypeBtns">
+                        <button onclick="selectCompl('PCR')"                    id="ctype-PCR"                    class="compl-type-btn" style="padding:8px 6px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:700;color:#64748b;margin:0;box-shadow:none;text-align:left">Posterior Capsule Rupture</button>
+                        <button onclick="selectCompl('Vitreous Loss')"          id="ctype-Vitreous Loss"          class="compl-type-btn" style="padding:8px 6px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:700;color:#64748b;margin:0;box-shadow:none;text-align:left">Vitreous Loss</button>
+                        <button onclick="selectCompl('Zonular Dehiscence')"     id="ctype-Zonular Dehiscence"     class="compl-type-btn" style="padding:8px 6px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:700;color:#64748b;margin:0;box-shadow:none;text-align:left">Zonular Dehiscence</button>
+                        <button onclick="selectCompl('Nuclear Drop')"           id="ctype-Nuclear Drop"           class="compl-type-btn" style="padding:8px 6px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:700;color:#64748b;margin:0;box-shadow:none;text-align:left">Nuclear Drop</button>
+                        <button onclick="selectCompl('Suprachoroidal Hemorrhage')" id="ctype-Suprachoroidal Hemorrhage" class="compl-type-btn" style="padding:8px 6px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:700;color:#64748b;margin:0;box-shadow:none;text-align:left">Suprachoroidal Hemorrhage</button>
+                        <button onclick="selectCompl('Wound Burn')"             id="ctype-Wound Burn"             class="compl-type-btn" style="padding:8px 6px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:700;color:#64748b;margin:0;box-shadow:none;text-align:left">Wound Burn</button>
+                        <button onclick="selectCompl('Descemet Detachment')"    id="ctype-Descemet Detachment"    class="compl-type-btn" style="padding:8px 6px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:700;color:#64748b;margin:0;box-shadow:none;text-align:left">Descemet Detachment</button>
+                        <button onclick="selectCompl('Iatrogenic Break')"       id="ctype-Iatrogenic Break"       class="compl-type-btn" style="padding:8px 6px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:700;color:#64748b;margin:0;box-shadow:none;text-align:left">Iatrogenic Break</button>
+                        <button onclick="selectCompl('Other')"                  id="ctype-Other"                  class="compl-type-btn" style="padding:8px 6px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:700;color:#64748b;margin:0;box-shadow:none;text-align:left">Other…</button>
+                    </div>
+                    <input type="text" id="complTypeCustom" placeholder="Specify complication…" style="display:none;margin:0;font-size:13px">
+                </div>
+
+                <!-- Severity -->
+                <div style="margin-bottom:14px">
+                    <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;display:block">Severity</label>
+                    <div style="display:flex;gap:8px">
+                        <button onclick="selectComplSeverity('Minor')"    id="csev-Minor"    style="flex:1;padding:8px 4px;border-radius:10px;border:1.5px solid #86efac;background:#f0fdf4;font-size:12px;font-weight:700;color:#16a34a;margin:0;box-shadow:none">Minor</button>
+                        <button onclick="selectComplSeverity('Moderate')" id="csev-Moderate" style="flex:1;padding:8px 4px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:12px;font-weight:700;color:#64748b;margin:0;box-shadow:none">Moderate</button>
+                        <button onclick="selectComplSeverity('Major')"    id="csev-Major"    style="flex:1;padding:8px 4px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:12px;font-weight:700;color:#64748b;margin:0;box-shadow:none">Major</button>
+                    </div>
+                </div>
+
+                <!-- Management + Outcome -->
+                <div style="margin-bottom:14px">
+                    <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block">Management / What Was Done</label>
+                    <textarea id="complManagement" rows="2" placeholder="e.g. AC maintainer, anterior vitrectomy, sulcus IOL…" style="width:100%;margin:0;font-size:13px;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;resize:vertical;font-family:inherit;box-sizing:border-box"></textarea>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;display:block">Outcome</label>
+                        <div style="display:flex;flex-direction:column;gap:5px">
+                            <button onclick="selectComplOutcome('Good')" id="cout-Good" style="padding:7px;border-radius:9px;border:1.5px solid #86efac;background:#f0fdf4;font-size:12px;font-weight:700;color:#16a34a;margin:0;box-shadow:none">Good ✅</button>
+                            <button onclick="selectComplOutcome('Fair')" id="cout-Fair" style="padding:7px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:12px;font-weight:700;color:#64748b;margin:0;box-shadow:none">Fair 🟡</button>
+                            <button onclick="selectComplOutcome('Poor')" id="cout-Poor" style="padding:7px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:12px;font-weight:700;color:#64748b;margin:0;box-shadow:none">Poor ⚠️</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block">Private Notes</label>
+                        <textarea id="complNotes" rows="4" placeholder="Reflections, what you'd do differently…" style="width:100%;margin:0;font-size:12px;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;resize:vertical;font-family:inherit;box-sizing:border-box"></textarea>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:8px">
+                    <button onclick="saveCompl()" style="flex:1;margin:0;background:#dc2626;color:white;border-radius:10px;font-size:14px;font-weight:700;padding:11px">Save (Private)</button>
+                    <button onclick="closeComplModal()" style="width:auto;padding:11px 18px;margin:0;background:#f1f5f9;color:#64748b;border-radius:10px;font-size:14px;font-weight:600;box-shadow:none;border:none">Cancel</button>
+                </div>
             </div>
         </div>
 

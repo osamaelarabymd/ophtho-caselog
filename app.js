@@ -125,6 +125,7 @@ const _CP_COMMANDS = [
     { section:'Navigate', label:'Calendar',     sub:'Plan & events view',     icon:'#fef9c3', iconColor:'#ca8a04', iconPath:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', action:"showTab('journal',null);showWorkspaceTab('calendar');closeGlobalSearch()" },
     { section:'Navigate', label:'Duty Hours',    sub:'ACGME 80-hour compliance',icon:'#fef9c3', iconColor:'#d97706', iconPath:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>', action:"showTab('journal',null);showWorkspaceTab('duty');closeGlobalSearch()" },
     { section:'Navigate', label:'OKAP / ITE',   sub:'In-training exam scores', icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>', action:"showTab('journal',null);showWorkspaceTab('ite');closeGlobalSearch()" },
+    { section:'Navigate', label:'Complications', sub:'Private intraop log',     icon:'#fef2f2', iconColor:'#dc2626', iconPath:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>', action:"showTab('journal',null);showWorkspaceTab('compl');closeGlobalSearch()" },
     { section:'Navigate', label:'Settings',     sub:'App settings',           icon:'#f1f5f9', iconColor:'#64748b', iconPath:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', action:"showTab('settings',null);closeGlobalSearch()" },
     // Create
     { section:'Create', label:'New Journal Entry',  sub:'Write a reflection',             icon:'#faf5ff', iconColor:'#7c3aed', iconPath:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/>', action:"showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch();setTimeout(()=>openJournalModal(),100)" },
@@ -3648,7 +3649,7 @@ let activeWorkspaceTab = 'journal';
 
 function showWorkspaceTab(tab) {
     activeWorkspaceTab = tab;
-    ['calendar','journal','todo','notes','study','fellowship','duty','ite'].forEach(t => {
+    ['calendar','journal','todo','notes','study','fellowship','duty','ite','compl'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = t === tab ? 'block' : 'none';
         let btn = document.getElementById('ws-tab-'+t);
@@ -3672,6 +3673,7 @@ function showWorkspaceTab(tab) {
     if (tab === 'fellowship') renderFellowshipBoard();
     if (tab === 'duty')       renderDutyHours();
     if (tab === 'ite')        renderIteScores();
+    if (tab === 'compl')      renderCompls();
 }
 
 // ── Workspace Cloud Sync ──────────────────────────────────────────────────────
@@ -5517,6 +5519,191 @@ function renderDutyHours() {
         html += `</div>`;
     });
     histEl.innerHTML = html;
+}
+
+// ── Intraoperative Complications (Private — localStorage only, never synced) ──
+function getCompls()     { return JSON.parse(localStorage.getItem('eyeCompls')||'[]'); }
+function saveCompls(arr) { localStorage.setItem('eyeCompls', JSON.stringify(arr)); }
+
+let selectedComplType     = '';
+let selectedComplSeverity = 'Minor';
+let selectedComplOutcome  = 'Good';
+
+function selectCompl(type) {
+    selectedComplType = type;
+    document.querySelectorAll('.compl-type-btn').forEach(b => {
+        b.style.background  = '#f8fafc';
+        b.style.color       = '#64748b';
+        b.style.borderColor = '#e2e8f0';
+    });
+    let active = document.getElementById('ctype-' + type);
+    if (active) { active.style.background='#fef2f2'; active.style.color='#dc2626'; active.style.borderColor='#fca5a5'; }
+    let customEl = document.getElementById('complTypeCustom');
+    if (customEl) customEl.style.display = type === 'Other' ? 'block' : 'none';
+}
+
+function selectComplSeverity(sev) {
+    selectedComplSeverity = sev;
+    let cols = { Minor:['#f0fdf4','#16a34a','#86efac'], Moderate:['#fffbeb','#d97706','#fde68a'], Major:['#fef2f2','#dc2626','#fca5a5'] };
+    ['Minor','Moderate','Major'].forEach(s => {
+        let btn = document.getElementById('csev-'+s);
+        if (!btn) return;
+        let [bg,txt,bd] = s===sev ? cols[s] : ['#f8fafc','#64748b','#e2e8f0'];
+        btn.style.background=bg; btn.style.color=txt; btn.style.borderColor=bd;
+    });
+}
+
+function selectComplOutcome(out) {
+    selectedComplOutcome = out;
+    let cols = { Good:['#f0fdf4','#16a34a','#86efac'], Fair:['#fffbeb','#d97706','#fde68a'], Poor:['#fef2f2','#dc2626','#fca5a5'] };
+    ['Good','Fair','Poor'].forEach(o => {
+        let btn = document.getElementById('cout-'+o);
+        if (!btn) return;
+        let [bg,txt,bd] = o===out ? cols[o] : ['#f8fafc','#64748b','#e2e8f0'];
+        btn.style.background=bg; btn.style.color=txt; btn.style.borderColor=bd;
+    });
+}
+
+function openComplModal(id) {
+    let compls = getCompls();
+    let c = id ? compls.find(x => x.id === id) : null;
+    document.getElementById('complId').value          = c ? c.id : '';
+    document.getElementById('complDate').value        = c ? c.date : getTodayStr();
+    document.getElementById('complProcedure').value   = c ? c.procedure : 'Cataract / Phaco';
+    document.getElementById('complManagement').value  = c ? (c.management||'') : '';
+    document.getElementById('complNotes').value       = c ? (c.notes||'') : '';
+    document.getElementById('complTypeCustom').value  = '';
+    selectCompl(c ? c.complication : 'PCR');
+    selectComplSeverity(c ? c.severity : 'Minor');
+    selectComplOutcome(c ? c.outcome : 'Good');
+    if (c && !document.getElementById('ctype-'+c.complication)) {
+        selectCompl('Other');
+        document.getElementById('complTypeCustom').value = c.complication;
+    }
+    document.getElementById('complModal').style.display = 'flex';
+}
+
+function closeComplModal() {
+    document.getElementById('complModal').style.display = 'none';
+}
+
+function saveCompl() {
+    let date = document.getElementById('complDate').value;
+    if (!date) { showToast('Enter date', 'warning'); return; }
+    let type = selectedComplType === 'Other'
+        ? (document.getElementById('complTypeCustom').value.trim() || 'Other')
+        : selectedComplType;
+    if (!type) { showToast('Select a complication type', 'warning'); return; }
+
+    let compls = getCompls();
+    let id     = document.getElementById('complId').value;
+    let entry  = {
+        id:         id || crypto.randomUUID(),
+        date,
+        procedure:  document.getElementById('complProcedure').value,
+        complication: type,
+        severity:   selectedComplSeverity,
+        management: document.getElementById('complManagement').value.trim(),
+        outcome:    selectedComplOutcome,
+        notes:      document.getElementById('complNotes').value.trim(),
+        createdAt:  new Date().toISOString()
+    };
+    if (id) {
+        let idx = compls.findIndex(c => c.id === id);
+        if (idx !== -1) compls[idx] = entry; else compls.unshift(entry);
+    } else {
+        compls.unshift(entry);
+    }
+    saveCompls(compls);
+    closeComplModal();
+    renderCompls();
+    showToast('🔒 Saved privately');
+}
+
+function deleteCompl(id) {
+    if (!confirm('Delete this complication entry?')) return;
+    saveCompls(getCompls().filter(c => c.id !== id));
+    renderCompls();
+}
+
+function renderCompls() {
+    let compls = getCompls();
+    let statsEl = document.getElementById('complStats');
+    let histEl  = document.getElementById('complHistory');
+
+    // ── Stats cards: total, PCR rate, severity breakdown ──
+    if (statsEl) {
+        if (compls.length === 0) { statsEl.innerHTML = ''; }
+        else {
+            let total    = compls.length;
+            let pcrCount = compls.filter(c => c.complication === 'PCR' || c.complication === 'Posterior Capsule Rupture').length;
+            let vlCount  = compls.filter(c => c.complication === 'Vitreous Loss').length;
+            let majCount = compls.filter(c => c.severity === 'Major').length;
+            let goodOut  = compls.filter(c => c.outcome === 'Good').length;
+
+            // PCR rate vs all cataract cases
+            let cataractCases = allCases.filter(c => c.procedure && c.procedure.toLowerCase().includes('cataract') || c.procedure && c.procedure.toLowerCase().includes('phaco')).length;
+            let pcrRate = cataractCases > 0 ? ((pcrCount / cataractCases) * 100).toFixed(1) : null;
+
+            statsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+                <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:12px;padding:10px;text-align:center">
+                    <div style="font-size:20px;font-weight:800;color:#dc2626">${total}</div>
+                    <div style="font-size:9px;color:#dc2626;font-weight:700;text-transform:uppercase;margin-top:2px">Total</div>
+                </div>
+                <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:10px;text-align:center">
+                    <div style="font-size:20px;font-weight:800;color:#ea580c">${pcrCount}</div>
+                    <div style="font-size:9px;color:#ea580c;font-weight:700;text-transform:uppercase;margin-top:2px">PCR${pcrRate?'<br><span style=\'font-size:8px;font-weight:400\'>('+pcrRate+'%)</span>':''}</div>
+                </div>
+                <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:12px;padding:10px;text-align:center">
+                    <div style="font-size:20px;font-weight:800;color:#dc2626">${majCount}</div>
+                    <div style="font-size:9px;color:#dc2626;font-weight:700;text-transform:uppercase;margin-top:2px">Major</div>
+                </div>
+                <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:10px;text-align:center">
+                    <div style="font-size:20px;font-weight:800;color:#16a34a">${goodOut}</div>
+                    <div style="font-size:9px;color:#16a34a;font-weight:700;text-transform:uppercase;margin-top:2px">Good Outcome</div>
+                </div>
+            </div>`;
+        }
+    }
+
+    // ── History list ──
+    if (!histEl) return;
+    if (compls.length === 0) {
+        histEl.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#9ca3af">
+            <div style="font-size:32px;margin-bottom:12px">✅</div>
+            <div style="font-size:14px;font-weight:600">No complications logged</div>
+            <div style="font-size:12px;margin-top:4px">This log is private — only visible on this device</div>
+        </div>`;
+        return;
+    }
+
+    let sevColor = { Minor:'#16a34a', Moderate:'#d97706', Major:'#dc2626' };
+    let sevBg    = { Minor:'#f0fdf4', Moderate:'#fffbeb', Major:'#fef2f2' };
+    let outEmoji = { Good:'✅', Fair:'🟡', Poor:'⚠️' };
+
+    histEl.innerHTML = compls.map(c => {
+        let d     = new Date(c.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+        let scol  = sevColor[c.severity]||'#64748b';
+        let sbg   = sevBg[c.severity]||'#f8fafc';
+        return `<div class="dash-card" style="margin-bottom:10px;border-left:3px solid ${scol}">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+                <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:3px">
+                        <span style="font-size:13px;font-weight:800;color:#0f172a">${c.complication}</span>
+                        <span style="background:${sbg};color:${scol};border-radius:6px;font-size:10px;font-weight:700;padding:2px 8px">${c.severity}</span>
+                        <span style="font-size:11px">${outEmoji[c.outcome]||''} ${c.outcome}</span>
+                    </div>
+                    <div style="font-size:11px;color:#94a3b8">${c.procedure} · ${d}</div>
+                </div>
+                <div style="display:flex;gap:5px;flex-shrink:0;margin-left:8px">
+                    <button onclick="openComplModal('${c.id}')" style="width:26px;height:26px;padding:0;margin:0;background:#f1f5f9;border-radius:6px;font-size:11px;color:#64748b;border:none;box-shadow:none">✏️</button>
+                    <button onclick="deleteCompl('${c.id}')" style="width:26px;height:26px;padding:0;margin:0;background:#fef2f2;border-radius:6px;font-size:13px;color:#dc2626;border:1px solid #fecaca;box-shadow:none">×</button>
+                </div>
+            </div>
+            ${c.management ? `<div style="font-size:12px;color:#374151;margin-top:6px;padding:8px 10px;background:#f8fafc;border-radius:8px"><strong>Management:</strong> ${c.management}</div>` : ''}
+            ${c.notes ? `<div style="font-size:12px;color:#64748b;margin-top:6px;font-style:italic;padding:6px 10px;background:#fef2f2;border-radius:8px;border-left:2px solid #fca5a5">🔒 ${c.notes}</div>` : ''}
+        </div>`;
+    }).join('');
 }
 
 // ── ITE / OKAP Score Tracker ──────────────────────────────────────────────────
