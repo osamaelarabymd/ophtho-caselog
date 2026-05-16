@@ -2642,6 +2642,25 @@ function checkSmartAlerts(cases) {
 // ── Voice Logging ────────────────────────────────────────────────────────────
 let _voiceRec = null;
 let _voiceActive = false;
+let _vfLang = 'en-US'; // current voice language — toggled by user
+
+function toggleVoiceLang(lang) {
+    _vfLang = lang;
+    const enBtn = document.getElementById('vlangEN');
+    const arBtn = document.getElementById('vlangAR');
+    const liveText = document.getElementById('voiceLiveText');
+    if (enBtn) {
+        const active   = { background: '#0f172a', color: 'white' };
+        const inactive = { background: '#f1f5f9', color: '#64748b' };
+        Object.assign(enBtn.style, lang === 'en-US' ? active : inactive);
+        Object.assign(arBtn.style, lang === 'ar-SA' ? active : inactive);
+    }
+    if (liveText) {
+        liveText.dir         = lang === 'ar-SA' ? 'rtl' : 'ltr';
+        liveText.style.textAlign = lang === 'ar-SA' ? 'right' : 'left';
+        liveText.placeholder = lang === 'ar-SA' ? 'جارٍ الاستماع…' : 'Listening…';
+    }
+}
 
 // Universal voice fill — shows floating overlay with live transcript
 let _vfRec = null, _vfTargetId = null, _vfBtn = null, _vfAccumulated = '';
@@ -2658,7 +2677,7 @@ function startVoiceFill(targetId, btnEl) {
 
     let SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     _vfRec = new SR();
-    _vfRec.lang = 'en-US';
+    _vfRec.lang = _vfLang;
     _vfRec.interimResults = true;
     _vfRec.continuous = true;
     _vfRec.maxAlternatives = 1;
@@ -2667,8 +2686,14 @@ function startVoiceFill(targetId, btnEl) {
     let overlay = document.getElementById('voiceOverlay');
     let liveText = document.getElementById('voiceLiveText');
     if (overlay) overlay.style.display = 'block';
-    if (liveText) liveText.textContent = 'Listening…';
-    btnEl.innerHTML = '⏹'; btnEl.style.color = '#dc2626';
+    if (liveText) {
+        liveText.textContent = _vfLang === 'ar-SA' ? 'جارٍ الاستماع…' : 'Listening…';
+        liveText.dir = _vfLang === 'ar-SA' ? 'rtl' : 'ltr';
+        liveText.style.textAlign = _vfLang === 'ar-SA' ? 'right' : 'left';
+    }
+    // mark btn as active — red mic
+    btnEl.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="#dc2626" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+    btnEl.style.background = '#fef2f2'; btnEl.style.borderColor = '#fca5a5';
 
     _vfRec.onresult = (e) => {
         let interim = '';
@@ -2713,19 +2738,25 @@ function _cleanupVoiceFill(saved) {
     _vfRec = null; _vfAccumulated = '';
     let overlay = document.getElementById('voiceOverlay');
     if (overlay) overlay.style.display = 'none';
-    if (_vfBtn) { _vfBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>'; _vfBtn.style.color = ''; _vfBtn = null; }
+    if (_vfBtn) {
+        _vfBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+        _vfBtn.style.background = '#eff6ff'; _vfBtn.style.borderColor = '#bfdbfe'; _vfBtn.style.color = '';
+        _vfBtn = null;
+    }
 }
 
 function startVoiceLog() {
     let statusEl = document.getElementById('voiceStatus');
     let voiceBtn = document.getElementById('voiceBtn');
 
+    const _micSVG = (col) => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>`;
     // Toggle off if already recording
     if (_voiceActive && _voiceRec) {
         _voiceRec.stop();
         _voiceActive = false;
-        voiceBtn.innerHTML = 'Voice';
-        if (statusEl) { statusEl.textContent = '⏹ Recording stopped'; setTimeout(() => { statusEl.style.display = 'none'; }, 2000); }
+        voiceBtn.innerHTML = _micSVG('white') + ' <span>Voice</span>';
+        voiceBtn.style.background = '#2563eb'; voiceBtn.style.borderColor = '#2563eb';
+        if (statusEl) { statusEl.textContent = 'Recording stopped'; setTimeout(() => { statusEl.style.display = 'none'; }, 2000); }
         return;
     }
 
@@ -2736,14 +2767,20 @@ function startVoiceLog() {
 
     let SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     _voiceRec = new SR();
-    _voiceRec.lang = 'en-US';
+    _voiceRec.lang = _vfLang;
     _voiceRec.interimResults = true;
     _voiceRec.maxAlternatives = 1;
     _voiceActive = true;
 
-    statusEl.textContent = 'Listening… say e.g. "Cataract primary surgeon today with Dr. Smith"';
+    const _hint = _vfLang === 'ar-SA'
+        ? 'استمع… قل مثلاً: "إعتام عدسة العين جراح أساسي اليوم"'
+        : 'Listening… say e.g. "Cataract primary surgeon today with Dr. Smith"';
+    statusEl.textContent = _hint;
+    statusEl.dir = _vfLang === 'ar-SA' ? 'rtl' : 'ltr';
     statusEl.style.display = 'block';
-    voiceBtn.innerHTML = '⏹ Stop';
+    // Active state: red pill + stop icon
+    voiceBtn.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="#fff"><rect x="1" y="1" width="8" height="8" rx="2"/></svg> <span>Stop</span>';
+    voiceBtn.style.background = '#dc2626'; voiceBtn.style.borderColor = '#dc2626';
 
     _voiceRec.onresult = (e) => {
         let interim = '';
@@ -2752,20 +2789,22 @@ function startVoiceLog() {
             let t = e.results[i][0].transcript;
             if (e.results[i].isFinal) final += t; else interim += t;
         }
-        if (interim) statusEl.textContent = interim + '…';
-        if (final)   { statusEl.textContent = '✅ Heard: "' + final + '"'; parseVoiceInput(final); }
+        if (interim) { statusEl.textContent = interim + '…'; statusEl.dir = _vfLang === 'ar-SA' ? 'rtl' : 'ltr'; }
+        if (final)   { statusEl.textContent = (_vfLang === 'ar-SA' ? 'سُمع: "' : 'Heard: "') + final + '"'; statusEl.dir = _vfLang === 'ar-SA' ? 'rtl' : 'ltr'; parseVoiceInput(final); }
     };
     _voiceRec.onerror = (e) => {
         _voiceActive = false;
-        voiceBtn.innerHTML = 'Voice';
-        let msg = { 'not-allowed':'⚠️ Microphone permission denied — allow mic in browser settings', 'no-speech':'⚠️ No speech detected — tap and speak clearly', 'network':'⚠️ Network error — check connection', 'audio-capture':'⚠️ No microphone found' }[e.error] || ('⚠️ Error: ' + e.error);
+        voiceBtn.innerHTML = _micSVG('white') + ' <span>Voice</span>';
+        voiceBtn.style.background = '#2563eb'; voiceBtn.style.borderColor = '#2563eb';
+        let msg = { 'not-allowed':'Microphone permission denied — allow mic in browser settings', 'no-speech':'No speech detected — tap and speak clearly', 'network':'Network error — check connection', 'audio-capture':'No microphone found' }[e.error] || ('Error: ' + e.error);
         statusEl.textContent = msg;
         setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
     };
     _voiceRec.onend = () => {
         _voiceActive = false;
-        voiceBtn.innerHTML = 'Voice';
-        setTimeout(() => { if (statusEl.textContent.startsWith('✅')) setTimeout(() => { statusEl.style.display = 'none'; }, 3000); }, 100);
+        voiceBtn.innerHTML = _micSVG('white') + ' <span>Voice</span>';
+        voiceBtn.style.background = '#2563eb'; voiceBtn.style.borderColor = '#2563eb';
+        setTimeout(() => { if (statusEl.textContent.startsWith('Heard') || statusEl.textContent.startsWith('سُمع')) setTimeout(() => { statusEl.style.display = 'none'; }, 3000); }, 100);
     };
 
     try { _voiceRec.start(); }
