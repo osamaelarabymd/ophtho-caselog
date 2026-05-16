@@ -44,27 +44,39 @@
         </div>
     </div>
 
-    <!-- Global Search Modal -->
-    <div id="globalSearchModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;backdrop-filter:blur(6px)" onclick="if(event.target===this)closeGlobalSearch()">
-        <div style="background:white;border-radius:0 0 24px 24px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,0.25);display:flex;flex-direction:column">
-            <div style="padding:16px;border-bottom:1px solid #f1f5f9;position:sticky;top:0;background:white;z-index:1">
-                <div style="display:flex;align-items:center;gap:10px">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <input id="globalSearchInput" type="text" placeholder="Search cases, journal, notes, tasks…"
-                        oninput="runGlobalSearch()" autofocus
-                        style="flex:1;margin:0;padding:10px 14px;border-radius:12px;font-size:15px;border:2px solid #2563eb;outline:none">
-                    <button onclick="closeGlobalSearch()" style="width:36px;height:36px;margin:0;padding:0;background:#f1f5f9;border-radius:10px;font-size:18px;color:#64748b;box-shadow:none;flex-shrink:0">✕</button>
-                </div>
+    <!-- Command Palette (⌘K) -->
+    <div id="globalSearchModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.55);z-index:9999;backdrop-filter:blur(8px);align-items:flex-start;justify-content:center;padding-top:9vh" onclick="if(event.target===this)closeGlobalSearch()">
+        <div style="background:white;border-radius:20px;width:94%;max-width:620px;max-height:76vh;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.28),0 0 0 1px rgba(0,0,0,0.06);display:flex;flex-direction:column">
+            <!-- Search input -->
+            <div style="padding:14px 18px;border-bottom:1.5px solid #f1f5f9;display:flex;align-items:center;gap:12px;flex-shrink:0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input id="globalSearchInput" type="text" placeholder="Jump to anything…"
+                    oninput="runGlobalSearch()"
+                    onkeydown="cpKeyDown(event)"
+                    style="flex:1;margin:0;padding:0;border:none;outline:none;font-size:16px;color:#0f172a;font-weight:500;background:transparent"
+                    autocomplete="off" spellcheck="false">
+                <kbd style="font-size:11px;color:#94a3b8;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:2px 7px;font-family:inherit;flex-shrink:0">Esc</kbd>
             </div>
-            <div id="globalSearchResults" style="padding:16px;min-height:200px">
-                <div style="text-align:center;padding:40px 20px;color:#94a3b8">
-                    <div style="margin-bottom:12px;display:flex;justify-content:center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
-                    <p style="font-size:14px;font-weight:600;color:#64748b">Start typing to search everything</p>
-                    <p style="font-size:12px">Cases · Journal · Notes · Tasks · Study List</p>
-                </div>
+            <!-- Results -->
+            <div id="globalSearchResults" style="overflow-y:auto;flex:1;padding:8px 0"></div>
+            <!-- Footer hints -->
+            <div style="padding:10px 18px;border-top:1.5px solid #f1f5f9;display:flex;gap:16px;flex-shrink:0;background:#fafafa;border-radius:0 0 20px 20px">
+                <span style="font-size:11px;color:#94a3b8;display:flex;align-items:center;gap:4px"><kbd style="font-size:10px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:1px 5px">↑↓</kbd> navigate</span>
+                <span style="font-size:11px;color:#94a3b8;display:flex;align-items:center;gap:4px"><kbd style="font-size:10px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:1px 5px">↵</kbd> select</span>
+                <span style="font-size:11px;color:#94a3b8;display:flex;align-items:center;gap:4px"><kbd style="font-size:10px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:1px 5px">Esc</kbd> close</span>
             </div>
         </div>
     </div>
+    <style>
+        .cp-item { display:flex;align-items:center;gap:12px;padding:10px 18px;cursor:pointer;border-radius:0;transition:background 0.08s;user-select:none; }
+        .cp-item:hover,.cp-item.cp-active { background:#f1f5f9; }
+        .cp-item.cp-active { background:#eff6ff; }
+        .cp-icon { width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+        .cp-label { font-size:14px;font-weight:600;color:#0f172a;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+        .cp-sub { font-size:11px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px; }
+        .cp-section { font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;padding:10px 18px 4px; }
+        .cp-divider { height:1px;background:#f1f5f9;margin:4px 0; }
+    </style>
 
     <!-- Stats Card Modal -->
     <div id="statsCardModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px)">
@@ -326,7 +338,7 @@
     <div id="appSection" style="display:none">
 
         <div class="top-bar">
-            <button onclick="openGlobalSearch()" class="top-btn" style="background:#2563eb"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Search</span></button>
+            <button onclick="openGlobalSearch()" class="top-btn" style="background:#2563eb;gap:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Search</span><kbd style="font-size:10px;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.25);border-radius:5px;padding:1px 5px;font-family:inherit;font-weight:700;line-height:1.4">⌘K</kbd></button>
             <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSev-87zwv0Ot_7LNJuuNNTBpKpcOvS_vEtSnGbgLGjMVP-iMA/viewform', '_blank')" class="top-btn" style="background:#16a34a"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Feedback</span></button>
             <button id="darkBtn" onclick="toggleDarkMode()" class="top-btn" style="background:#1e293b"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><span>Dark</span></button>
             <button onclick="signOut()" class="top-btn" style="background:#dc2626"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Sign Out</span></button>
@@ -815,8 +827,16 @@
 
             <!-- LIST sub-section -->
             <div id="cl-section-list">
-                <div style="background:white;padding:12px 14px;border-radius:14px;margin-bottom:12px;border:1px solid #E5E7EB;box-shadow:0 1px 4px rgba(0,0,0,0.04)">
-                    <input type="text" id="searchNotes" placeholder="Search cases…" oninput="applyFilter()" style="margin:0;padding:10px 14px;border-radius:10px;font-size:13px">
+                <div style="background:white;padding:12px 14px;border-radius:14px;margin-bottom:12px;border:1px solid #E5E7EB;box-shadow:0 1px 4px rgba(0,0,0,0.04);display:flex;gap:8px;align-items:center">
+                    <input type="text" id="searchNotes" placeholder="Search cases…" oninput="applyFilter()" style="margin:0;padding:10px 14px;border-radius:10px;font-size:13px;flex:1">
+                    <div style="display:flex;background:#f1f5f9;border-radius:9px;padding:3px;gap:2px;flex-shrink:0">
+                        <button id="caseViewList" onclick="setCaseView('list')" title="List view" style="width:30px;height:30px;margin:0;padding:0;border-radius:7px;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:center">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                        </button>
+                        <button id="caseViewGallery" onclick="setCaseView('gallery')" title="Gallery view" style="width:30px;height:30px;margin:0;padding:0;border-radius:7px;background:transparent;box-shadow:none;display:flex;align-items:center;justify-content:center">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <div id="savedFiltersBar" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center"></div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
@@ -895,6 +915,19 @@
                         <h3 style="margin:0;font-size:12px;font-weight:700;color:#111827">Role Split</h3>
                     </div>
                     <div id="roleChart"></div>
+                </div>
+
+                <!-- Learning Curve -->
+                <div class="dash-card" style="margin-bottom:12px">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <div style="width:24px;height:24px;background:#faf5ff;border-radius:7px;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+                            <h3 style="margin:0;font-size:12px;font-weight:700;color:#111827">Learning Curve</h3>
+                        </div>
+                        <select id="lcProcedure" onchange="renderLearningCurve()" style="width:auto;margin:0;padding:5px 10px;font-size:11px;font-weight:600;border-radius:9px;border:1.5px solid #e2e8f0;background:white;color:#374151"></select>
+                    </div>
+                    <canvas id="learningCurveChart" height="100"></canvas>
+                    <div id="learningCurveStats" style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap"></div>
                 </div>
 
                 <!-- ACGME Projections -->
@@ -1110,7 +1143,8 @@
                 <button id="ws-tab-journal"  onclick="showWorkspaceTab('journal')"  class="ws-tab active-ws-tab" style="flex:1;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/></svg>Journal</button>
                 <button id="ws-tab-todo"     onclick="showWorkspaceTab('todo')"     class="ws-tab" style="flex:1;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>To-Do</button>
                 <button id="ws-tab-notes"    onclick="showWorkspaceTab('notes')"    class="ws-tab" style="flex:1;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>Notes</button>
-                <button id="ws-tab-study"    onclick="showWorkspaceTab('study')"    class="ws-tab" style="flex:1;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>Study</button>
+                <button id="ws-tab-study"       onclick="showWorkspaceTab('study')"       class="ws-tab" style="flex:1;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>Study</button>
+                <button id="ws-tab-fellowship" onclick="showWorkspaceTab('fellowship')" class="ws-tab" style="flex:1;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>Match</button>
             </div>
             <!-- Calendar section -->
             <div id="ws-calendar" style="display:none">
@@ -1197,6 +1231,20 @@
                 <div id="studyKanban" style="display:none"></div>
                 <div id="studyProgress" style="margin-bottom:14px"></div>
                 <div id="studyList"></div>
+            </div>
+
+            <!-- Fellowship Pipeline -->
+            <div id="ws-fellowship" style="display:none">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                    <div>
+                        <h3 style="margin:0 0 2px;font-size:16px;font-weight:800;color:#0f172a">Fellowship Pipeline</h3>
+                        <p style="margin:0;font-size:12px;color:#94a3b8">Track programs from application to match</p>
+                    </div>
+                    <button onclick="openFellowshipModal()" style="width:auto;margin:0;padding:9px 14px;font-size:12px;font-weight:700;border-radius:12px;background:#0f172a;color:white;display:flex;align-items:center;gap:6px">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Program
+                    </button>
+                </div>
+                <div id="fellowshipBoard"></div>
             </div>
         </div>
 
@@ -1682,5 +1730,38 @@
         .rt-task { display:flex;align-items:center;gap:8px;margin:4px 0; }
         .rt-task input[type=checkbox] { width:15px;height:15px;accent-color:#2563eb;flex-shrink:0;cursor:pointer; }
     </style>
+
+    <!-- Fellowship Program Modal -->
+    <div id="fellowshipModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+        <div style="background:white;border-radius:20px;padding:28px;width:92%;max-width:440px;box-shadow:0 24px 64px rgba(0,0,0,0.25);max-height:90vh;overflow-y:auto">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                <h2 style="margin:0;font-size:18px;font-weight:700">Program</h2>
+                <button onclick="closeFellowshipModal()" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b;box-shadow:none">✕</button>
+            </div>
+            <input type="hidden" id="fpId">
+            <label>Program Name</label>
+            <input type="text" id="fpName" placeholder="e.g. Bascom Palmer, Wills Eye…" style="margin-bottom:12px">
+            <label>Institution / City</label>
+            <input type="text" id="fpCity" placeholder="e.g. Miami, FL" style="margin-bottom:12px">
+            <label>Stage</label>
+            <select id="fpStage" style="margin-bottom:12px">
+                <option value="wishlist">Wish List</option>
+                <option value="applied">Applied</option>
+                <option value="interview-offered">Interview Offered</option>
+                <option value="interviewed">Interviewed</option>
+                <option value="ranked">Ranked</option>
+                <option value="matched">Matched</option>
+                <option value="not-matched">Not Matched</option>
+            </select>
+            <label>Deadline / Interview Date <span style="font-size:11px;color:#94a3b8">(optional)</span></label>
+            <input type="date" id="fpDate" style="margin-bottom:12px">
+            <label>Notes <span style="font-size:11px;color:#94a3b8">(optional)</span></label>
+            <textarea id="fpNotes" rows="3" placeholder="Contact, impressions, rank thoughts…" style="margin-bottom:20px"></textarea>
+            <div style="display:flex;gap:10px">
+                <button onclick="saveFellowshipProgram()" style="flex:1;margin:0;background:#0f172a">Save</button>
+                <button onclick="closeFellowshipModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

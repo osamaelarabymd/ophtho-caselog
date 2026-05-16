@@ -109,31 +109,133 @@ function renderGoalsWidget() {
 }
 
 // ── Global Search ─────────────────────────────────────────────────────────────
+// ── Command Palette (⌘K) ──────────────────────────────────────────────────────
+let _cpIndex = -1;
+let _cpActions = []; // flat list of executable items currently shown
+
+const _CP_COMMANDS = [
+    // Navigate
+    { section:'Navigate', label:'Dashboard',    sub:'Go to Dashboard',       icon:'#dbeafe', iconColor:'#2563eb', iconPath:'<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>', action:"showTab('dashboard',null);closeGlobalSearch()" },
+    { section:'Navigate', label:'Log a Case',   sub:'Open case logging form', icon:'#dcfce7', iconColor:'#16a34a', iconPath:'<circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>', action:"showTab('logCase',null);closeGlobalSearch()" },
+    { section:'Navigate', label:'My Cases',     sub:'Browse case history',    icon:'#f3e8ff', iconColor:'#7c3aed', iconPath:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>', action:"showTab('caseList',null);closeGlobalSearch()" },
+    { section:'Navigate', label:'Journal',      sub:'Open journal workspace', icon:'#faf5ff', iconColor:'#7c3aed', iconPath:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/>', action:"showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch()" },
+    { section:'Navigate', label:'To-Do',        sub:'View tasks',             icon:'#fff7ed', iconColor:'#ea580c', iconPath:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>', action:"showTab('journal',null);showWorkspaceTab('todo');closeGlobalSearch()" },
+    { section:'Navigate', label:'Notes',        sub:'Clinical pearls & notes',icon:'#ecfdf5', iconColor:'#059669', iconPath:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>', action:"showTab('journal',null);showWorkspaceTab('notes');closeGlobalSearch()" },
+    { section:'Navigate', label:'Study List',   sub:'Reading list & resources',icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>', action:"showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch()" },
+    { section:'Navigate', label:'Calendar',     sub:'Plan & events view',     icon:'#fef9c3', iconColor:'#ca8a04', iconPath:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', action:"showTab('journal',null);showWorkspaceTab('calendar');closeGlobalSearch()" },
+    { section:'Navigate', label:'Settings',     sub:'App settings',           icon:'#f1f5f9', iconColor:'#64748b', iconPath:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', action:"showTab('settings',null);closeGlobalSearch()" },
+    // Create
+    { section:'Create', label:'New Journal Entry', sub:'Write a reflection',    icon:'#faf5ff', iconColor:'#7c3aed', iconPath:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/>', action:"showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch();setTimeout(()=>openJournalModal(),100)" },
+    { section:'Create', label:'Add Task',          sub:'Create a to-do item',   icon:'#fff7ed', iconColor:'#ea580c', iconPath:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>', action:"showTab('journal',null);showWorkspaceTab('todo');closeGlobalSearch();setTimeout(()=>openTodoModal(),100)" },
+    { section:'Create', label:'Add Note',          sub:'Quick clinical pearl',  icon:'#ecfdf5', iconColor:'#059669', iconPath:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>', action:"showTab('journal',null);showWorkspaceTab('notes');closeGlobalSearch();setTimeout(()=>openNoteModal(),100)" },
+    { section:'Create', label:'Add Study Item',    sub:'Add to reading list',   icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>', action:"showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch();setTimeout(()=>openStudyModal(),100)" },
+];
+
 function openGlobalSearch() {
     let modal = document.getElementById('globalSearchModal');
     if (!modal) return;
-    modal.style.display = 'block';
-    setTimeout(() => { let inp = document.getElementById('globalSearchInput'); if (inp) inp.focus(); }, 100);
+    modal.style.display = 'flex';
+    let inp = document.getElementById('globalSearchInput');
+    if (inp) { inp.value = ''; inp.focus(); }
+    _cpIndex = -1;
+    _cpActions = [];
+    _renderCpDefaults();
 }
 
 function closeGlobalSearch() {
     let modal = document.getElementById('globalSearchModal');
     if (modal) modal.style.display = 'none';
+    _cpIndex = -1;
+    _cpActions = [];
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGlobalSearch(); });
+function cpKeyDown(e) {
+    if (e.key === 'ArrowDown')  { e.preventDefault(); _cpMove(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); _cpMove(-1); }
+    else if (e.key === 'Enter') { e.preventDefault(); _cpExecute(); }
+}
+
+function _cpMove(dir) {
+    let items = document.querySelectorAll('.cp-item');
+    if (!items.length) return;
+    items[_cpIndex]?.classList.remove('cp-active');
+    _cpIndex = Math.max(0, Math.min(items.length - 1, _cpIndex + dir));
+    items[_cpIndex]?.classList.add('cp-active');
+    items[_cpIndex]?.scrollIntoView({ block: 'nearest' });
+}
+
+function _cpExecute() {
+    let items = document.querySelectorAll('.cp-item');
+    let active = _cpIndex >= 0 ? items[_cpIndex] : items[0];
+    if (active) active.click();
+}
+
+function _cpItemHTML(icon, iconColor, iconPath, label, sub, action) {
+    return `<div class="cp-item" onclick="${action.replace(/"/g,"'")}" onmouseenter="_cpHover(this)">
+        <div class="cp-icon" style="background:${icon}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${iconPath}</svg>
+        </div>
+        <div class="cp-label">${label}</div>
+        <div class="cp-sub">${sub}</div>
+    </div>`;
+}
+
+function _cpHover(el) {
+    document.querySelectorAll('.cp-item').forEach((x,i) => {
+        x.classList.remove('cp-active');
+        if (x === el) _cpIndex = i;
+    });
+    el.classList.add('cp-active');
+}
+
+function _renderCpDefaults() {
+    let out = document.getElementById('globalSearchResults');
+    if (!out) return;
+    let sections = {};
+    _CP_COMMANDS.forEach(cmd => {
+        if (!sections[cmd.section]) sections[cmd.section] = [];
+        sections[cmd.section].push(cmd);
+    });
+    // Recent cases
+    let recent = allCases.slice(0,3);
+    let html = '';
+    if (recent.length) {
+        html += `<div class="cp-section">Recent Cases</div>`;
+        let pColors = {'Cataract / Phaco':'#2563eb','Vitreoretinal (PPV)':'#7c3aed','Glaucoma':'#059669','Cornea':'#0891b2','Strabismus':'#ea580c','Oculoplastics':'#d97706'};
+        html += recent.map(c => _cpItemHTML('#f8fafc', pColors[c.procedure]||'#64748b', '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>', c.procedure||'Case', `${c.date||''} · ${c.role||''}`, `showTab('caseList',null);closeGlobalSearch()`)).join('');
+        html += `<div class="cp-divider"></div>`;
+    }
+    for (let [section, cmds] of Object.entries(sections)) {
+        html += `<div class="cp-section">${section}</div>`;
+        html += cmds.map(cmd => _cpItemHTML(cmd.icon, cmd.iconColor, cmd.iconPath, cmd.label, cmd.sub, cmd.action)).join('');
+        html += `<div class="cp-divider"></div>`;
+    }
+    out.innerHTML = html;
+}
+
+document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openGlobalSearch(); return; }
+    if (e.key === 'Escape') closeGlobalSearch();
+});
 
 function runGlobalSearch() {
     let q   = (document.getElementById('globalSearchInput')?.value || '').trim().toLowerCase();
     let out = document.getElementById('globalSearchResults');
     if (!out) return;
+    _cpIndex = -1;
 
-    if (q.length < 2) {
-        out.innerHTML = '<div style="text-align:center;padding:40px 20px;color:#94a3b8"><div style="margin-bottom:12px;display:flex;justify-content:center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><p style="font-size:14px;font-weight:600;color:#64748b">Start typing to search everything</p><p style="font-size:12px">Cases · Journal · Notes · Tasks · Study List</p></div>';
-        return;
-    }
+    if (q.length < 1) { _renderCpDefaults(); return; }
 
     let html = '';
+    const pColors = {'Cataract / Phaco':'#2563eb','Vitreoretinal (PPV)':'#7c3aed','Glaucoma':'#059669','Cornea':'#0891b2','Strabismus':'#ea580c','Oculoplastics':'#d97706'};
+
+    // Filter commands
+    let cmdHits = _CP_COMMANDS.filter(c => c.label.toLowerCase().includes(q) || c.sub.toLowerCase().includes(q));
+    if (cmdHits.length) {
+        html += `<div class="cp-section">Commands</div>`;
+        html += cmdHits.map(cmd => _cpItemHTML(cmd.icon, cmd.iconColor, cmd.iconPath, cmd.label, cmd.sub, cmd.action)).join('');
+        html += `<div class="cp-divider"></div>`;
+    }
 
     // Cases
     let caseHits = allCases.filter(c =>
@@ -141,62 +243,73 @@ function runGlobalSearch() {
         (c.attending||'').toLowerCase().includes(q)  ||
         (c.hospital||'').toLowerCase().includes(q)   ||
         (c.notes||'').toLowerCase().includes(q)
-    ).slice(0, 6);
+    ).slice(0, 5);
     if (caseHits.length) {
-        html += _srSection('Cases', caseHits.map(c =>
-            _srItem('📋', c.procedure, `${c.date||''} · ${c.role||''} · ${c.attending||''}`, `showTab('caseList',null);closeGlobalSearch()`, procedureColors[c.procedure]||'#2563eb')
-        ));
+        html += `<div class="cp-section">Cases</div>`;
+        html += caseHits.map(c => _cpItemHTML('#f8fafc', pColors[c.procedure]||'#64748b',
+            '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+            c.procedure||'Case', `${c.date||''} · ${c.role||''} · ${c.attending||''}`,
+            `showTab('caseList',null);closeGlobalSearch()`)).join('');
+        html += `<div class="cp-divider"></div>`;
     }
 
     // Journal
     let jHits = getJournalEntries().filter(e =>
         (e.title||'').toLowerCase().includes(q) ||
-        (e.body||'').toLowerCase().includes(q)
+        (e.body||'').replace(/<[^>]*>/g,' ').toLowerCase().includes(q)
     ).slice(0, 4);
     if (jHits.length) {
-        html += _srSection('Journal', jHits.map(e =>
-            _srItem(e.mood||'📔', e.title||'Untitled entry', `${e.date||''} · ${(e.body||'').replace(/<[^>]*>/g,' ').trim().slice(0,60)}…`, `showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch()`, '#7c3aed')
-        ));
+        html += `<div class="cp-section">Journal</div>`;
+        html += jHits.map(e => _cpItemHTML('#faf5ff', '#7c3aed',
+            '<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/>',
+            e.title||'Untitled entry', `${e.date||''} · ${(e.body||'').replace(/<[^>]*>/g,' ').trim().slice(0,60)}`,
+            `showTab('journal',null);showWorkspaceTab('journal');openJournalModal('${e.id}');closeGlobalSearch()`)).join('');
+        html += `<div class="cp-divider"></div>`;
     }
 
     // Notes
     let nHits = getNotes().filter(n =>
-        (n.title||'').toLowerCase().includes(q) ||
-        (n.body||'').toLowerCase().includes(q)  ||
-        (n.tag||'').toLowerCase().includes(q)
+        (n.title||'').toLowerCase().includes(q) || (n.body||'').toLowerCase().includes(q)
     ).slice(0, 4);
     if (nHits.length) {
-        html += _srSection('Notes', nHits.map(n =>
-            _srItem('📝', n.title||'Untitled', (n.tag||'') + (n.body ? ' · ' + n.body.slice(0,60) : ''), `showTab('journal',null);showWorkspaceTab('notes');closeGlobalSearch()`, '#0891b2')
-        ));
+        html += `<div class="cp-section">Notes</div>`;
+        html += nHits.map(n => _cpItemHTML('#ecfdf5', '#059669',
+            '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
+            n.title||'Untitled', n.tag||'Note',
+            `showTab('journal',null);showWorkspaceTab('notes');closeGlobalSearch()`)).join('');
+        html += `<div class="cp-divider"></div>`;
     }
 
     // Todos
+    let priColor = { high:'#dc2626', medium:'#d97706', low:'#16a34a' };
     let tHits = getTodos().filter(t => (t.text||'').toLowerCase().includes(q)).slice(0, 4);
     if (tHits.length) {
-        let priColor = { high:'#dc2626', medium:'#d97706', low:'#16a34a' };
-        html += _srSection('Tasks', tHits.map(t =>
-            _srItem(t.done ? '✅' : '⬜', t.text, `${t.priority} priority${t.due?' · due '+t.due:''}`, `showTab('journal',null);showWorkspaceTab('todo');closeGlobalSearch()`, priColor[t.priority]||'#64748b')
-        ));
+        html += `<div class="cp-section">Tasks</div>`;
+        html += tHits.map(t => _cpItemHTML('#fff7ed', priColor[t.priority]||'#64748b',
+            '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+            t.text, `${t.priority} priority${t.due?' · due '+t.due:''}`,
+            `showTab('journal',null);showWorkspaceTab('todo');closeGlobalSearch()`)).join('');
+        html += `<div class="cp-divider"></div>`;
     }
 
     // Study
+    let stColor = { 'to-read':'#2563eb', 'reading':'#d97706', 'done':'#16a34a' };
     let sHits = getStudyItems().filter(s =>
-        (s.topic||'').toLowerCase().includes(q) ||
-        (s.notes||'').toLowerCase().includes(q)
+        (s.topic||'').toLowerCase().includes(q) || (s.notes||'').toLowerCase().includes(q)
     ).slice(0, 4);
     if (sHits.length) {
-        let stColor = { 'to-read':'#2563eb', 'reading':'#d97706', 'done':'#16a34a' };
-        html += _srSection('Study List', sHits.map(s =>
-            _srItem('📚', s.topic, `${s.type||''} · ${s.status||''}`, `showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch()`, stColor[s.status]||'#64748b')
-        ));
+        html += `<div class="cp-section">Study List</div>`;
+        html += sHits.map(s => _cpItemHTML('#eff6ff', stColor[s.status]||'#64748b',
+            '<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>',
+            s.topic, `${s.type||''} · ${s.status||''}`,
+            `showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch()`)).join('');
     }
 
     if (!html) {
-        html = `<div style="text-align:center;padding:40px 20px;color:#94a3b8">
-            <div style="margin-bottom:12px;display:flex;justify-content:center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
-            <p style="font-size:14px;font-weight:600;color:#64748b">No results for "${q}"</p>
-            <p style="font-size:12px">Try a different keyword</p>
+        html = `<div style="text-align:center;padding:48px 20px">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 12px;display:block"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <p style="font-size:14px;font-weight:600;color:#64748b;margin:0 0 4px">No results for "<em>${q}</em>"</p>
+            <p style="font-size:12px;color:#94a3b8;margin:0">Try a procedure name, journal title, or command</p>
         </div>`;
     }
     out.innerHTML = html;
@@ -824,12 +937,145 @@ function showCasesSubTab(which) {
         if (listBtn) { listBtn.style.background = 'transparent'; listBtn.style.color = '#6B7280'; listBtn.style.boxShadow = 'none'; }
         if (insBtn)  { insBtn.style.background  = 'white';       insBtn.style.color  = '#111827'; insBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)'; }
         showAnalytics();
+        renderLearningCurve();
     } else {
         insightsEl.style.display = 'none';
         listEl.style.display     = 'block';
         if (insBtn)  { insBtn.style.background  = 'transparent'; insBtn.style.color  = '#6B7280'; insBtn.style.boxShadow = 'none'; }
         if (listBtn) { listBtn.style.background = 'white';       listBtn.style.color = '#111827'; listBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)'; }
     }
+}
+
+// ── Learning Curve ────────────────────────────────────────────────────────────
+let _lcChart = null;
+function renderLearningCurve() {
+    let sel = document.getElementById('lcProcedure');
+    let canvas = document.getElementById('learningCurveChart');
+    let statsEl = document.getElementById('learningCurveStats');
+    if (!sel || !canvas) return;
+
+    // Populate procedure selector from logged cases
+    let procs = [...new Set(allCases.map(c => c.procedure).filter(Boolean))].sort();
+    if (!sel.options.length || sel.dataset.loaded !== '1') {
+        sel.innerHTML = procs.map(p => `<option value="${p}">${p}</option>`).join('');
+        sel.dataset.loaded = '1';
+    }
+    let proc = sel.value || procs[0];
+    if (!proc) { canvas.parentElement.style.display = 'none'; return; }
+
+    // Get cases for this procedure sorted by date
+    let cx = { 'Routine': 1, 'Complex': 2, 'Challenging': 3 };
+    let cxLabel = { 1:'Routine', 2:'Complex', 3:'Challenging' };
+    let cases = allCases
+        .filter(c => c.procedure === proc && c.date)
+        .sort((a,b) => a.date.localeCompare(b.date))
+        .map((c, i) => ({
+            n: i + 1,
+            score: cx[c.complexity] || 1,
+            date: c.date,
+            role: c.role || ''
+        }));
+
+    if (cases.length < 2) {
+        canvas.style.display = 'none';
+        if (statsEl) statsEl.innerHTML = `<p style="font-size:13px;color:#94a3b8;margin:0">Log at least 2 ${proc} cases to see your curve.</p>`;
+        return;
+    }
+    canvas.style.display = 'block';
+
+    // Rolling average (window=3)
+    function rollingAvg(data, key, win) {
+        return data.map((_, i) => {
+            let slice = data.slice(Math.max(0, i - win + 1), i + 1);
+            return slice.reduce((s, d) => s + d[key], 0) / slice.length;
+        });
+    }
+    let rolling = rollingAvg(cases, 'score', 3);
+
+    // Theoretical novice→expert sigmoid (scaled to match y 1–3)
+    let sigmoid = cases.map((_, i) => {
+        let x = i / (cases.length - 1);
+        let s = 1 / (1 + Math.exp(-10 * (x - 0.5)));
+        return 1 + s * 2; // maps 1–3
+    });
+
+    // Stats
+    let first5avg = cases.slice(0, 5).reduce((s,c) => s + c.score, 0) / Math.min(5, cases.length);
+    let last5avg  = cases.slice(-5).reduce((s,c) => s + c.score, 0) / Math.min(5, cases.length);
+    let trend = last5avg - first5avg;
+    let trendLabel = trend > 0.3 ? '↑ Taking on harder cases' : trend < -0.3 ? '↓ Trending simpler' : '→ Stable complexity';
+    let trendColor = trend > 0.3 ? '#16a34a' : trend < -0.3 ? '#dc2626' : '#64748b';
+
+    if (statsEl) statsEl.innerHTML = [
+        { label:'Total cases', val: cases.length, col:'#2563eb' },
+        { label:'Avg complexity', val: cxLabel[Math.round(cases.reduce((s,c)=>s+c.score,0)/cases.length)] || 'Routine', col:'#7c3aed' },
+        { label:'Trend', val: trendLabel, col: trendColor },
+    ].map(s=>`<div style="flex:1;min-width:90px;background:#f8fafc;border-radius:10px;padding:8px 10px">
+        <div style="font-size:18px;font-weight:800;color:${s.col};margin-bottom:2px">${s.val}</div>
+        <div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px">${s.label}</div>
+    </div>`).join('');
+
+    if (_lcChart) _lcChart.destroy();
+    _lcChart = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: cases.map(c => `#${c.n}`),
+            datasets: [
+                {
+                    label: 'Your progression',
+                    data: rolling,
+                    borderColor: '#7c3aed',
+                    backgroundColor: 'rgba(124,58,237,0.08)',
+                    borderWidth: 2.5,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#7c3aed',
+                    tension: 0.4,
+                    fill: true,
+                },
+                {
+                    label: 'Expert curve',
+                    data: sigmoid,
+                    borderColor: '#e2e8f0',
+                    borderWidth: 1.5,
+                    borderDash: [4, 4],
+                    pointRadius: 0,
+                    tension: 0.4,
+                    fill: false,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.datasetIndex === 0
+                            ? ` Complexity: ${cxLabel[Math.round(ctx.raw)] || ctx.raw.toFixed(1)}`
+                            : ' Expert reference'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    min: 0.8, max: 3.2,
+                    ticks: {
+                        stepSize: 1,
+                        callback: v => cxLabel[v] || '',
+                        font: { size: 10 }
+                    },
+                    grid: { color: '#f1f5f9' }
+                },
+                x: {
+                    ticks: {
+                        maxTicksLimit: 10,
+                        font: { size: 10 }
+                    },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
 }
 
 function setActiveNav(id) {
@@ -1987,6 +2233,47 @@ function deleteSavedFilter(id) {
     renderSavedFiltersBar();
 }
 
+// ── Case Gallery / List view toggle ──────────────────────────────────────────
+let _caseView = 'list';
+function setCaseView(v) {
+    _caseView = v;
+    let listBtn    = document.getElementById('caseViewList');
+    let galleryBtn = document.getElementById('caseViewGallery');
+    let _a = {background:'white',boxShadow:'0 1px 3px rgba(0,0,0,0.08)'};
+    let _i = {background:'transparent',boxShadow:'none'};
+    if (listBtn)    { Object.assign(listBtn.style, v==='list' ? _a : _i); listBtn.querySelector('svg').setAttribute('stroke', v==='list'?'#374151':'#94a3b8'); }
+    if (galleryBtn) { Object.assign(galleryBtn.style, v==='gallery' ? _a : _i); galleryBtn.querySelector('svg').setAttribute('stroke', v==='gallery'?'#374151':'#94a3b8'); }
+    applyFilter();
+}
+
+function _renderGallery(cases) {
+    let el = document.getElementById('caseList');
+    if (!el) return;
+    const pColors = {'Cataract / Phaco':'#2563eb','Vitreoretinal (PPV)':'#7c3aed','Glaucoma':'#059669','Cornea / Keratoplasty':'#0891b2','Oculoplastics':'#d97706','Strabismus':'#ea580c','Laser (LIO / SLT / YAG)':'#16a34a'};
+    const pBg     = {'Cataract / Phaco':'#eff6ff','Vitreoretinal (PPV)':'#faf5ff','Glaucoma':'#f0fdf4','Cornea / Keratoplasty':'#f0f9ff','Oculoplastics':'#fffbeb','Strabismus':'#fff7ed','Laser (LIO / SLT / YAG)':'#f0fdf4'};
+    const roleColor = {'Primary Surgeon':'#16a34a','Assistant':'#2563eb','Supervisor':'#d97706','Observer':'#94a3b8'};
+    if (!cases.length) { el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:#94a3b8"><p style="font-weight:600">No cases match</p></div>`; return; }
+    el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:12px">` +
+        cases.map(c => {
+            let col = pColors[c.procedure]||'#64748b';
+            let bg  = pBg[c.procedure]||'#f8fafc';
+            let rc  = roleColor[c.role]||'#94a3b8';
+            let dateStr = c.date ? new Date(c.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'}) : '';
+            return `<div style="background:white;border:1.5px solid #e2e8f0;border-radius:14px;overflow:hidden;cursor:pointer;transition:box-shadow 0.15s,transform 0.12s"
+                onmouseover="this.style.boxShadow='0 6px 20px rgba(0,0,0,0.1)';this.style.transform='translateY(-1px)'"
+                onmouseout="this.style.boxShadow='none';this.style.transform='none'">
+                <div style="height:6px;background:${col}"></div>
+                <div style="padding:12px">
+                    <div style="font-size:11px;font-weight:800;color:${col};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;line-height:1.2">${(c.procedure||'Case').replace(' / ',' /​')}</div>
+                    <div style="font-size:10px;color:white;background:${rc};border-radius:20px;padding:2px 8px;display:inline-block;font-weight:700;margin-bottom:8px">${c.role||'—'}</div>
+                    <div style="font-size:11px;color:#64748b;font-weight:500">${dateStr}</div>
+                    ${c.attending?`<div style="font-size:11px;color:#94a3b8;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Dr. ${c.attending}</div>`:''}
+                </div>
+            </div>`;
+        }).join('') + `</div>
+        <div style="text-align:center;font-size:12px;color:#94a3b8;padding:8px">${cases.length} case${cases.length!==1?'s':''}</div>`;
+}
+
 function applyFilter() {
     let search    = document.getElementById('searchNotes').value.toLowerCase();
     let procedure = document.getElementById('filterProcedure').value;
@@ -2013,7 +2300,8 @@ function applyFilter() {
     if (sort === 'procedure') filtered.sort((a,b) => a.procedure.localeCompare(b.procedure));
     if (sort === 'role')      filtered.sort((a,b) => a.role.localeCompare(b.role));
 
-    displayCaseList(filtered);
+    if (_caseView === 'gallery') _renderGallery(filtered);
+    else displayCaseList(filtered);
 }
 
 function clearFilter() {
@@ -3240,7 +3528,7 @@ let activeWorkspaceTab = 'journal';
 
 function showWorkspaceTab(tab) {
     activeWorkspaceTab = tab;
-    ['calendar','journal','todo','notes','study'].forEach(t => {
+    ['calendar','journal','todo','notes','study','fellowship'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = t === tab ? 'block' : 'none';
         let btn = document.getElementById('ws-tab-'+t);
@@ -3256,11 +3544,12 @@ function showWorkspaceTab(tab) {
             }
         }
     });
-    if (tab === 'calendar') { if (calView === 'week') renderWeekView(); else renderCalendar(); }
-    if (tab === 'journal')  renderJournalList();
-    if (tab === 'todo')     renderTodos();
-    if (tab === 'notes')    renderNotes();
-    if (tab === 'study')    renderStudyList();
+    if (tab === 'calendar')   { if (calView === 'week') renderWeekView(); else renderCalendar(); }
+    if (tab === 'journal')    renderJournalList();
+    if (tab === 'todo')       renderTodos();
+    if (tab === 'notes')      renderNotes();
+    if (tab === 'study')      renderStudyList();
+    if (tab === 'fellowship') renderFellowshipBoard();
 }
 
 // ── Workspace Cloud Sync ──────────────────────────────────────────────────────
@@ -4230,12 +4519,21 @@ function deleteNote(id) {
     showToast('🗑️ Note deleted', 'warning');
 }
 
+function togglePinNote(id, e) {
+    e.stopPropagation();
+    let notes = getNotes();
+    let n = notes.find(x => x.id === id);
+    if (n) { n.pinned = !n.pinned; saveNotes(notes); renderNotes(); }
+}
+
 function renderNotes() {
     let el = document.getElementById('notesList');
     if (!el) return;
     let search = (document.getElementById('notesSearch')?.value || '').toLowerCase();
     let notes  = getNotes();
     if (search) notes = notes.filter(n => (n.title+n.body+n.tag).toLowerCase().includes(search));
+    // Pinned first
+    notes = [...notes.filter(n=>n.pinned), ...notes.filter(n=>!n.pinned)];
 
     if (notes.length === 0) {
         el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#94a3b8">
@@ -4249,23 +4547,38 @@ function renderNotes() {
     let tagColors = { 'Clinical Pearl':'#d97706','Technique':'#2563eb','Drug / Dosing':'#16a34a','Anatomy':'#7c3aed','Board Prep':'#dc2626','Reminder':'#0891b2' };
     let tagBg     = { 'Clinical Pearl':'#fffbeb','Technique':'#eff6ff','Drug / Dosing':'#f0fdf4','Anatomy':'#faf5ff','Board Prep':'#fef2f2','Reminder':'#f0f9ff' };
 
-    el.innerHTML = notes.map(n => `
-        <div style="background:${n.tag&&tagBg[n.tag]?tagBg[n.tag]:'white'};border:1.5px solid ${n.tag&&tagColors[n.tag]?tagColors[n.tag]+'33':'#e2e8f0'};border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;transition:box-shadow 0.15s"
+    let pinnedNotes = notes.filter(n => n.pinned);
+    let html = '';
+    if (pinnedNotes.length && !search) {
+        html += `<div style="font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="#94a3b8" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Pinned</div>`;
+    }
+    html += notes.map((n, i) => {
+        let isPinSeparator = i > 0 && !n.pinned && notes[i-1]?.pinned && !search;
+        return `${isPinSeparator ? '<div style="height:1px;background:#f1f5f9;margin:10px 0 14px"></div>' : ''}
+        <div style="background:${n.tag&&tagBg[n.tag]?tagBg[n.tag]:'white'};border:1.5px solid ${n.pinned?'#fbbf24':n.tag&&tagColors[n.tag]?tagColors[n.tag]+'33':'#e2e8f0'};border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;transition:box-shadow 0.15s${n.pinned?';box-shadow:0 2px 12px rgba(251,191,36,0.15)':''}"
              onclick="openNoteModal('${n.id}')"
              onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'"
-             onmouseout="this.style.boxShadow='none'">
+             onmouseout="this.style.boxShadow='${n.pinned?'0 2px 12px rgba(251,191,36,0.15)':'none'}'">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-                <div>
+                <div style="flex:1;min-width:0">
                     <p style="font-weight:700;font-size:14px;color:#0f172a;margin-bottom:4px">${n.title}</p>
                     ${n.tag?`<span style="font-size:11px;font-weight:700;color:${tagColors[n.tag]||'#64748b'};background:${tagColors[n.tag]||'#94a3b8'}18;padding:2px 8px;border-radius:20px">${n.tag}</span>`:''}
                 </div>
-                <button onclick="event.stopPropagation();deleteNote('${n.id}')" title="Delete"
-                    style="width:26px;height:26px;padding:0;margin:0;background:#fef2f2;border-radius:7px;box-shadow:none;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-                </button>
+                <div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px">
+                    <button onclick="togglePinNote('${n.id}',event)" title="${n.pinned?'Unpin':'Pin'}"
+                        style="width:26px;height:26px;padding:0;margin:0;background:${n.pinned?'#fef9c3':'#f8fafc'};border-radius:7px;box-shadow:none;display:flex;align-items:center;justify-content:center">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="${n.pinned?'#ca8a04':'none'}" stroke="${n.pinned?'#ca8a04':'#94a3b8'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    </button>
+                    <button onclick="event.stopPropagation();deleteNote('${n.id}')" title="Delete"
+                        style="width:26px;height:26px;padding:0;margin:0;background:#fef2f2;border-radius:7px;box-shadow:none;display:flex;align-items:center;justify-content:center">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                    </button>
+                </div>
             </div>
             ${n.body?`<p style="font-size:13px;color:#374151;line-height:1.6;margin:0">${n.body.length>160?n.body.slice(0,160)+'…':n.body}</p>`:''}
-        </div>`).join('');
+        </div>`;
+    }).join('');
+    el.innerHTML = html;
 }
 
 // ── Study Kanban ──────────────────────────────────────────────────────────────
@@ -4470,6 +4783,115 @@ function renderStudyList() {
                 </div>
             </div>
         </div>`).join('');
+}
+
+// ── Fellowship Pipeline ───────────────────────────────────────────────────────
+const FP_KEY = 'eyeFellowship';
+function getFellowshipPrograms() { return JSON.parse(localStorage.getItem(FP_KEY)||'[]'); }
+function saveFellowshipPrograms(p) { localStorage.setItem(FP_KEY, JSON.stringify(p)); }
+
+function openFellowshipModal(id) {
+    let prog = id ? getFellowshipPrograms().find(p=>p.id===id) : null;
+    document.getElementById('fpId').value     = prog ? prog.id    : '';
+    document.getElementById('fpName').value   = prog ? prog.name  : '';
+    document.getElementById('fpCity').value   = prog ? prog.city  : '';
+    document.getElementById('fpStage').value  = prog ? prog.stage : 'applied';
+    document.getElementById('fpDate').value   = prog ? (prog.date||'') : '';
+    document.getElementById('fpNotes').value  = prog ? (prog.notes||'') : '';
+    document.getElementById('fellowshipModal').style.display = 'flex';
+}
+function closeFellowshipModal() {
+    document.getElementById('fellowshipModal').style.display = 'none';
+}
+function saveFellowshipProgram() {
+    let name = document.getElementById('fpName').value.trim();
+    if (!name) { showToast('Enter a program name', 'warning'); return; }
+    let programs = getFellowshipPrograms();
+    let id = document.getElementById('fpId').value;
+    let prog = {
+        id:    id || crypto.randomUUID(),
+        name,
+        city:  document.getElementById('fpCity').value.trim(),
+        stage: document.getElementById('fpStage').value,
+        date:  document.getElementById('fpDate').value,
+        notes: document.getElementById('fpNotes').value.trim(),
+    };
+    if (id) { let i = programs.findIndex(p=>p.id===id); if (i>=0) programs[i]=prog; else programs.unshift(prog); }
+    else programs.unshift(prog);
+    saveFellowshipPrograms(programs);
+    closeFellowshipModal();
+    renderFellowshipBoard();
+    showToast('Program saved!');
+}
+function deleteFellowshipProgram(id) {
+    if (!confirm('Remove this program?')) return;
+    saveFellowshipPrograms(getFellowshipPrograms().filter(p=>p.id!==id));
+    renderFellowshipBoard();
+}
+
+function renderFellowshipBoard() {
+    let el = document.getElementById('fellowshipBoard');
+    if (!el) return;
+    let programs = getFellowshipPrograms();
+    const stages = [
+        { key:'wishlist',           label:'Wish List',        color:'#94a3b8', bg:'#f8fafc' },
+        { key:'applied',            label:'Applied',           color:'#2563eb', bg:'#eff6ff' },
+        { key:'interview-offered',  label:'Interview Offered', color:'#d97706', bg:'#fffbeb' },
+        { key:'interviewed',        label:'Interviewed',       color:'#7c3aed', bg:'#faf5ff' },
+        { key:'ranked',             label:'Ranked',            color:'#059669', bg:'#f0fdf4' },
+        { key:'matched',            label:'Matched',           color:'#16a34a', bg:'#dcfce7' },
+        { key:'not-matched',        label:'Not Matched',       color:'#dc2626', bg:'#fef2f2' },
+    ];
+    if (!programs.length) {
+        el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:#94a3b8">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 12px;display:block"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            <p style="font-size:14px;font-weight:600;color:#64748b;margin:0 0 6px">No programs yet</p>
+            <p style="font-size:13px;margin:0">Add programs to start tracking your applications</p>
+        </div>`;
+        return;
+    }
+    // Count by stage
+    let html = '';
+    stages.forEach(stage => {
+        let stageProg = programs.filter(p => p.stage === stage.key);
+        if (!stageProg.length) return;
+        html += `<div style="margin-bottom:20px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                <div style="width:10px;height:10px;border-radius:50%;background:${stage.color}"></div>
+                <span style="font-size:12px;font-weight:700;color:${stage.color};text-transform:uppercase;letter-spacing:0.5px">${stage.label}</span>
+                <span style="font-size:11px;color:#94a3b8;font-weight:500">${stageProg.length}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+            ${stageProg.map(p=>`<div style="background:${stage.bg};border:1.5px solid ${stage.color}33;border-radius:12px;padding:12px 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:700;font-size:14px;color:#0f172a;margin-bottom:2px">${p.name}</div>
+                    ${p.city?`<div style="font-size:12px;color:#64748b">${p.city}</div>`:''}
+                    ${p.date?`<div style="font-size:11px;color:${stage.color};font-weight:600;margin-top:4px">${new Date(p.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>`:''}
+                    ${p.notes?`<div style="font-size:12px;color:#64748b;margin-top:6px;line-height:1.4">${p.notes.slice(0,120)}</div>`:''}
+                </div>
+                <div style="display:flex;gap:4px;flex-shrink:0">
+                    <button onclick="openFellowshipModal('${p.id}')" title="Edit" style="width:26px;height:26px;padding:0;margin:0;background:#f1f5f9;border-radius:7px;box-shadow:none;display:flex;align-items:center;justify-content:center">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button onclick="deleteFellowshipProgram('${p.id}')" title="Delete" style="width:26px;height:26px;padding:0;margin:0;background:#fef2f2;border-radius:7px;box-shadow:none;display:flex;align-items:center;justify-content:center">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                    </button>
+                </div>
+            </div>`).join('')}
+            </div>
+        </div>`;
+    });
+    // Summary stats
+    let matched = programs.filter(p=>p.stage==='matched').length;
+    let interviewed = programs.filter(p=>['interviewed','ranked','matched'].includes(p.stage)).length;
+    html = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+        ${[{label:'Total Programs',val:programs.length,col:'#2563eb'},{label:'Interviewed',val:interviewed,col:'#7c3aed'},{label:'Matched',val:matched,col:'#16a34a'}]
+        .map(s=>`<div style="background:white;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;text-align:center">
+            <div style="font-size:22px;font-weight:800;color:${s.col}">${s.val}</div>
+            <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px">${s.label}</div>
+        </div>`).join('')}
+    </div>` + html;
+    el.innerHTML = html;
 }
 
 if ('serviceWorker' in navigator) {
