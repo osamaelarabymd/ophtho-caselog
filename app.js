@@ -4023,8 +4023,10 @@ function renderNotes() {
                     <p style="font-weight:700;font-size:14px;color:#0f172a;margin-bottom:4px">${n.title}</p>
                     ${n.tag?`<span style="font-size:11px;font-weight:700;color:${tagColors[n.tag]||'#64748b'};background:${tagColors[n.tag]||'#94a3b8'}18;padding:2px 8px;border-radius:20px">${n.tag}</span>`:''}
                 </div>
-                <button onclick="event.stopPropagation();deleteNote('${n.id}')"
-                    style="background:transparent;border:none;color:#94a3b8;font-size:14px;padding:4px;margin:0;width:auto;min-width:0;cursor:pointer">🗑️</button>
+                <button onclick="event.stopPropagation();deleteNote('${n.id}')" title="Delete"
+                    style="width:26px;height:26px;padding:0;margin:0;background:#fef2f2;border-radius:7px;box-shadow:none;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                </button>
             </div>
             ${n.body?`<p style="font-size:13px;color:#374151;line-height:1.6;margin:0">${n.body.length>160?n.body.slice(0,160)+'…':n.body}</p>`:''}
         </div>`).join('');
@@ -4156,8 +4158,12 @@ function renderStudyList() {
                     ${s.notes?`<p style="font-size:12px;color:#64748b;margin-top:6px;line-height:1.5">${s.notes}</p>`:''}
                 </div>
                 <div style="display:flex;gap:4px;flex-shrink:0">
-                    <button onclick="openStudyModal('${s.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:12px;color:#64748b;box-shadow:none">✏️</button>
-                    <button onclick="deleteStudyItem('${s.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#fef2f2;border-radius:8px;font-size:12px;color:#dc2626;box-shadow:none">🗑️</button>
+                    <button onclick="openStudyModal('${s.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;box-shadow:none;display:flex;align-items:center;justify-content:center" title="Edit">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button onclick="deleteStudyItem('${s.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#fef2f2;border-radius:8px;box-shadow:none;display:flex;align-items:center;justify-content:center" title="Delete">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                    </button>
                 </div>
             </div>
         </div>`).join('');
