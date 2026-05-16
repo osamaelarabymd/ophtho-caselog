@@ -381,15 +381,16 @@
                 <div style="position:absolute;bottom:-20px;right:80px;width:100px;height:100px;background:rgba(255,255,255,0.03);border-radius:50%"></div>
                 <p id="greetingText" style="font-size:11px;opacity:0.6;margin-bottom:8px;text-transform:uppercase;letter-spacing:2px;font-weight:600">GOOD MORNING</p>
                 <h2 id="welcomeName" style="font-size:24px;font-weight:800;margin-bottom:6px;color:white;letter-spacing:-0.5px">Dr. Elaraby</h2>
-                <p style="font-size:13px;opacity:0.7;line-height:1.6;font-weight:400;max-width:420px">Every case logged brings you closer to your ACGME goals.</p>
-                <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap">
+                <!-- Hero Stats Row -->
+                <div id="heroStats" style="display:flex;gap:0;margin-top:20px;border-top:1px solid rgba(255,255,255,0.12);padding-top:18px;flex-wrap:wrap"></div>
+                <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
                     <button onclick="showTab('logCase', event)" style="background:rgba(255,255,255,0.12);width:auto;padding:8px 18px;margin:0;font-size:13px;font-weight:600;border-radius:10px;border:1px solid rgba(255,255,255,0.2);backdrop-filter:blur(4px)"><svg style="display:inline;vertical-align:-3px;margin-right:6px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Log Case</button>
                     <button onclick="setupNotifications()" style="background:rgba(255,255,255,0.06);width:auto;padding:8px 18px;margin:0;font-size:13px;font-weight:600;border-radius:10px;border:1px solid rgba(255,255,255,0.12)"><svg style="display:inline;vertical-align:-3px;margin-right:6px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Reminders</button>
                 </div>
             </div>
 
-            <!-- Inline Stats Row -->
-            <div id="summaryCards" style="margin-bottom:16px"></div>
+            <!-- Inline Stats Row (hidden — stats moved to hero) -->
+            <div id="summaryCards" style="display:none"></div>
             <div id="goalsWidget" style="margin-bottom:16px"></div>
 
             <!-- Smart Alerts -->
@@ -582,6 +583,64 @@
                 </div>
             </div>
 
+            <!-- Timezone -->
+            <div class="dash-card" style="margin-bottom:14px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+                    <div style="width:28px;height:28px;background:#eff6ff;border-radius:8px;display:flex;align-items:center;justify-content:center">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><polyline points="12 12 15 14"/></svg>
+                    </div>
+                    <h3 style="margin:0;font-size:14px;font-weight:700;color:#111827">Time Zone</h3>
+                </div>
+                <label style="font-size:12px;color:#6B7280;font-weight:600;margin-bottom:6px;display:block">Your local time zone (used for date/time display)</label>
+                <select id="profileTimezone" style="margin:0" onchange="saveTimezonePreference(this.value)">
+                    <option value="">— Use browser default —</option>
+                    <optgroup label="Americas">
+                        <option value="America/New_York">Eastern Time (ET) — New York</option>
+                        <option value="America/Chicago">Central Time (CT) — Chicago</option>
+                        <option value="America/Denver">Mountain Time (MT) — Denver</option>
+                        <option value="America/Los_Angeles">Pacific Time (PT) — Los Angeles</option>
+                        <option value="America/Anchorage">Alaska Time — Anchorage</option>
+                        <option value="Pacific/Honolulu">Hawaii Time — Honolulu</option>
+                        <option value="America/Toronto">Eastern Time — Toronto</option>
+                        <option value="America/Vancouver">Pacific Time — Vancouver</option>
+                        <option value="America/Sao_Paulo">Brasília Time — São Paulo</option>
+                        <option value="America/Mexico_City">Central Time — Mexico City</option>
+                    </optgroup>
+                    <optgroup label="Europe">
+                        <option value="Europe/London">GMT / BST — London</option>
+                        <option value="Europe/Paris">CET — Paris, Berlin, Rome</option>
+                        <option value="Europe/Helsinki">EET — Helsinki, Athens</option>
+                        <option value="Europe/Moscow">Moscow Time — Moscow</option>
+                        <option value="Europe/Istanbul">Turkey Time — Istanbul</option>
+                    </optgroup>
+                    <optgroup label="Middle East &amp; Africa">
+                        <option value="Asia/Dubai">Gulf Standard Time — Dubai, UAE</option>
+                        <option value="Asia/Riyadh">Arabia Standard Time — Riyadh, KSA</option>
+                        <option value="Asia/Kuwait">Arabia Standard Time — Kuwait</option>
+                        <option value="Asia/Qatar">Arabia Standard Time — Doha</option>
+                        <option value="Asia/Bahrain">Arabia Standard Time — Bahrain</option>
+                        <option value="Asia/Muscat">Gulf Standard Time — Muscat</option>
+                        <option value="Africa/Cairo">Egypt Standard Time — Cairo</option>
+                        <option value="Africa/Johannesburg">South Africa Time — Johannesburg</option>
+                        <option value="Africa/Lagos">West Africa Time — Lagos</option>
+                        <option value="Asia/Jerusalem">Israel Time — Jerusalem</option>
+                    </optgroup>
+                    <optgroup label="Asia &amp; Pacific">
+                        <option value="Asia/Kolkata">India Standard Time — Mumbai</option>
+                        <option value="Asia/Karachi">Pakistan Standard Time — Karachi</option>
+                        <option value="Asia/Dhaka">Bangladesh Time — Dhaka</option>
+                        <option value="Asia/Bangkok">Indochina Time — Bangkok</option>
+                        <option value="Asia/Singapore">Singapore / Malaysia Time</option>
+                        <option value="Asia/Shanghai">China Standard Time — Beijing</option>
+                        <option value="Asia/Tokyo">Japan Standard Time — Tokyo</option>
+                        <option value="Asia/Seoul">Korea Standard Time — Seoul</option>
+                        <option value="Australia/Sydney">AEDT — Sydney</option>
+                        <option value="Pacific/Auckland">New Zealand Time — Auckland</option>
+                    </optgroup>
+                </select>
+                <p id="tzCurrentTime" style="font-size:12px;color:#64748b;margin-top:8px;margin-bottom:0"></p>
+            </div>
+
             <!-- Goals -->
             <div class="dash-card" style="margin-bottom:14px">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
@@ -725,7 +784,7 @@
                     <p style="font-size:10px;font-weight:800;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.8px;margin:0 0 12px">Procedure</p>
                     <div style="margin-bottom:12px">
                         <label style="font-size:12px;color:#6B7280;font-weight:600;margin-bottom:6px;display:block">Type</label>
-                        <select id="procedure" style="margin:0">
+                        <select id="procedure" style="margin:0" onchange="toggleOtherProcedure(this.value)">
                             <option>Cataract / Phaco</option>
                             <option>Vitreoretinal (PPV)</option>
                             <option>Glaucoma</option>
@@ -733,7 +792,9 @@
                             <option>Oculoplastics</option>
                             <option>Strabismus</option>
                             <option>Laser (LIO / SLT / YAG)</option>
+                            <option value="Others">Others (specify)</option>
                         </select>
+                        <input type="text" id="procedureOther" placeholder="Specify procedure name…" style="display:none;margin-top:8px;margin-bottom:0">
                     </div>
                     <div style="margin-bottom:12px">
                         <label style="font-size:12px;color:#6B7280;font-weight:600;margin-bottom:8px;display:block">Your Role</label>
@@ -1457,96 +1518,101 @@
                 <p style="opacity:0.8; font-size:14px">Everything you need to know in one place</p>
             </div>
 
+            <!-- Accordion CSS -->
+            <style>
+                .help-acc-item { border-bottom:1px solid #f1f5f9; }
+                .help-acc-item:last-child { border-bottom:none; }
+                .help-acc-hdr { display:flex;align-items:center;justify-content:space-between;padding:13px 0;cursor:pointer;user-select:none;gap:10px }
+                .help-acc-hdr:hover .help-acc-title { color:#2563eb }
+                .help-acc-title { font-weight:700;font-size:14px;color:#0f172a;line-height:1.4;flex:1 }
+                .help-acc-arrow { flex-shrink:0;transition:transform 0.2s;color:#94a3b8 }
+                .help-acc-body { display:none;font-size:13px;color:#64748b;line-height:1.65;padding-bottom:13px }
+                .help-acc-item.open .help-acc-arrow { transform:rotate(180deg) }
+                .help-acc-item.open .help-acc-body { display:block }
+                .help-acc-item.open .help-acc-title { color:#2563eb }
+            </style>
+
+            <!-- Quick Start + Features accordion card -->
             <div class="dash-card" style="margin-bottom:16px">
-                <h3 style="display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Quick Start</h3>
-                <div style="display:flex; flex-direction:column; gap:12px; margin-top:12px">
-                    <div style="display:flex; gap:12px; align-items:flex-start">
-                        <div style="width:28px; height:28px; background:#2563eb; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:13px; font-weight:700; flex-shrink:0">1</div>
-                        <div>
-                            <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:2px">Set up your profile</p>
-                            <p style="font-size:13px; color:#64748b">Go to Profile tab → Enter your name, PGY year, and institution</p>
-                        </div>
+                <h3 style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Quick Start</h3>
+                <div>
+                    <div class="help-acc-item" onclick="toggleAcc(this)">
+                        <div class="help-acc-hdr"><span class="help-acc-title">1 · Set up your profile</span><svg class="help-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        <div class="help-acc-body">Go to <strong>Settings</strong> tab → enter your name, PGY year, program name, and residency start year. This personalises your dashboard, ACGME benchmarks, and readiness score.</div>
                     </div>
-                    <div style="display:flex; gap:12px; align-items:flex-start">
-                        <div style="width:28px; height:28px; background:#16a34a; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:13px; font-weight:700; flex-shrink:0">2</div>
-                        <div>
-                            <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:2px">Log a case</p>
-                            <p style="font-size:13px; color:#64748b">Tap ➕ Log Case → Fill in procedure, role, date, attending → Save</p>
-                        </div>
+                    <div class="help-acc-item" onclick="toggleAcc(this)">
+                        <div class="help-acc-hdr"><span class="help-acc-title">2 · Log a case</span><svg class="help-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        <div class="help-acc-body">Tap <strong>Log Case</strong> in the top nav → choose a procedure, your role (Primary / Assistant / Observer), date, attending, and complexity → tap <strong>Save Case</strong>. Use voice input (🎙️) to dictate notes hands-free in English or Arabic.</div>
                     </div>
-                    <div style="display:flex; gap:12px; align-items:flex-start">
-                        <div style="width:28px; height:28px; background:#7c3aed; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:13px; font-weight:700; flex-shrink:0">3</div>
-                        <div>
-                            <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:2px">Track your progress</p>
-                            <p style="font-size:13px; color:#64748b">Dashboard shows ACGME progress, charts, and streaks automatically</p>
-                        </div>
+                    <div class="help-acc-item" onclick="toggleAcc(this)">
+                        <div class="help-acc-hdr"><span class="help-acc-title">3 · Track your ACGME progress</span><svg class="help-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        <div class="help-acc-body">The <strong>Dashboard</strong> shows live ACGME progress bars per procedure, your Readiness Score (cases + phaco recency + journal + tasks), activity heatmap, and a comparison against national averages.</div>
                     </div>
-                    <div style="display:flex; gap:12px; align-items:flex-start">
-                        <div style="width:28px; height:28px; background:#d97706; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:13px; font-weight:700; flex-shrink:0">4</div>
-                        <div>
-                            <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:2px">Export a report</p>
-                            <p style="font-size:13px; color:#64748b">Log Case tab → Export PDF or Monthly Report</p>
-                        </div>
+                    <div class="help-acc-item" onclick="toggleAcc(this)">
+                        <div class="help-acc-hdr"><span class="help-acc-title">4 · Use the Journal &amp; Workspace</span><svg class="help-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        <div class="help-acc-body">Go to <strong>Journal</strong> tab for 5 workspace tools: journal entries (with mood, templates, linked cases), to-dos, clinical notes (pinnable), study list, and fellowship pipeline tracker. Press <strong>⌘K</strong> (or Ctrl+K) to jump anywhere instantly.</div>
+                    </div>
+                    <div class="help-acc-item" onclick="toggleAcc(this)">
+                        <div class="help-acc-hdr"><span class="help-acc-title">5 · Export a report for your PD</span><svg class="help-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        <div class="help-acc-body">Go to <strong>Log Case</strong> tab → scroll down → tap <strong>Export PDF</strong> for a full case list, or <strong>Monthly Report</strong> for a summary. Share directly with your program director.</div>
+                    </div>
+                    <div class="help-acc-item" onclick="toggleAcc(this)">
+                        <div class="help-acc-hdr"><span class="help-acc-title">6 · Add EyeLog to your home screen</span><svg class="help-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        <div class="help-acc-body"><strong>iPhone:</strong> Open in Safari → tap the Share icon → <em>Add to Home Screen</em> → Add. <strong>Android:</strong> Open in Chrome → tap ⋮ menu → <em>Add to Home Screen</em>. EyeLog works offline after the first load.</div>
                     </div>
                 </div>
             </div>
 
+            <!-- Features grid -->
             <div class="dash-card" style="margin-bottom:16px">
-                <h3 style="display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Features</h3>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px">
-                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
-                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px"><span style="display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Templates</span></p>
-                        <p style="font-size:12px; color:#64748b">Save common cases as templates for one-tap logging</p>
-                    </div>
-                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
-                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px"><span style="display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Duplicate</span></p>
-                        <p style="font-size:12px; color:#64748b">Copy a previous case with today's date instantly</p>
-                    </div>
-                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
-                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px"><span style="display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search &amp; Filter</span></p>
-                        <p style="font-size:12px; color:#64748b">Find cases by procedure, role, date, or keyword</p>
-                    </div>
-                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
-                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px"><span style="display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Analytics</span></p>
-                        <p style="font-size:12px; color:#64748b">Monthly trends, role breakdown, busiest days</p>
-                    </div>
-                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
-                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px"><span style="display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Streaks</span></p>
-                        <p style="font-size:12px; color:#64748b">Track consecutive days of logging cases</p>
-                    </div>
-                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0">
-                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px"><span style="display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> Mobile App</span></p>
-                        <p style="font-size:12px; color:#64748b">Add to iPhone home screen for native app feel</p>
-                    </div>
+                <h3 style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Features at a Glance</h3>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0"><p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">⚡ Templates</p><p style="font-size:12px; color:#64748b">Save common cases for one-tap logging</p></div>
+                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0"><p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">📋 Duplicate</p><p style="font-size:12px; color:#64748b">Copy a previous case with today's date</p></div>
+                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0"><p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">🔍 Search & Filter</p><p style="font-size:12px; color:#64748b">Find cases by procedure, role, or date</p></div>
+                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0"><p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">📊 Analytics</p><p style="font-size:12px; color:#64748b">Monthly trends, learning curve, heatmap</p></div>
+                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0"><p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">🎙️ Voice Input</p><p style="font-size:12px; color:#64748b">Dictate in English or Arabic</p></div>
+                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0"><p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">⌘K Command Palette</p><p style="font-size:12px; color:#64748b">Spotlight-style jump to anything</p></div>
+                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0"><p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">🏆 Readiness Score</p><p style="font-size:12px; color:#64748b">Whoop-style daily activity score</p></div>
+                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0"><p style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:4px">🎓 Fellowship Tracker</p><p style="font-size:12px; color:#64748b">Kanban pipeline from wishlist to matched</p></div>
                 </div>
             </div>
 
+            <!-- FAQ accordion -->
             <div class="dash-card" style="margin-bottom:16px">
-                <h3 style="display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> FAQ</h3>
-                <div style="display:flex; flex-direction:column; gap:12px; margin-top:12px">
-                    <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
-                        <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">How do I add EyeLog to my iPhone?</p>
-                        <p style="font-size:13px; color:#64748b">Open the app in Safari → Tap Share button → Add to Home Screen → Add</p>
+                <h3 style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> FAQ</h3>
+                <div>
+                    <div class="help-acc-item" onclick="toggleAcc(this)">
+                        <div class="help-acc-hdr"><span class="help-acc-title">How do I add EyeLog to my iPhone?</span><svg class="help-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        <div class="help-acc-body">Open the app in Safari → tap the <strong>Share</strong> button (box with arrow) → tap <strong>Add to Home Screen</strong> → tap <strong>Add</strong>. The app icon appears on your home screen and works like a native app.</div>
                     </div>
-                    <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
-                        <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">Can I edit a case after saving?</p>
-                        <p style="font-size:13px; color:#64748b">Yes! Go to Case List → tap the edit button on any case to edit all fields</p>
+                    <div class="help-acc-item" onclick="toggleAcc(this)">
+                        <div class="help-acc-hdr"><span class="help-acc-title">Can I edit a case after saving?</span><svg class="help-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        <div class="help-acc-body">Yes. Go to <strong>Cases</strong> tab → find your case → tap the <strong>edit (pencil)</strong> icon. All fields are editable. Your changes sync to the cloud immediately.</div>
                     </div>
-                    <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
-                        <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">How do I create a PDF for my PD?</p>
-                        <p style="font-size:13px; color:#64748b">Go to Log Case tab → tap Export PDF or Monthly Report</p>
+                    <div class="help-acc-item" onclick="toggleAcc(this)">
+                        <div class="help-acc-hdr"><span class="help-acc-title">How do I create a PDF for my PD?</span><svg class="help-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        <div class="help-acc-body">Go to <strong>Log Case</strong> tab → scroll to the bottom → tap <strong>Export PDF</strong> for a complete case list, or <strong>Monthly Report</strong> for a concise month-by-month summary. Both are ready to share directly with your program director.</div>
                     </div>
-                    <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
-                        <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">Is my data private?</p>
-                        <p style="font-size:13px; color:#64748b">Yes — only you and your program director can see your cases</p>
+                    <div class="help-acc-item" onclick="toggleAcc(this)">
+                        <div class="help-acc-hdr"><span class="help-acc-title">Is my data private?</span><svg class="help-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        <div class="help-acc-body">Yes. Your cases are stored in a private Supabase database with row-level security — only your account can read your data. Your program director can only view what you explicitly share. Journal entries and notes are <strong>never shared</strong>.</div>
                     </div>
-                    <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px">
-                        <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">How do I enable daily reminders?</p>
-                        <p style="font-size:13px; color:#64748b">Dashboard → tap Reminders → allow notifications → get reminded at 6 PM daily</p>
+                    <div class="help-acc-item" onclick="toggleAcc(this)">
+                        <div class="help-acc-hdr"><span class="help-acc-title">How do I enable daily reminders?</span><svg class="help-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        <div class="help-acc-body">On the Dashboard, tap the <strong>Reminders</strong> button in the hero banner → allow browser notifications when prompted → you'll receive a push reminder at 6 PM daily to log your cases.</div>
                     </div>
-                    <div>
-                        <p style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px">How do I use templates?</p>
-                        <p style="font-size:13px; color:#64748b">Log Case → fill form → tap + Save Template. Next time tap the template button to auto-fill</p>
+                    <div class="help-acc-item" onclick="toggleAcc(this)">
+                        <div class="help-acc-hdr"><span class="help-acc-title">How do I use voice input?</span><svg class="help-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        <div class="help-acc-body">Tap the 🎙️ microphone icon next to any text field → speak your notes → the text appears automatically. Switch between <strong>EN</strong> and <strong>AR</strong> for Arabic transcription. Works in the case notes, journal entry, and to-do fields.</div>
+                    </div>
+                    <div class="help-acc-item" onclick="toggleAcc(this)">
+                        <div class="help-acc-hdr"><span class="help-acc-title">What is the ⌘K command palette?</span><svg class="help-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        <div class="help-acc-body">Press <strong>⌘K</strong> (Mac) or <strong>Ctrl+K</strong> (Windows/Android) anywhere in EyeLog to open the command palette — a Spotlight-style search that lets you jump to any tab, log a case, open a journal entry, or run a weekly review in one keystroke.</div>
+                    </div>
+                    <div class="help-acc-item" onclick="toggleAcc(this)">
+                        <div class="help-acc-hdr"><span class="help-acc-title">How do I use templates?</span><svg class="help-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        <div class="help-acc-body">In <strong>Log Case</strong>, fill in the case form → tap <strong>+ Save Template</strong>. Next time, tap the template button at the top of the form to auto-fill all fields instantly — perfect for your most common procedure types.</div>
                     </div>
                 </div>
             </div>

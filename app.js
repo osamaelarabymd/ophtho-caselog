@@ -143,6 +143,27 @@ function openGlobalSearch() {
     _renderCpDefaults();
 }
 
+// ── Help accordion toggle ─────────────────────────────────────────────────────
+function toggleAcc(item) {
+    let isOpen = item.classList.contains('open');
+    // Close all siblings
+    item.closest('.dash-card').querySelectorAll('.help-acc-item.open').forEach(el => el.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+}
+
+// ── Procedure "Others" toggle ─────────────────────────────────────────────────
+function toggleOtherProcedure(val) {
+    let inp = document.getElementById('procedureOther');
+    if (!inp) return;
+    if (val === 'Others') {
+        inp.style.display = 'block';
+        inp.focus();
+    } else {
+        inp.style.display = 'none';
+        inp.value = '';
+    }
+}
+
 function closeGlobalSearch() {
     let modal = document.getElementById('globalSearchModal');
     if (modal) modal.style.display = 'none';
@@ -594,12 +615,45 @@ function loadProfile() {
     _set('profileStartYear',    profile.startYear || '');
     _set('profileEndYear',      profile.endYear || '');
     _set('profileGoals',        profile.goals || '');
+    // Timezone
+    let tzSel = document.getElementById('profileTimezone');
+    if (tzSel) tzSel.value = localStorage.getItem('eyeTimezone') || '';
+    updateTzPreview();
     // Pronouns
     let pron = profile.pronouns || '';
     _set('profilePronounsInput', pron);
     updatePronounLabels(pron);
     updateSettingsAvatarPreview();
     updateProfileDisplay();
+}
+
+// ── Timezone preference ───────────────────────────────────────────────────────
+function saveTimezonePreference(tz) {
+    if (tz) {
+        localStorage.setItem('eyeTimezone', tz);
+    } else {
+        localStorage.removeItem('eyeTimezone');
+    }
+    updateTzPreview();
+    showToast('🌐 Time zone saved!');
+}
+
+function updateTzPreview() {
+    let el = document.getElementById('tzCurrentTime');
+    if (!el) return;
+    let tz = localStorage.getItem('eyeTimezone') || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    try {
+        let now = new Date().toLocaleString('en-US', {
+            timeZone: tz, weekday:'short', year:'numeric', month:'short', day:'numeric',
+            hour:'numeric', minute:'2-digit', hour12:true
+        });
+        el.textContent = `🕐 Current time in ${tz.replace('_',' ')}: ${now}`;
+    } catch(e) { el.textContent = ''; }
+}
+
+// Helper: get user's preferred timezone
+function getUserTz() {
+    return localStorage.getItem('eyeTimezone') || Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
 // ── Pronouns radio helper ────────────────────────────────────────────────────
@@ -1382,8 +1436,12 @@ document.addEventListener('DOMContentLoaded', function() {
         let baseNotes  = document.getElementById('notes').value;
         let complexity = document.getElementById('complexity') ? document.getElementById('complexity').value : 'Routine';
         let notesWithComp = baseNotes + (baseNotes ? ' ' : '') + '[COMP:' + complexity + ']';
+        let procSel = document.getElementById('procedure').value;
+        let procVal = procSel === 'Others'
+            ? (document.getElementById('procedureOther').value.trim() || 'Others')
+            : procSel;
         let { error } = await db.from('cases').insert({
-            procedure:     document.getElementById('procedure').value,
+            procedure:     procVal,
             role:          document.getElementById('role').value,
             date:          document.getElementById('date').value,
             notes:         notesWithComp,
@@ -1401,6 +1459,11 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('hospital').value  = '';
             document.getElementById('notes').value     = '';
             document.getElementById('date').value      = '';
+            // Reset Others procedure
+            let otherInp = document.getElementById('procedureOther');
+            if (otherInp) { otherInp.style.display = 'none'; otherInp.value = ''; }
+            let procEl = document.getElementById('procedure');
+            if (procEl) procEl.value = 'Cataract / Phaco';
             loadCases();
             showToast('✅ Case saved!');
         }
@@ -1579,26 +1642,23 @@ function updateDashboard(cases) {
     checkMilestones(overallPercent);
     updateAchievementBadges(overallPercent);
 
-    // ── Inline stats row (Notion property style)
-    const _sv = (icon, val, label, color) =>
-        `<div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:16px 10px;gap:6px">
-            <div style="width:36px;height:36px;border-radius:10px;background:${color}14;display:flex;align-items:center;justify-content:center">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
-            </div>
-            <span style="font-size:22px;font-weight:800;color:${color};letter-spacing:-0.5px;line-height:1">${val}</span>
-            <span style="font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.6px">${label}</span>
+    // ── Hero stats row (inside the blue banner)
+    const _hv = (icon, val, label) =>
+        `<div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:0 8px;min-width:0;text-align:center">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:5px">${icon}</svg>
+            <span style="font-size:20px;font-weight:800;color:white;letter-spacing:-0.5px;line-height:1">${val}</span>
+            <span style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.7px;margin-top:3px">${label}</span>
         </div>`;
-    const _div = `<div style="width:1px;background:#F3F4F6;align-self:stretch;margin:12px 0"></div>`;
-    document.getElementById('summaryCards').innerHTML =
-        `<div style="background:white;border-radius:16px;border:1px solid #E5E7EB;display:flex;align-items:stretch;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-            ${_sv('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',totalDone,'Total Cases','#2563eb')}
-            ${_div}
-            ${_sv('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',monthCases.length,'This Month','#0891b2')}
-            ${_div}
-            ${_sv('<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',overallPercent+'%','ACGME','#7c3aed')}
-            ${_div}
-            ${_sv('<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',streak,'Day Streak','#d97706')}
-        </div>`;
+    const _hdiv = `<div style="width:1px;background:rgba(255,255,255,0.12);align-self:stretch;margin:0 2px"></div>`;
+    let heroEl = document.getElementById('heroStats');
+    if (heroEl) heroEl.innerHTML =
+        `${_hv('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',totalDone,'Total Cases')}
+        ${_hdiv}
+        ${_hv('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',monthCases.length,'This Month')}
+        ${_hdiv}
+        ${_hv('<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',overallPercent+'%','ACGME')}
+        ${_hdiv}
+        ${_hv('<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',streak,'Day Streak')}`;
 
     let badge = document.getElementById('overallBadge');
     if (badge) badge.textContent = overallPercent + '% Complete';
