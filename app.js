@@ -1642,23 +1642,12 @@ function updateDashboard(cases) {
     checkMilestones(overallPercent);
     updateAchievementBadges(overallPercent);
 
-    // ── Hero stats row (inside the blue banner)
-    const _hv = (icon, val, label) =>
-        `<div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:0 8px;min-width:0;text-align:center">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:5px">${icon}</svg>
-            <span style="font-size:20px;font-weight:800;color:white;letter-spacing:-0.5px;line-height:1">${val}</span>
-            <span style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.7px;margin-top:3px">${label}</span>
-        </div>`;
-    const _hdiv = `<div style="width:1px;background:rgba(255,255,255,0.12);align-self:stretch;margin:0 2px"></div>`;
-    let heroEl = document.getElementById('heroStats');
-    if (heroEl) heroEl.innerHTML =
-        `${_hv('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',totalDone,'Total Cases')}
-        ${_hdiv}
-        ${_hv('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',monthCases.length,'This Month')}
-        ${_hdiv}
-        ${_hv('<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',overallPercent+'%','ACGME')}
-        ${_hdiv}
-        ${_hv('<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',streak,'Day Streak')}`;
+    // ── Hero stats — update the hardcoded number cells
+    let _hs = id => document.getElementById(id);
+    if (_hs('heroStatCases'))  _hs('heroStatCases').textContent  = totalDone;
+    if (_hs('heroStatMonth'))  _hs('heroStatMonth').textContent  = monthCases.length;
+    if (_hs('heroStatAcgme'))  _hs('heroStatAcgme').textContent  = overallPercent + '%';
+    if (_hs('heroStatStreak')) _hs('heroStatStreak').textContent = streak;
 
     let badge = document.getElementById('overallBadge');
     if (badge) badge.textContent = overallPercent + '% Complete';
