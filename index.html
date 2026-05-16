@@ -378,6 +378,7 @@
 
             <!-- Inline Stats Row -->
             <div id="summaryCards" style="margin-bottom:16px"></div>
+            <div id="goalsWidget" style="margin-bottom:16px"></div>
 
             <!-- Smart Alerts -->
             <div id="smartAlertBox" style="margin-bottom:16px"></div>
@@ -406,6 +407,20 @@
                 <div class="dash-card">
                     <h3 style="font-size:14px;font-weight:700;margin-bottom:14px">Recent Cases</h3>
                     <div id="recentCasesFeed"></div>
+                </div>
+            </div>
+
+            <div class="dash-card" style="margin-bottom:16px">
+                <h3 style="margin:0 0 16px;font-size:14px;font-weight:700">Activity</h3>
+                <div id="activityHeatmap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"></div>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:10px;justify-content:flex-end">
+                    <span style="font-size:11px;color:#94a3b8">Less</span>
+                    <div style="width:11px;height:11px;border-radius:3px;background:#f1f5f9"></div>
+                    <div style="width:11px;height:11px;border-radius:3px;background:#bfdbfe"></div>
+                    <div style="width:11px;height:11px;border-radius:3px;background:#60a5fa"></div>
+                    <div style="width:11px;height:11px;border-radius:3px;background:#2563eb"></div>
+                    <div style="width:11px;height:11px;border-radius:3px;background:#1e40af"></div>
+                    <span style="font-size:11px;color:#94a3b8">More</span>
                 </div>
             </div>
 
@@ -803,6 +818,7 @@
                 <div style="background:white;padding:12px 14px;border-radius:14px;margin-bottom:12px;border:1px solid #E5E7EB;box-shadow:0 1px 4px rgba(0,0,0,0.04)">
                     <input type="text" id="searchNotes" placeholder="Search cases…" oninput="applyFilter()" style="margin:0;padding:10px 14px;border-radius:10px;font-size:13px">
                 </div>
+                <div id="savedFiltersBar" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center"></div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
                     <select id="filterProcedure" onchange="applyFilter()" style="width:auto;padding:7px 10px;font-size:12px;border-radius:20px;margin-top:0;border:1.5px solid #E5E7EB;background:white">
                         <option value="">All Procedures</option>
@@ -1174,6 +1190,11 @@
                     </div>
                     <button onclick="openStudyModal()" style="width:auto;margin:0;padding:10px 14px;font-size:13px;border-radius:12px;background:#7c3aed;display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</button>
                 </div>
+                <div id="studyViewToggle" style="display:flex;background:#f1f5f9;border-radius:10px;padding:3px;gap:2px;width:fit-content;margin-bottom:14px">
+                    <button id="studyViewList" onclick="setStudyView('list')" style="padding:5px 14px;margin:0;border-radius:8px;font-size:11px;font-weight:700;background:white;color:#111827;box-shadow:0 1px 3px rgba(0,0,0,0.08)">List</button>
+                    <button id="studyViewBoard" onclick="setStudyView('board')" style="padding:5px 14px;margin:0;border-radius:8px;font-size:11px;font-weight:700;background:transparent;color:#6B7280;box-shadow:none">Board</button>
+                </div>
+                <div id="studyKanban" style="display:none"></div>
                 <div id="studyProgress" style="margin-bottom:14px"></div>
                 <div id="studyList"></div>
             </div>
@@ -1187,6 +1208,13 @@
                     <button onclick="closeJournalModal()" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b">✕</button>
                 </div>
                 <input type="hidden" id="journalEntryId">
+                <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+                    <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;align-self:center">Template:</span>
+                    <button onclick="applyJournalTemplate('postcall')" style="width:auto;padding:4px 12px;margin:0;font-size:11px;font-weight:600;background:#f1f5f9;color:#374151;border-radius:20px;box-shadow:none;border:1px solid #e2e8f0">Post-Call</button>
+                    <button onclick="applyJournalTemplate('grandrounds')" style="width:auto;padding:4px 12px;margin:0;font-size:11px;font-weight:600;background:#f1f5f9;color:#374151;border-radius:20px;box-shadow:none;border:1px solid #e2e8f0">Grand Rounds</button>
+                    <button onclick="applyJournalTemplate('rotation')" style="width:auto;padding:4px 12px;margin:0;font-size:11px;font-weight:600;background:#f1f5f9;color:#374151;border-radius:20px;box-shadow:none;border:1px solid #e2e8f0">End of Rotation</button>
+                    <button onclick="applyJournalTemplate('weekly')" style="width:auto;padding:4px 12px;margin:0;font-size:11px;font-weight:600;background:#f1f5f9;color:#374151;border-radius:20px;box-shadow:none;border:1px solid #e2e8f0">Weekly Review</button>
+                </div>
                 <label>Date</label><input type="date" id="journalDate">
                 <label>How did it go?</label>
                 <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
@@ -1201,8 +1229,21 @@
                     <input type="text" id="journalTitle" placeholder="e.g. First solo cataract, Tough VR case…" style="flex:1;margin:0">
                     <button onclick="startVoiceFill('journalTitle',this)" title="Voice input" style="width:38px;height:38px;padding:0;margin:0;background:#eff6ff;border-radius:10px;box-shadow:none;border:1.5px solid #bfdbfe;flex-shrink:0;display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
                 </div>
-                <label style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">Entry <button onclick="startVoiceFill('journalBody',this)" title="Voice input" style="width:32px;height:32px;padding:0;margin:0;background:#eff6ff;border-radius:8px;box-shadow:none;border:1.5px solid #bfdbfe;display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button></label>
-                <textarea id="journalBody" rows="6" placeholder="What happened today? What did you learn? What would you do differently?"></textarea>
+                <label style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:6px">
+    <span style="font-weight:600;font-size:13px;color:#374151">Entry</span>
+    <div style="display:flex;gap:3px;align-items:center">
+        <button onclick="rtFmt('bold')" title="Bold" style="width:28px;height:28px;padding:0;margin:0;background:#f8fafc;border-radius:7px;box-shadow:none;border:1px solid #e2e8f0;font-size:12px;font-weight:800;color:#374151;font-family:Georgia,serif">B</button>
+        <button onclick="rtFmt('italic')" title="Italic" style="width:28px;height:28px;padding:0;margin:0;background:#f8fafc;border-radius:7px;box-shadow:none;border:1px solid #e2e8f0;font-size:12px;font-weight:600;color:#374151;font-style:italic;font-family:Georgia,serif">I</button>
+        <button onclick="rtFmt('h3')" title="Heading" style="width:28px;height:28px;padding:0;margin:0;background:#f8fafc;border-radius:7px;box-shadow:none;border:1px solid #e2e8f0;font-size:10px;font-weight:800;color:#374151;letter-spacing:-0.5px">H2</button>
+        <button onclick="rtFmt('ul')" title="Bullet list" style="width:28px;height:28px;padding:0;margin:0;background:#f8fafc;border-radius:7px;box-shadow:none;border:1px solid #e2e8f0;font-size:14px;color:#374151">≡</button>
+        <button onclick="rtFmt('todo')" title="Task" style="width:28px;height:28px;padding:0;margin:0;background:#f8fafc;border-radius:7px;box-shadow:none;border:1px solid #e2e8f0;font-size:11px;color:#374151">☐</button>
+        <button onclick="startVoiceFill('journalBody',this)" title="Voice input" style="width:28px;height:28px;padding:0;margin:0;background:#eff6ff;border-radius:7px;box-shadow:none;border:1.5px solid #bfdbfe;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+    </div>
+</label>
+<div id="journalBody" contenteditable="true"
+    data-placeholder="What happened today? What did you learn? What would you do differently?"
+    style="min-height:140px;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:14px;color:#374151;line-height:1.7;outline:none;font-family:inherit;background:white;cursor:text;transition:border-color 0.15s"
+    onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'"></div>
                 <label>Link to a case <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
                 <select id="journalCaseLink" style="margin-bottom:20px"><option value="">— No case linked —</option></select>
                 <div style="display:flex;gap:10px">
@@ -1614,9 +1655,32 @@
         <!-- Live transcript -->
         <div id="voiceLiveText" style="font-size:14px;color:#334155;min-height:24px;font-style:italic;line-height:1.5;word-break:break-word">Listening…</div>
     </div>
+    <!-- Goals Modal -->
+    <div id="goalsModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+        <div style="background:white;border-radius:20px;padding:28px;width:92%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,0.2)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                <h2 style="margin:0;font-size:18px;font-weight:700">My Annual Goals</h2>
+                <button onclick="document.getElementById('goalsModal').style.display='none'" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b;box-shadow:none">✕</button>
+            </div>
+            <label>Cases this year</label>
+            <input type="number" id="goalCases" min="1" max="2000" style="margin-bottom:12px">
+            <label>Journal entries this year</label>
+            <input type="number" id="goalJournal" min="1" max="500" style="margin-bottom:12px">
+            <label>Study items completed</label>
+            <input type="number" id="goalStudy" min="1" max="500" style="margin-bottom:20px">
+            <button onclick="saveGoals()" style="width:100%;margin:0;background:#0f172a">Save Goals</button>
+        </div>
+    </div>
+
     <style>
         @keyframes voicePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.3)} }
         @keyframes voiceRing  { 0%{transform:scale(0.6);opacity:0.8} 100%{transform:scale(2.2);opacity:0} }
+        #journalBody:empty:before { content: attr(data-placeholder); color: #94a3b8; pointer-events: none; display: block; }
+        #journalBody h3 { font-size:15px;font-weight:700;color:#0f172a;margin:8px 0 4px; }
+        #journalBody ul { padding-left:20px;margin:4px 0; }
+        #journalBody li { margin:2px 0; }
+        .rt-task { display:flex;align-items:center;gap:8px;margin:4px 0; }
+        .rt-task input[type=checkbox] { width:15px;height:15px;accent-color:#2563eb;flex-shrink:0;cursor:pointer; }
     </style>
 </body>
 </html>

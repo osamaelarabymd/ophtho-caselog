@@ -45,6 +45,69 @@ const milestones = [
     { pct: 100, emoji: '🏆', title: 'ACGME Complete!', text: "Outstanding! You've completed ALL ACGME requirements!", badge: '100% Legend',  color: '#16a34a' }
 ];
 
+// ── Annual Goals ──────────────────────────────────────────────────────────────
+const GOALS_KEY = 'eyeGoals';
+function getGoals() { return JSON.parse(localStorage.getItem(GOALS_KEY) || '{"cases":200,"journal":100,"study":50}'); }
+function saveGoals() {
+    let g = {
+        cases:   parseInt(document.getElementById('goalCases').value)   || 200,
+        journal: parseInt(document.getElementById('goalJournal').value) || 100,
+        study:   parseInt(document.getElementById('goalStudy').value)   || 50
+    };
+    localStorage.setItem(GOALS_KEY, JSON.stringify(g));
+    document.getElementById('goalsModal').style.display = 'none';
+    renderGoalsWidget();
+    showToast('Goals saved!');
+}
+function openGoalsModal() {
+    let g = getGoals();
+    document.getElementById('goalCases').value   = g.cases;
+    document.getElementById('goalJournal').value = g.journal;
+    document.getElementById('goalStudy').value   = g.study;
+    document.getElementById('goalsModal').style.display = 'flex';
+}
+function renderGoalsWidget() {
+    let el = document.getElementById('goalsWidget');
+    if (!el) return;
+    let g = getGoals();
+    let today = new Date();
+    let dayOfYear = Math.ceil((today - new Date(today.getFullYear(),0,1)) / 86400000);
+    let studyItems = getStudyItems();
+    let vals = {
+        cases:   allCases.length,
+        journal: getJournalEntries().length,
+        study:   studyItems.filter(s=>s.status==='done').length
+    };
+    function bar(label, now, goal, color) {
+        let pct = Math.min(100, goal ? Math.round(now/goal*100) : 0);
+        let paceTarget = Math.round((goal/365)*dayOfYear);
+        let diff = now - paceTarget;
+        let paceLabel = diff >= 0 ? `+${diff} ahead of pace` : `${Math.abs(diff)} behind pace`;
+        let paceColor = diff >= 0 ? '#16a34a' : '#ef4444';
+        return `<div style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
+                <span style="font-size:13px;font-weight:600;color:#0f172a">${label}</span>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:10px;font-weight:700;color:${paceColor}">${paceLabel}</span>
+                    <span style="font-size:12px;color:#64748b;font-weight:500">${now}<span style="color:#cbd5e1"> / ${goal}</span></span>
+                </div>
+            </div>
+            <div style="height:7px;background:#f1f5f9;border-radius:99px;overflow:hidden">
+                <div style="height:100%;width:${pct}%;background:${color};border-radius:99px"></div>
+            </div>
+        </div>`;
+    }
+    el.innerHTML = `<div class="dash-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h3 style="margin:0;font-size:14px;font-weight:700">My Annual Goals</h3>
+            <button onclick="openGoalsModal()" style="width:auto;padding:5px 12px;margin:0;background:#f1f5f9;color:#374151;border-radius:9px;font-size:11px;font-weight:700;box-shadow:none;border:1px solid #e2e8f0">Edit</button>
+        </div>
+        ${bar('Cases Logged', vals.cases, g.cases, '#2563eb')}
+        ${bar('Journal Entries', vals.journal, g.journal, '#7c3aed')}
+        ${bar('Study Items Done', vals.study, g.study, '#16a34a')}
+    </div>`;
+}
+
 // ── Global Search ─────────────────────────────────────────────────────────────
 function openGlobalSearch() {
     let modal = document.getElementById('globalSearchModal');
@@ -92,7 +155,7 @@ function runGlobalSearch() {
     ).slice(0, 4);
     if (jHits.length) {
         html += _srSection('Journal', jHits.map(e =>
-            _srItem(e.mood||'📔', e.title||'Untitled entry', `${e.date||''} · ${(e.body||'').slice(0,60)}…`, `showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch()`, '#7c3aed')
+            _srItem(e.mood||'📔', e.title||'Untitled entry', `${e.date||''} · ${(e.body||'').replace(/<[^>]*>/g,' ').trim().slice(0,60)}…`, `showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch()`, '#7c3aed')
         ));
     }
 
@@ -711,6 +774,7 @@ function showTab(tab, e) {
     } else if (tab === 'caseList') {
         document.getElementById('caseListTab').style.display = 'block';
         showCasesSubTab('list');
+        renderSavedFiltersBar();
         displayCaseList(allCases);
     } else if (tab === 'analytics') {
         // Analytics merged into Cases > Insights
@@ -1291,48 +1355,6 @@ function updateDashboard(cases) {
     for (let p in acgme) { counts[p] = 0; }
     for (let c of cases) { if (counts[c.procedure] !== undefined) { counts[c.procedure]++; } }
 
-    // ── Today's Focus (Notion callout style)
-    let todayStr  = new Date().toISOString().split('T')[0];
-    let todayCases = cases.filter(c => c.date === todayStr);
-    let openTodos  = (JSON.parse(localStorage.getItem('eyelog_todos')) || []).filter(t => !t.done && (!t.due || t.due <= todayStr));
-    let focusEl = document.getElementById('todayFocus');
-    if (focusEl) {
-        let todoItems = openTodos.slice(0,3).map(t =>
-            `<div style="display:flex;align-items:center;gap:8px;padding:5px 0">
-                <div style="width:6px;height:6px;border-radius:50%;background:#7c3aed;flex-shrink:0"></div>
-                <span style="font-size:13px;color:#374151;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.text}</span>
-            </div>`).join('');
-        focusEl.innerHTML = `
-        <div style="background:#fafafa;border:1px solid #E5E7EB;border-radius:14px;padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div style="display:flex;flex-direction:column;gap:6px">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-                    <div style="width:28px;height:28px;background:#eff6ff;border-radius:8px;display:flex;align-items:center;justify-content:center">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    </div>
-                    <span style="font-size:12px;font-weight:700;color:#374151;letter-spacing:0.3px">TODAY</span>
-                    <span style="font-size:12px;font-weight:700;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px">${todayCases.length} case${todayCases.length!==1?'s':''}</span>
-                </div>
-                ${todayCases.length === 0
-                    ? `<p style="font-size:12px;color:#9CA3AF;font-style:italic">No cases logged today yet</p>`
-                    : todayCases.slice(0,3).map(c=>`<div style="font-size:12px;color:#374151;padding:4px 0;border-bottom:1px solid #F3F4F6">${c.procedure?.split('/')[0]?.trim()||c.procedure} · <span style="color:#6B7280">${c.role||''}</span></div>`).join('')
-                }
-            </div>
-            <div style="border-left:1px solid #E5E7EB;padding-left:14px;display:flex;flex-direction:column;gap:6px">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-                    <div style="width:28px;height:28px;background:#faf5ff;border-radius:8px;display:flex;align-items:center;justify-content:center">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                    </div>
-                    <span style="font-size:12px;font-weight:700;color:#374151;letter-spacing:0.3px">OPEN TASKS</span>
-                    <span style="font-size:12px;font-weight:700;color:#7c3aed;background:#faf5ff;padding:2px 8px;border-radius:20px">${openTodos.length}</span>
-                </div>
-                ${openTodos.length === 0
-                    ? `<p style="font-size:12px;color:#9CA3AF;font-style:italic">All caught up!</p>`
-                    : todoItems
-                }
-            </div>
-        </div>`;
-    }
-
     // ── ACGME Progress — Notion-style bars
     let statsHtml = '';
     for (let p in acgme) {
@@ -1434,6 +1456,11 @@ function updateDashboard(cases) {
             }).join('');
         }
     }
+
+    // ── New feature widgets
+    renderGoalsWidget();
+    renderTodayWidget();
+    renderActivityHeatmap();
 }
 
 // Custom procedure categories
@@ -1902,6 +1929,62 @@ function displayCaseList(cases) {
     }
     html += '</div>';
     document.getElementById('caseList').innerHTML = html;
+}
+
+// ── Saved Case Filters ────────────────────────────────────────────────────────
+const SAVED_FILTERS_KEY = 'eyeSavedFilters';
+function getSavedFilters() { return JSON.parse(localStorage.getItem(SAVED_FILTERS_KEY)||'[]'); }
+function renderSavedFiltersBar() {
+    let el = document.getElementById('savedFiltersBar');
+    if (!el) return;
+    let filters = getSavedFilters();
+    let activeId = localStorage.getItem('eyeActiveFilter')||'';
+    let html = `<button onclick="clearSavedFilter()" style="padding:5px 12px;margin:0;border-radius:20px;font-size:11px;font-weight:700;box-shadow:none;${!activeId?'background:#0f172a;color:white;border:none':'background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0'}">All</button>`;
+    filters.forEach(f => {
+        let isActive = f.id === activeId;
+        html += `<div style="display:flex;align-items:center;gap:0">
+            <button onclick="applySavedFilter('${f.id}')" style="padding:5px 12px;margin:0;border-radius:20px 0 0 20px;font-size:11px;font-weight:700;box-shadow:none;${isActive?'background:#2563eb;color:white;border:none':'background:#f1f5f9;color:#374151;border:1px solid #e2e8f0;border-right:none'}">${f.name}</button>
+            <button onclick="deleteSavedFilter('${f.id}')" style="padding:5px 8px;margin:0;border-radius:0 20px 20px 0;font-size:10px;font-weight:700;box-shadow:none;${isActive?'background:#2563eb;color:rgba(255,255,255,0.7);border:none':'background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;border-left:none'}">✕</button>
+        </div>`;
+    });
+    html += `<button onclick="saveCurrentFilter()" style="padding:5px 12px;margin:0;border-radius:20px;font-size:11px;font-weight:600;box-shadow:none;background:transparent;color:#2563eb;border:1px dashed #93c5fd">+ Save view</button>`;
+    el.innerHTML = html;
+}
+function saveCurrentFilter() {
+    let name = prompt('Name this filter view:');
+    if (!name) return;
+    let proc = document.getElementById('filterProcedure')?.value || '';
+    let role = document.getElementById('filterRole')?.value || '';
+    let search = document.getElementById('searchNotes')?.value || '';
+    let filters = getSavedFilters();
+    filters.push({ id: crypto.randomUUID(), name: name.trim(), proc, role, search });
+    localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(filters));
+    renderSavedFiltersBar();
+    showToast('Filter saved!');
+}
+function applySavedFilter(id) {
+    let f = getSavedFilters().find(x=>x.id===id);
+    if (!f) return;
+    localStorage.setItem('eyeActiveFilter', id);
+    if (document.getElementById('filterProcedure'))   document.getElementById('filterProcedure').value = f.proc||'';
+    if (document.getElementById('filterRole'))   document.getElementById('filterRole').value = f.role||'';
+    if (document.getElementById('searchNotes'))   document.getElementById('searchNotes').value = f.search||'';
+    renderSavedFiltersBar();
+    applyFilter();
+}
+function clearSavedFilter() {
+    localStorage.removeItem('eyeActiveFilter');
+    if (document.getElementById('filterProcedure'))  document.getElementById('filterProcedure').value  = '';
+    if (document.getElementById('filterRole'))  document.getElementById('filterRole').value  = '';
+    if (document.getElementById('searchNotes'))  document.getElementById('searchNotes').value  = '';
+    renderSavedFiltersBar();
+    applyFilter();
+}
+function deleteSavedFilter(id) {
+    let filters = getSavedFilters().filter(f=>f.id!==id);
+    localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(filters));
+    if (localStorage.getItem('eyeActiveFilter')===id) localStorage.removeItem('eyeActiveFilter');
+    renderSavedFiltersBar();
 }
 
 function applyFilter() {
@@ -2714,11 +2797,17 @@ function startVoiceFill(targetId, btnEl) {
     };
 
     _vfRec.onend = () => {
-        // Save accumulated text to field
         if (_vfAccumulated) {
             let el = document.getElementById(_vfTargetId);
             if (el) {
-                el.value = el.value ? el.value + ' ' + _vfAccumulated : _vfAccumulated;
+                if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+                    el.value = el.value ? el.value + ' ' + _vfAccumulated : _vfAccumulated;
+                } else {
+                    el.focus();
+                    let sel = window.getSelection();
+                    if (!sel.rangeCount) { let r = document.createRange(); r.selectNodeContents(el); r.collapse(false); sel.removeAllRanges(); sel.addRange(r); }
+                    document.execCommand('insertText', false, (el.textContent.trim() ? ' ' : '') + _vfAccumulated);
+                }
                 el.focus();
             }
         }
@@ -3581,7 +3670,7 @@ function renderDayDetail(dk) {
         for (let j of journal) {
             html += `<div onclick="openJournalModal('${j.id}')" style="padding:12px;background:#faf5ff;border-radius:12px;margin-bottom:6px;border-left:3px solid #7c3aed;cursor:pointer">
                 <p style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:4px">${j.mood} ${j.title||'Journal Entry'}</p>
-                <p style="font-size:12px;color:#64748b;line-height:1.5">${j.body.slice(0,100)}${j.body.length>100?'…':''}</p>
+                <p style="font-size:12px;color:#64748b;line-height:1.5">${((j.body||'').replace(/<[^>]*>/g,' ').trim()).slice(0,100)}…</p>
             </div>`;
         }
         html += '</div>';
@@ -3677,7 +3766,7 @@ function openJournalModal(id) {
     document.getElementById('journalEntryId').value = entry ? entry.id : '';
     document.getElementById('journalDate').value    = entry ? entry.date : new Date().toISOString().slice(0,10);
     document.getElementById('journalTitle').value   = entry ? (entry.title || '') : '';
-    document.getElementById('journalBody').value    = entry ? entry.body : '';
+    document.getElementById('journalBody').innerHTML = entry ? (entry.body || '') : '';
 
     selectedMood = entry ? entry.mood : '😊';
     updateMoodButtons();
@@ -3719,9 +3808,155 @@ function updateMoodButtons() {
     }
 }
 
+const JOURNAL_PROMPTS = [
+    "What's the one thing you want to master this week?",
+    "Describe a case that challenged you today.",
+    "What did you learn from your attending today?",
+    "What would you do differently next time?",
+    "What are you most proud of this week?",
+    "What clinical skill improved most recently?",
+    "Reflect on a patient interaction that stayed with you.",
+];
+function renderActivityHeatmap() {
+    let el = document.getElementById('activityHeatmap');
+    if (!el) return;
+    let activity = {};
+    allCases.forEach(c => { if (c.date) activity[c.date] = (activity[c.date]||0) + 1; });
+    getJournalEntries().forEach(e => { if (e.date) activity[e.date] = (activity[e.date]||0) + 1; });
+    let today = new Date();
+    let startDate = new Date(today);
+    startDate.setDate(startDate.getDate() - 52*7 - today.getDay());
+    let dayLabels = ['S','M','T','W','T','F','S'];
+    let colors = ['#f1f5f9','#bfdbfe','#60a5fa','#2563eb','#1e40af'];
+    function getColor(count) {
+        if (!count) return colors[0];
+        if (count === 1) return colors[1];
+        if (count === 2) return colors[2];
+        if (count <= 4) return colors[3];
+        return colors[4];
+    }
+    let weeks = [];
+    let cur = new Date(startDate);
+    while (cur <= today) {
+        let week = [];
+        for (let d = 0; d < 7; d++) {
+            let ds = cur.toISOString().slice(0,10);
+            let count = activity[ds] || 0;
+            let isFuture = cur > today;
+            let isToday = ds === today.toISOString().slice(0,10);
+            week.push({ ds, count, isFuture, isToday });
+            cur.setDate(cur.getDate() + 1);
+        }
+        weeks.push(week);
+    }
+    let html = `<div style="display:inline-grid;grid-template-columns:16px repeat(${weeks.length},12px);grid-template-rows:16px repeat(7,12px);gap:2px;align-items:center">`;
+    html += `<div></div>`;
+    weeks.forEach((week, wi) => {
+        let m = new Date(week[0].ds+'T12:00:00').getMonth();
+        let prevM = wi > 0 ? new Date(weeks[wi-1][0].ds+'T12:00:00').getMonth() : -1;
+        html += `<div style="font-size:9px;color:#94a3b8;white-space:nowrap;overflow:visible">${m !== prevM ? new Date(week[0].ds+'T12:00:00').toLocaleString('default',{month:'short'}) : ''}</div>`;
+    });
+    for (let d = 0; d < 7; d++) {
+        html += `<div style="font-size:9px;color:#94a3b8;padding-right:2px;text-align:right">${[0,2,4,6].includes(d)?dayLabels[d]:''}</div>`;
+        weeks.forEach(week => {
+            let cell = week[d];
+            if (!cell) { html += `<div></div>`; return; }
+            let bg = cell.isFuture ? 'transparent' : getColor(cell.count);
+            let border = cell.isToday ? '1.5px solid #2563eb' : '1.5px solid transparent';
+            let tip = cell.isFuture ? '' : `title="${cell.ds}: ${cell.count} activit${cell.count===1?'y':'ies'}"`;
+            html += `<div ${tip} style="width:11px;height:11px;border-radius:3px;background:${bg};border:${border};cursor:${cell.isFuture?'default':'pointer'}"></div>`;
+        });
+    }
+    html += `</div>`;
+    el.innerHTML = html;
+}
+
+function renderTodayWidget() {
+    let el = document.getElementById('todayFocus');
+    if (!el) return;
+    let today = new Date().toISOString().slice(0,10);
+    let todayCases  = allCases.filter(c => c.date === today);
+    let todos       = JSON.parse(localStorage.getItem('eyeTodos')||'[]').filter(t => !t.done && t.due === today);
+    let events      = JSON.parse(localStorage.getItem('calEvents')||'[]').filter(ev => ev.date === today);
+    let prompt      = JOURNAL_PROMPTS[new Date().getDay() % JOURNAL_PROMPTS.length];
+    let dateLabel   = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+
+    let casesHTML = todayCases.length
+        ? todayCases.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f1f5f9">
+            <div style="width:7px;height:7px;border-radius:50%;background:#22c55e;flex-shrink:0"></div>
+            <span style="font-size:13px;color:#0f172a;font-weight:500">${c.procedure||'Case'}</span>
+            <span style="font-size:11px;color:#94a3b8;margin-left:auto">${c.role||''}</span>
+          </div>`).join('')
+        : `<div style="font-size:13px;color:#94a3b8;padding:6px 0">No cases logged today yet</div>`;
+
+    let todosHTML = todos.length
+        ? todos.map(t=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f1f5f9">
+            <div style="width:7px;height:7px;border-radius:2px;border:2px solid #f59e0b;flex-shrink:0"></div>
+            <span style="font-size:13px;color:#0f172a">${t.text}</span>
+          </div>`).join('')
+        : '';
+
+    let eventsHTML = events.length
+        ? events.map(ev=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f1f5f9">
+            <div style="width:7px;height:7px;border-radius:50%;background:#2563eb;flex-shrink:0"></div>
+            <span style="font-size:13px;color:#0f172a">${ev.title}</span>
+          </div>`).join('')
+        : '';
+
+    el.innerHTML = `<div class="dash-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div>
+                <h3 style="margin:0 0 2px;font-size:14px;font-weight:700">Today</h3>
+                <p style="margin:0;font-size:11px;color:#94a3b8">${dateLabel}</p>
+            </div>
+            <button onclick="openJournalModal();showWorkspaceTab('journal')" style="width:auto;padding:5px 12px;margin:0;background:#7c3aed;color:white;border-radius:9px;font-size:11px;font-weight:700;box-shadow:none">+ Journal</button>
+        </div>
+        ${eventsHTML}${casesHTML}${todosHTML}
+        <div style="margin-top:12px;padding:10px 12px;background:#f8fafc;border-radius:10px;border-left:3px solid #7c3aed">
+            <p style="margin:0;font-size:11px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Today's Prompt</p>
+            <p style="margin:0;font-size:13px;color:#374151;line-height:1.5;font-style:italic">${prompt}</p>
+        </div>
+    </div>`;
+}
+
+function applyJournalTemplate(tpl) {
+    let el = document.getElementById('journalBody');
+    if (!el) return;
+    const templates = {
+        postcall: `<h3>Post-Call Reflection</h3><p>Sleep hours: </p><p>Energy level today: </p><h3>Hardest Case</h3><p></p><h3>What I'd Do Differently</h3><p></p><h3>Win of the Call</h3><p></p>`,
+        grandrounds: `<h3>Grand Rounds Notes</h3><p><strong>Topic:</strong> </p><p><strong>Speaker:</strong> </p><h3>Key Learnings</h3><ul><li></li><li></li></ul><h3>Follow-Up Action</h3><p></p>`,
+        rotation: `<h3>End of Rotation Summary</h3><p><strong>Rotation:</strong> </p><p><strong>Dates:</strong> </p><h3>Cases Highlights</h3><p></p><h3>Skills Gained</h3><ul><li></li><li></li></ul><h3>What to Work On Next</h3><p></p><h3>Overall Rating</h3><p> / 10</p>`,
+        weekly: `<h3>Weekly Review</h3><p><strong>Week of:</strong> </p><h3>This Week's Wins</h3><ul><li></li></ul><h3>Challenges</h3><p></p><h3>What I Learned</h3><p></p><h3>Next Week's Focus</h3><p></p><h3>How I'm Feeling</h3><p> / 10</p>`
+    };
+    if (templates[tpl]) {
+        el.innerHTML = templates[tpl];
+        el.focus();
+        let range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+    }
+}
+
+function rtFmt(cmd) {
+    let el = document.getElementById('journalBody');
+    if (!el) return;
+    el.focus();
+    if (cmd === 'bold')   document.execCommand('bold', false, null);
+    else if (cmd === 'italic') document.execCommand('italic', false, null);
+    else if (cmd === 'h3')  document.execCommand('formatBlock', false, 'h3');
+    else if (cmd === 'ul')  document.execCommand('insertUnorderedList', false, null);
+    else if (cmd === 'todo') {
+        document.execCommand('insertHTML', false,
+            '<div class="rt-task"><input type="checkbox" onclick="event.stopPropagation()"><span> </span></div>');
+    }
+}
+
 function saveJournalEntry() {
-    let body = document.getElementById('journalBody').value.trim();
-    if (!body) { showToast('⚠️ Write something first!', 'warning'); return; }
+    let bodyEl = document.getElementById('journalBody');
+    let body = bodyEl.innerHTML.trim();
+    if (!body || bodyEl.textContent.trim() === '') { showToast('Write something first!', 'warning'); return; }
 
     let entries = getJournalEntries();
     let id      = document.getElementById('journalEntryId').value;
@@ -3766,7 +4001,7 @@ function renderJournalList() {
     let moodFilter = document.getElementById('journalMoodFilter')?.value || '';
     let entries   = getJournalEntries();
 
-    if (search)     entries = entries.filter(e => (e.title+e.body).toLowerCase().includes(search));
+    if (search)     entries = entries.filter(e => (e.title+(e.body||'').replace(/<[^>]*>/g,' ')).toLowerCase().includes(search));
     if (moodFilter) entries = entries.filter(e => e.mood === moodFilter);
 
     if (entries.length === 0) {
@@ -3796,7 +4031,8 @@ function renderJournalList() {
         let label = new Date(month+'-02').toLocaleString('default',{month:'long',year:'numeric'});
         html += `<div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px">${label}</div>`;
         for (let e of grouped[month]) {
-            let preview = e.body.length > 120 ? e.body.slice(0,120)+'…' : e.body;
+            let plainBody = (e.body||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+            let preview = plainBody.length > 120 ? plainBody.slice(0,120)+'…' : plainBody;
             let dateStr = e.date ? new Date(e.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) : '';
             let linkedCase = e.caseId ? allCases.find(c => c.id === e.caseId) : null;
             html += `<div style="background:${moodColors[e.mood]||'#f8fafc'};border:1.5px solid ${moodBorder[e.mood]||'#e2e8f0'};border-radius:16px;padding:16px;margin-bottom:10px;cursor:pointer;transition:box-shadow 0.15s"
@@ -3824,7 +4060,7 @@ function renderJournalList() {
 
     // Word count footer
     let total = getJournalEntries().length;
-    let words = getJournalEntries().reduce((sum,e)=>sum+(e.body||'').split(/\s+/).filter(Boolean).length,0);
+    let words = getJournalEntries().reduce((sum,e)=>sum+(e.body||'').replace(/<[^>]*>/g,' ').split(/\s+/).filter(Boolean).length,0);
     html += `<div style="text-align:center;padding:16px;color:#94a3b8;font-size:12px;margin-top:8px">
         ${total} entr${total===1?'y':'ies'} · ${words.toLocaleString()} words written
     </div>`;
@@ -4030,6 +4266,73 @@ function renderNotes() {
             </div>
             ${n.body?`<p style="font-size:13px;color:#374151;line-height:1.6;margin:0">${n.body.length>160?n.body.slice(0,160)+'…':n.body}</p>`:''}
         </div>`).join('');
+}
+
+// ── Study Kanban ──────────────────────────────────────────────────────────────
+let _studyView = 'list';
+function setStudyView(v) {
+    _studyView = v;
+    let listBtn  = document.getElementById('studyViewList');
+    let boardBtn = document.getElementById('studyViewBoard');
+    let kanban   = document.getElementById('studyKanban');
+    let list     = document.getElementById('studyList');
+    let _a = {background:'white',color:'#111827',boxShadow:'0 1px 3px rgba(0,0,0,0.08)'};
+    let _i = {background:'transparent',color:'#6B7280',boxShadow:'none'};
+    if (listBtn)  Object.assign(listBtn.style,  v==='list'  ? _a : _i);
+    if (boardBtn) Object.assign(boardBtn.style, v==='board' ? _a : _i);
+    if (kanban) kanban.style.display = v==='board' ? 'block' : 'none';
+    if (list)   list.style.display   = v==='list'  ? 'block' : 'none';
+    if (v==='board') renderStudyKanban();
+}
+function renderStudyKanban() {
+    let el = document.getElementById('studyKanban');
+    if (!el) return;
+    let items = getStudyItems();
+    let cols = {
+        'to-read': { label:'To Read', color:'#f59e0b', bg:'#fffbeb', items:[] },
+        'reading':  { label:'Reading',  color:'#2563eb', bg:'#eff6ff', items:[] },
+        'done':     { label:'Done',     color:'#16a34a', bg:'#f0fdf4', items:[] }
+    };
+    items.forEach(s => { if (cols[s.status]) cols[s.status].items.push(s); });
+    const typeColors = {'Textbook':'#7c3aed','Article':'#2563eb','Video':'#dc2626','Question Bank':'#d97706','Other':'#64748b'};
+    let html = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-items:start">`;
+    for (let [status, col] of Object.entries(cols)) {
+        html += `<div style="background:${col.bg};border-radius:14px;padding:12px;border-top:3px solid ${col.color}">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                <span style="font-size:12px;font-weight:700;color:${col.color};text-transform:uppercase;letter-spacing:0.5px">${col.label}</span>
+                <span style="font-size:11px;font-weight:600;color:#94a3b8">${col.items.length}</span>
+            </div>`;
+        if (col.items.length === 0) {
+            html += `<div style="text-align:center;padding:20px 0;color:#cbd5e1;font-size:12px">Empty</div>`;
+        } else {
+            col.items.forEach(s => {
+                let tc = typeColors[s.type]||'#64748b';
+                html += `<div draggable="true" ondragstart="event.dataTransfer.setData('studyId','${s.id}')"
+                    ondragover="event.preventDefault()" ondrop="dropStudyCard(event,'${status}')"
+                    style="background:white;border-radius:10px;padding:10px 12px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.06);cursor:grab;border-left:3px solid ${tc}">
+                    <div style="font-size:13px;font-weight:600;color:#0f172a;margin-bottom:3px">${s.topic}</div>
+                    <div style="font-size:11px;color:${tc};font-weight:600">${s.type||'Other'}</div>
+                </div>`;
+            });
+        }
+        html += `<div style="height:60px;border:1.5px dashed #e2e8f0;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#e2e8f0;font-size:11px"
+            ondragover="event.preventDefault()" ondrop="dropStudyCard(event,'${status}')">drop here</div>`;
+        html += `</div>`;
+    }
+    html += `</div>`;
+    el.innerHTML = html;
+}
+function dropStudyCard(event, newStatus) {
+    event.preventDefault();
+    let id = event.dataTransfer.getData('studyId');
+    let items = getStudyItems();
+    let item = items.find(s=>s.id===id);
+    if (item) {
+        item.status = newStatus;
+        saveStudyItems(items);
+        renderStudyKanban();
+        renderStudyList();
+    }
 }
 
 // ── Study List ────────────────────────────────────────────────────────────────
