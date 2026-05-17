@@ -494,3 +494,68 @@ body.dark .nav-item.active svg { stroke: #60a5fa; }
 .mood-btn:hover { transform: scale(1.08); }
 
 @keyframes voicePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.4)} }
+
+/* === MOBILE BOTTOM SHEETS === */
+.sheet-handle {
+    display: none;
+    width: 40px;
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    margin: 0 auto 18px;
+}
+
+@media (max-width: 768px) {
+    /* Workspace grid/section header */
+    .ws-tab-scroll { display: none !important; }
+    #wsGrid { display: grid !important; }
+
+    /* Bottom sheet modals */
+    .modal-sheet {
+        align-items: flex-end !important;
+    }
+    .modal-sheet > div:first-child {
+        border-radius: 24px 24px 0 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 92dvh !important;
+        animation: sheetSlideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+        padding-bottom: max(24px, env(safe-area-inset-bottom)) !important;
+    }
+    @keyframes sheetSlideUp {
+        from { transform: translateY(100%); opacity: 0.6; }
+        to   { transform: translateY(0);   opacity: 1; }
+    }
+    .sheet-handle { display: block; }
+
+    /* Section header visible on mobile only when inside a section */
+    #wsSectionHeader.active { display: flex !important; }
+}
+
+/* === WORKSPACE GRID CARDS === */
+.ws-grid-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 8px;
+    background: white;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    cursor: pointer;
+    margin: 0;
+    width: 100%;
+    font-size: 11px;
+    font-weight: 700;
+    color: #374151;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    transition: all 0.15s;
+    text-align: center;
+    line-height: 1.3;
+    min-height: 80px;
+}
+.ws-grid-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+}

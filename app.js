@@ -991,6 +991,7 @@ function showTab(tab, e) {
     } else if (tab === 'journal') {
         document.getElementById('journalTab').style.display = 'block';
         renderJournalList();
+        setTimeout(()=>{ let g=document.getElementById('wsGrid'); if(g && window.innerWidth<=768) g.style.display='grid'; }, 10);
     } else if (tab === 'help') {
         document.getElementById('helpTab').style.display = 'block';
     } else if (tab === 'admin') {
@@ -3652,6 +3653,14 @@ let activeWorkspaceTab = 'journal';
 
 function showWorkspaceTab(tab) {
     activeWorkspaceTab = tab;
+    // Mobile: show section header, hide grid
+    let wsGrid = document.getElementById('wsGrid');
+    let wsSectionHeader = document.getElementById('wsSectionHeader');
+    let wsSectionLabel  = document.getElementById('wsSectionLabel');
+    if (wsGrid) wsGrid.style.display = 'none';
+    if (wsSectionHeader) { wsSectionHeader.style.display = 'flex'; wsSectionHeader.classList.add('active'); }
+    const WS_LABELS = { calendar:'📅 Calendar', journal:'📓 Journal', todo:'✅ To-Do', notes:'📌 Notes', study:'📚 Study List', fellowship:'🎓 Fellowship', duty:'⏰ Duty Hours', ite:'📊 OKAP', compl:'⚠️ Complications', didactics:'📖 Didactics', wellness:'💆 Wellness' };
+    if (wsSectionLabel) wsSectionLabel.textContent = WS_LABELS[tab] || tab;
     ['calendar','journal','todo','notes','study','fellowship','duty','ite','compl','didactics','wellness'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = t === tab ? 'block' : 'none';
@@ -3679,6 +3688,31 @@ function showWorkspaceTab(tab) {
     if (tab === 'compl')      renderCompls();
     if (tab === 'didactics')  renderDidactics();
     if (tab === 'wellness')   renderWellness();
+}
+
+function backToWsGrid() {
+    let wsGrid = document.getElementById('wsGrid');
+    let wsSectionHeader = document.getElementById('wsSectionHeader');
+    if (wsGrid) wsGrid.style.display = 'grid';
+    if (wsSectionHeader) { wsSectionHeader.style.display = 'none'; wsSectionHeader.classList.remove('active'); }
+    // Hide all workspace panels
+    ['calendar','journal','todo','notes','study','fellowship','duty','ite','compl','didactics','wellness'].forEach(t => {
+        let el = document.getElementById('ws-'+t);
+        if (el) el.style.display = 'none';
+        let btn = document.getElementById('ws-tab-'+t);
+        if (btn) { btn.style.background='transparent'; btn.style.color='#64748b'; btn.style.boxShadow='none'; }
+    });
+    activeWorkspaceTab = '';
+}
+
+function toggleMoreDrawer() {
+    let d = document.getElementById('moreDrawer');
+    if (d) d.style.display = d.style.display === 'none' ? 'flex' : 'none';
+}
+
+function closeMoreDrawer() {
+    let d = document.getElementById('moreDrawer');
+    if (d) d.style.display = 'none';
 }
 
 // ── Workspace Cloud Sync ──────────────────────────────────────────────────────

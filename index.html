@@ -1202,10 +1202,60 @@
 
         <!-- Journal / Workspace -->
         <div id="journalTab" style="display:none">
-            <div style="margin-bottom:16px">
-                <h2 style="margin:0 0 2px;font-size:20px;font-weight:800;color:#0f172a">My Workspace</h2>
-                <p style="margin:0;font-size:12px;color:#9CA3AF;font-weight:500">Journal · To-Do · Notes · Study List</p>
+            <div id="wsSectionHeader" style="display:none;align-items:center;gap:10px;margin-bottom:14px">
+                <button onclick="backToWsGrid()" style="width:32px;height:32px;border-radius:10px;background:#f1f5f9;border:1.5px solid #e2e8f0;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin:0;padding:0;box-shadow:none;color:#374151">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <div id="wsSectionLabel" style="font-size:15px;font-weight:800;color:#0f172a"></div>
             </div>
+
+            <div id="wsGrid" style="display:none;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+                <button class="ws-grid-card" onclick="showWorkspaceTab('journal')" style="background:#faf5ff;border-color:#e9d5ff">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/></svg>
+                    <span style="color:#7c3aed">Journal</span>
+                </button>
+                <button class="ws-grid-card" onclick="showWorkspaceTab('todo')" style="background:#fff7ed;border-color:#fed7aa">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    <span style="color:#ea580c">To-Do</span>
+                </button>
+                <button class="ws-grid-card" onclick="showWorkspaceTab('notes')" style="background:#f0fdf4;border-color:#86efac">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+                    <span style="color:#16a34a">Notes</span>
+                </button>
+                <button class="ws-grid-card" onclick="showWorkspaceTab('study')" style="background:#eff6ff;border-color:#bfdbfe">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                    <span style="color:#2563eb">Study</span>
+                </button>
+                <button class="ws-grid-card" onclick="showWorkspaceTab('calendar')" style="background:#fefce8;border-color:#fde68a">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+                    <span style="color:#ca8a04">Calendar</span>
+                </button>
+                <button class="ws-grid-card" onclick="showWorkspaceTab('fellowship')" style="background:#f0fdf4;border-color:#86efac">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                    <span style="color:#059669">Match</span>
+                </button>
+                <button class="ws-grid-card" onclick="showWorkspaceTab('duty')" style="background:#fffbeb;border-color:#fde68a">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span style="color:#d97706">Hours</span>
+                </button>
+                <button class="ws-grid-card" onclick="showWorkspaceTab('ite')" style="background:#eff6ff;border-color:#bfdbfe">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <span style="color:#2563eb">OKAP</span>
+                </button>
+                <button class="ws-grid-card" onclick="showWorkspaceTab('compl')" style="background:#fef2f2;border-color:#fecaca">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span style="color:#dc2626">Compl.</span>
+                </button>
+                <button class="ws-grid-card" onclick="showWorkspaceTab('didactics')" style="background:#f0fdf4;border-color:#86efac">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    <span style="color:#059669">Didactics</span>
+                </button>
+                <button class="ws-grid-card" onclick="showWorkspaceTab('wellness')" style="background:#fdf4ff;border-color:#f0abfc">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    <span style="color:#ec4899">Wellness</span>
+                </button>
+            </div>
+
             <div style="overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-bottom:16px" class="ws-tab-scroll">
                 <div style="display:flex;gap:3px;background:#F3F4F6;border-radius:14px;padding:4px;min-width:max-content">
                     <button id="ws-tab-calendar"   onclick="showWorkspaceTab('calendar')"   class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>Plan</button>
@@ -1472,8 +1522,9 @@
         </div>
 
         <!-- Wellness Modal -->
-        <div id="wellnessModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+        <div id="wellnessModal" class="modal-sheet" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
             <div style="background:white;border-radius:20px;padding:24px 26px;width:92%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.22)">
+                <div class="sheet-handle"></div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
                     <h2 style="margin:0;font-size:16px;font-weight:700;color:#0f172a">Wellness Check-In</h2>
                     <button onclick="closeWellnessModal()" style="width:30px;height:30px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:15px;color:#94a3b8;border:none;box-shadow:none">✕</button>
@@ -1554,8 +1605,9 @@
         </div>
 
         <!-- Didactics Modal -->
-        <div id="didacticsModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+        <div id="didacticsModal" class="modal-sheet" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
             <div style="background:white;border-radius:20px;padding:24px 26px;width:92%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.22)">
+                <div class="sheet-handle"></div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
                     <h2 style="margin:0;font-size:16px;font-weight:700;color:#0f172a">Log Didactic Session</h2>
                     <button onclick="closeDidacticsModal()" style="width:30px;height:30px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:15px;color:#94a3b8;border:none;box-shadow:none">✕</button>
@@ -1617,8 +1669,9 @@
         </div>
 
         <!-- Complication Log Modal -->
-        <div id="complModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+        <div id="complModal" class="modal-sheet" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
             <div style="background:white;border-radius:20px;padding:24px 26px;width:92%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.22)">
+                <div class="sheet-handle"></div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                     <h2 style="margin:0;font-size:16px;font-weight:700;color:#0f172a">Log Complication</h2>
                     <button onclick="closeComplModal()" style="width:30px;height:30px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:15px;color:#94a3b8;border:none;box-shadow:none">✕</button>
@@ -1703,8 +1756,9 @@
         </div>
 
         <!-- ITE / OKAP Modal -->
-        <div id="iteModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+        <div id="iteModal" class="modal-sheet" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
             <div style="background:white;border-radius:20px;padding:24px 26px;width:92%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.22)">
+                <div class="sheet-handle"></div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
                     <h2 style="margin:0;font-size:16px;font-weight:700;color:#0f172a">OKAP / ITE Score</h2>
                     <button onclick="closeIteModal()" style="width:30px;height:30px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:15px;color:#94a3b8;border:none;box-shadow:none">✕</button>
@@ -1774,8 +1828,9 @@
         </div>
 
         <!-- Shift Log Modal -->
-        <div id="shiftModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+        <div id="shiftModal" class="modal-sheet" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
             <div style="background:white;border-radius:20px;padding:24px 26px;width:92%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.22)">
+                <div class="sheet-handle"></div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
                     <h2 style="margin:0;font-size:16px;font-weight:700;color:#0f172a">Log Shift</h2>
                     <button onclick="closeShiftModal()" style="width:30px;height:30px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:15px;color:#94a3b8;border:none;box-shadow:none">✕</button>
@@ -1834,9 +1889,9 @@
         </div>
 
         <!-- Journal Entry Modal -->
-        <div id="journalModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(6px)">
+        <div id="journalModal" class="modal-sheet" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(6px)">
             <div style="background:white;border-radius:20px;padding:24px 26px;width:92%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,0.22)">
-
+                <div class="sheet-handle"></div>
                 <!-- Header -->
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
                     <div style="display:flex;align-items:center;gap:10px">
@@ -2251,14 +2306,37 @@
                     <span class="nav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
                     <span>Log</span>
                 </button>
-                <button class="nav-item" id="nav-analytics" onclick="showTab('profile', event); setActiveNav('nav-analytics')">
-                    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                    <span>Profile</span>
+                <button class="nav-item" id="nav-more" onclick="toggleMoreDrawer()">
+                    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span>
+                    <span>More</span>
                 </button>
                 <button class="nav-item" id="nav-journal" onclick="showTab('journal', event); setActiveNav('nav-journal')">
                     <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/></svg></span>
                     <span>Journal</span>
                 </button>
+            </div>
+            <div id="moreDrawer" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(0,0,0,0.45);top:0" onclick="if(event.target===this)closeMoreDrawer()">
+                <div style="position:absolute;bottom:0;left:0;right:0;background:white;border-radius:24px 24px 0 0;padding:20px 20px max(20px,env(safe-area-inset-bottom));box-shadow:0 -8px 40px rgba(0,0,0,0.15);animation:sheetSlideUp 0.25s cubic-bezier(0.32,0.72,0,1)">
+                    <div style="width:40px;height:4px;background:#e2e8f0;border-radius:2px;margin:0 auto 20px"></div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+                        <button onclick="closeMoreDrawer();showTab('profile',event);setActiveNav('nav-more')" style="margin:0;background:#f8fafc;color:#374151;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px 12px;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:none">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            Profile
+                        </button>
+                        <button onclick="closeMoreDrawer();showTab('settings',event);setActiveNav('nav-more')" style="margin:0;background:#f8fafc;color:#374151;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px 12px;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:none">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                            Settings
+                        </button>
+                        <button onclick="closeMoreDrawer();showTab('help',event);setActiveNav('nav-more')" style="margin:0;background:#f8fafc;color:#374151;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px 12px;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:none">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            Help / FAQ
+                        </button>
+                        <button onclick="closeMoreDrawer();openGlobalSearch()" style="margin:0;background:#0f172a;color:white;border-radius:14px;padding:16px 12px;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:none;border:none">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            ⌘K Search
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -2322,8 +2400,9 @@
     </style>
 
     <!-- Fellowship Program Modal -->
-    <div id="fellowshipModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+    <div id="fellowshipModal" class="modal-sheet" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
         <div style="background:white;border-radius:20px;padding:24px 26px;width:92%;max-width:460px;box-shadow:0 24px 64px rgba(0,0,0,0.25);max-height:90vh;overflow-y:auto">
+            <div class="sheet-handle"></div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
                 <h2 style="margin:0;font-size:17px;font-weight:800">Fellowship Program</h2>
                 <button onclick="closeFellowshipModal()" style="width:30px;height:30px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:15px;color:#64748b;box-shadow:none">✕</button>
@@ -2386,8 +2465,9 @@
     </div>
 
     <!-- Interview Notes Modal -->
-    <div id="interviewModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+    <div id="interviewModal" class="modal-sheet" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
         <div style="background:white;border-radius:20px;padding:24px 26px;width:92%;max-width:460px;box-shadow:0 24px 64px rgba(0,0,0,0.25);max-height:90vh;overflow-y:auto">
+            <div class="sheet-handle"></div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
                 <h2 style="margin:0;font-size:17px;font-weight:800">Interview Notes</h2>
                 <button onclick="closeInterviewModal()" style="width:30px;height:30px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:15px;color:#64748b;box-shadow:none">✕</button>
