@@ -1310,17 +1310,73 @@
 
             <!-- Fellowship Pipeline -->
             <div id="ws-fellowship" style="display:none">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-                    <div>
-                        <h3 style="margin:0 0 2px;font-size:16px;font-weight:800;color:#0f172a">Fellowship Pipeline</h3>
-                        <p style="margin:0;font-size:12px;color:#94a3b8">Track programs from application to match</p>
-                    </div>
-                    <button onclick="openFellowshipModal()" style="width:auto;margin:0;padding:9px 14px;font-size:12px;font-weight:700;border-radius:12px;background:#0f172a;color:white;display:flex;align-items:center;gap:6px">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Program
-                    </button>
-                </div>
-                <div id="fellowshipBoard"></div>
+    <!-- Sub-navigation -->
+    <div style="display:flex;gap:6px;margin-bottom:16px;background:#f1f5f9;border-radius:12px;padding:4px">
+        <button id="fp-tab-pipeline"   onclick="showFpTab('pipeline')"   style="flex:1;margin:0;padding:8px 4px;border-radius:8px;font-size:11px;font-weight:700;border:none;background:white;color:#2563eb;box-shadow:0 1px 4px rgba(0,0,0,0.08)">🎓 Pipeline</button>
+        <button id="fp-tab-interviews" onclick="showFpTab('interviews')" style="flex:1;margin:0;padding:8px 4px;border-radius:8px;font-size:11px;font-weight:700;border:none;background:transparent;color:#64748b;box-shadow:none">📅 Interviews</button>
+        <button id="fp-tab-ranklist"   onclick="showFpTab('ranklist')"   style="flex:1;margin:0;padding:8px 4px;border-radius:8px;font-size:11px;font-weight:700;border:none;background:transparent;color:#64748b;box-shadow:none">🏆 Rank List</button>
+        <button id="fp-tab-stats"      onclick="showFpTab('stats')"      style="flex:1;margin:0;padding:8px 4px;border-radius:8px;font-size:11px;font-weight:700;border:none;background:transparent;color:#64748b;box-shadow:none">📄 Stats Letter</button>
+    </div>
+
+    <!-- Pipeline sub-panel -->
+    <div id="fp-pipeline">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-size:13px;font-weight:700;color:#0f172a" id="fpPipelineTitle">Fellowship Pipeline</div>
+            <button onclick="openFellowshipModal()" style="width:auto;margin:0;padding:8px 14px;font-size:12px;font-weight:700;border-radius:10px;background:#0f172a;color:white;display:flex;align-items:center;gap:5px">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Program
+            </button>
+        </div>
+        <div id="fellowshipBoard"></div>
+    </div>
+
+    <!-- Interviews sub-panel -->
+    <div id="fp-interviews" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-size:13px;font-weight:700;color:#0f172a">Interview Notes</div>
+            <button onclick="openInterviewModal()" style="width:auto;margin:0;padding:8px 14px;font-size:12px;font-weight:700;border-radius:10px;background:#7c3aed;color:white;display:flex;align-items:center;gap:5px">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Interview
+            </button>
+        </div>
+        <div id="interviewList"></div>
+    </div>
+
+    <!-- Rank List sub-panel -->
+    <div id="fp-ranklist" style="display:none">
+        <div style="margin-bottom:14px">
+            <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:4px">Rank List</div>
+            <div style="font-size:12px;color:#94a3b8">Programs in Interviewed or Ranked stage. Use arrows to order your list.</div>
+        </div>
+        <div id="rankListEl"></div>
+    </div>
+
+    <!-- Stats Letter sub-panel -->
+    <div id="fp-stats" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div>
+                <div style="font-size:13px;font-weight:700;color:#0f172a">Case Statistics Letter</div>
+                <div style="font-size:11px;color:#94a3b8;margin-top:2px">Auto-generated from your case log</div>
             </div>
+            <div style="display:flex;gap:6px">
+                <button onclick="copyStatsLetter()" style="width:auto;margin:0;padding:8px 12px;font-size:11px;font-weight:700;border-radius:10px;background:#f1f5f9;color:#374151;border:1.5px solid #e2e8f0;box-shadow:none">Copy</button>
+                <button onclick="exportStatsLetterPDF()" style="width:auto;margin:0;padding:8px 12px;font-size:11px;font-weight:700;border-radius:10px;background:#2563eb;color:white">PDF</button>
+            </div>
+        </div>
+        <div id="statsLetterSubspecialty" style="margin-bottom:14px">
+            <label style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Applying for subspecialty</label>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <button class="subspec-btn" onclick="setSubspec(this,'Cornea &amp; External Disease')"    style="padding:6px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:600;color:#64748b;margin:0;box-shadow:none">Cornea</button>
+                <button class="subspec-btn" onclick="setSubspec(this,'Glaucoma')"                         style="padding:6px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:600;color:#64748b;margin:0;box-shadow:none">Glaucoma</button>
+                <button class="subspec-btn" onclick="setSubspec(this,'Vitreoretinal Surgery')"            style="padding:6px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:600;color:#64748b;margin:0;box-shadow:none">Retina</button>
+                <button class="subspec-btn" onclick="setSubspec(this,'Oculoplastics &amp; Orbit')"        style="padding:6px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:600;color:#64748b;margin:0;box-shadow:none">Oculoplastics</button>
+                <button class="subspec-btn" onclick="setSubspec(this,'Pediatric Ophthalmology')"          style="padding:6px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:600;color:#64748b;margin:0;box-shadow:none">Pediatrics</button>
+                <button class="subspec-btn" onclick="setSubspec(this,'Neuro-Ophthalmology')"              style="padding:6px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:600;color:#64748b;margin:0;box-shadow:none">Neuro-Ophtho</button>
+                <button class="subspec-btn" onclick="setSubspec(this,'Uveitis')"                          style="padding:6px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:600;color:#64748b;margin:0;box-shadow:none">Uveitis</button>
+                <button class="subspec-btn" onclick="setSubspec(this,'Anterior Segment / Refractive')"    style="padding:6px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:11px;font-weight:600;color:#64748b;margin:0;box-shadow:none">Refractive</button>
+            </div>
+        </div>
+        <div id="statsLetterPreview"></div>
+    </div>
+</div>
 
             <!-- Duty Hours -->
             <div id="ws-duty" style="display:none">
@@ -2267,33 +2323,106 @@
 
     <!-- Fellowship Program Modal -->
     <div id="fellowshipModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
-        <div style="background:white;border-radius:20px;padding:28px;width:92%;max-width:440px;box-shadow:0 24px 64px rgba(0,0,0,0.25);max-height:90vh;overflow-y:auto">
+        <div style="background:white;border-radius:20px;padding:24px 26px;width:92%;max-width:460px;box-shadow:0 24px 64px rgba(0,0,0,0.25);max-height:90vh;overflow-y:auto">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-                <h2 style="margin:0;font-size:18px;font-weight:700">Program</h2>
-                <button onclick="closeFellowshipModal()" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b;box-shadow:none">✕</button>
+                <h2 style="margin:0;font-size:17px;font-weight:800">Fellowship Program</h2>
+                <button onclick="closeFellowshipModal()" style="width:30px;height:30px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:15px;color:#64748b;box-shadow:none">✕</button>
             </div>
             <input type="hidden" id="fpId">
-            <label>Program Name</label>
-            <input type="text" id="fpName" placeholder="e.g. Bascom Palmer, Wills Eye…" style="margin-bottom:12px">
+            <label>Program Name *</label>
+            <input type="text" id="fpName" placeholder="e.g. Bascom Palmer, Wills Eye, Stein…" style="margin-bottom:12px">
             <label>Institution / City</label>
             <input type="text" id="fpCity" placeholder="e.g. Miami, FL" style="margin-bottom:12px">
+            <label>Subspecialty</label>
+            <select id="fpSubspec" style="margin-bottom:12px">
+                <option value="">— Select —</option>
+                <option value="Cornea">Cornea</option>
+                <option value="Glaucoma">Glaucoma</option>
+                <option value="Retina">Vitreoretinal Surgery</option>
+                <option value="Oculoplastics">Oculoplastics & Orbit</option>
+                <option value="Pediatrics">Pediatric Ophthalmology</option>
+                <option value="Neuro-Ophtho">Neuro-Ophthalmology</option>
+                <option value="Uveitis">Uveitis</option>
+                <option value="Refractive">Anterior Segment / Refractive</option>
+            </select>
             <label>Stage</label>
             <select id="fpStage" style="margin-bottom:12px">
                 <option value="wishlist">Wish List</option>
+                <option value="researching">Researching</option>
                 <option value="applied">Applied</option>
                 <option value="interview-offered">Interview Offered</option>
                 <option value="interviewed">Interviewed</option>
                 <option value="ranked">Ranked</option>
-                <option value="matched">Matched</option>
+                <option value="matched">Matched 🎉</option>
                 <option value="not-matched">Not Matched</option>
+                <option value="withdrawn">Withdrawn</option>
             </select>
-            <label>Deadline / Interview Date <span style="font-size:11px;color:#94a3b8">(optional)</span></label>
+            <label>Application Deadline</label>
+            <input type="date" id="fpDeadline" style="margin-bottom:12px">
+            <label>Interview Date</label>
             <input type="date" id="fpDate" style="margin-bottom:12px">
-            <label>Notes <span style="font-size:11px;color:#94a3b8">(optional)</span></label>
-            <textarea id="fpNotes" rows="3" placeholder="Contact, impressions, rank thoughts…" style="margin-bottom:20px"></textarea>
+            <label>Interview Format</label>
+            <select id="fpFormat" style="margin-bottom:12px">
+                <option value="">— N/A —</option>
+                <option value="In-Person">In-Person</option>
+                <option value="Virtual">Virtual</option>
+                <option value="Hybrid">Hybrid</option>
+            </select>
+            <label>Gut Feeling (1–5 ⭐)</label>
+            <div style="display:flex;gap:6px;margin-bottom:14px" id="gutStars">
+                <button onclick="setGutRank(1)" id="gut-1" style="flex:1;margin:0;padding:8px 4px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:16px;box-shadow:none">⭐</button>
+                <button onclick="setGutRank(2)" id="gut-2" style="flex:1;margin:0;padding:8px 4px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:16px;box-shadow:none">⭐</button>
+                <button onclick="setGutRank(3)" id="gut-3" style="flex:1;margin:0;padding:8px 4px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:16px;box-shadow:none">⭐</button>
+                <button onclick="setGutRank(4)" id="gut-4" style="flex:1;margin:0;padding:8px 4px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:16px;box-shadow:none">⭐</button>
+                <button onclick="setGutRank(5)" id="gut-5" style="flex:1;margin:0;padding:8px 4px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:16px;box-shadow:none">⭐</button>
+            </div>
+            <label>Notes</label>
+            <textarea id="fpNotes" rows="3" placeholder="Contact, impressions, next steps…" style="margin-bottom:20px"></textarea>
             <div style="display:flex;gap:10px">
-                <button onclick="saveFellowshipProgram()" style="flex:1;margin:0;background:#0f172a">Save</button>
+                <button onclick="saveFellowshipProgram()" style="flex:1;margin:0;background:#0f172a">Save Program</button>
                 <button onclick="closeFellowshipModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interview Notes Modal -->
+    <div id="interviewModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+        <div style="background:white;border-radius:20px;padding:24px 26px;width:92%;max-width:460px;box-shadow:0 24px 64px rgba(0,0,0,0.25);max-height:90vh;overflow-y:auto">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                <h2 style="margin:0;font-size:17px;font-weight:800">Interview Notes</h2>
+                <button onclick="closeInterviewModal()" style="width:30px;height:30px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:15px;color:#64748b;box-shadow:none">✕</button>
+            </div>
+            <input type="hidden" id="ivId">
+            <label>Program *</label>
+            <select id="ivProgram" style="margin-bottom:12px"></select>
+            <label>Interview Date</label>
+            <input type="date" id="ivDate" style="margin-bottom:12px">
+            <label>Format</label>
+            <select id="ivFormat" style="margin-bottom:12px">
+                <option value="In-Person">In-Person</option>
+                <option value="Virtual">Virtual</option>
+                <option value="Hybrid">Hybrid</option>
+            </select>
+            <label>Interviewers / Panels</label>
+            <input type="text" id="ivInterviewers" placeholder="Dr. Smith, Dr. Patel, Program Director…" style="margin-bottom:12px">
+            <label>Questions Asked</label>
+            <textarea id="ivQuestions" rows="3" placeholder="List questions they asked you…" style="margin-bottom:12px"></textarea>
+            <label>Your Impressions</label>
+            <textarea id="ivImpressions" rows="3" placeholder="Culture, vibes, residents you met, facilities…" style="margin-bottom:12px"></textarea>
+            <label>Gut Feeling</label>
+            <div style="display:flex;gap:6px;margin-bottom:14px" id="ivGutStars">
+                <button onclick="setIvGut(1)" id="ivgut-1" style="flex:1;margin:0;padding:8px 4px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:16px;box-shadow:none">⭐</button>
+                <button onclick="setIvGut(2)" id="ivgut-2" style="flex:1;margin:0;padding:8px 4px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:16px;box-shadow:none">⭐</button>
+                <button onclick="setIvGut(3)" id="ivgut-3" style="flex:1;margin:0;padding:8px 4px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:16px;box-shadow:none">⭐</button>
+                <button onclick="setIvGut(4)" id="ivgut-4" style="flex:1;margin:0;padding:8px 4px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:16px;box-shadow:none">⭐</button>
+                <button onclick="setIvGut(5)" id="ivgut-5" style="flex:1;margin:0;padding:8px 4px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:16px;box-shadow:none">⭐</button>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;cursor:pointer">
+                <input type="checkbox" id="ivThankYou" style="width:16px;height:16px"> Thank-you note sent ✉️
+            </label>
+            <div style="display:flex;gap:10px;margin-top:20px">
+                <button onclick="saveInterview()" style="flex:1;margin:0;background:#7c3aed">Save Notes</button>
+                <button onclick="closeInterviewModal()" style="flex:1;margin:0;background:#64748b">Cancel</button>
             </div>
         </div>
     </div>

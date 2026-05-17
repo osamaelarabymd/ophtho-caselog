@@ -3673,7 +3673,7 @@ function showWorkspaceTab(tab) {
     if (tab === 'todo')       renderTodos();
     if (tab === 'notes')      renderNotes();
     if (tab === 'study')      renderStudyList();
-    if (tab === 'fellowship') renderFellowshipBoard();
+    if (tab === 'fellowship') { showFpTab('pipeline'); }
     if (tab === 'duty')       renderDutyHours();
     if (tab === 'ite')        renderIteScores();
     if (tab === 'compl')      renderCompls();
@@ -6146,23 +6146,79 @@ function renderIteScores() {
     histEl.innerHTML = html;
 }
 
-// ── Fellowship Pipeline ───────────────────────────────────────────────────────
-const FP_KEY = 'eyeFellowship';
+// ── Fellowship Application Suite ─────────────────────────────────────────────
+const FP_KEY   = 'eyeFellowship';
+const IV_KEY   = 'eyeFellowshipInterviews';
+const RL_KEY   = 'eyeFellowshipRanks'; // ordered array of program ids
+
 function getFellowshipPrograms() { return JSON.parse(localStorage.getItem(FP_KEY)||'[]'); }
 function saveFellowshipPrograms(p) { localStorage.setItem(FP_KEY, JSON.stringify(p)); }
+function getInterviews()  { return JSON.parse(localStorage.getItem(IV_KEY)||'[]'); }
+function saveInterviews_(arr) { localStorage.setItem(IV_KEY, JSON.stringify(arr)); }
+function getRankList()    { return JSON.parse(localStorage.getItem(RL_KEY)||'[]'); } // array of program ids in order
+function saveRankList_(arr) { localStorage.setItem(RL_KEY, JSON.stringify(arr)); }
 
+let activeFpTab = 'pipeline';
+let selectedGutRank = 0;
+let selectedIvGut   = 0;
+let selectedSubspec = '';
+
+function showFpTab(tab) {
+    activeFpTab = tab;
+    ['pipeline','interviews','ranklist','stats'].forEach(t => {
+        let panel = document.getElementById('fp-'+t);
+        let btn   = document.getElementById('fp-tab-'+t);
+        if (panel) panel.style.display = t === tab ? 'block' : 'none';
+        if (btn) {
+            btn.style.background  = t === tab ? 'white' : 'transparent';
+            btn.style.color       = t === tab ? '#2563eb' : '#64748b';
+            btn.style.boxShadow   = t === tab ? '0 1px 4px rgba(0,0,0,0.08)' : 'none';
+        }
+    });
+    if (tab === 'pipeline')    renderFellowshipBoard();
+    if (tab === 'interviews')  renderInterviews();
+    if (tab === 'ranklist')    renderRankList();
+    if (tab === 'stats')       renderStatsLetter();
+}
+
+// ── Gut stars ──
+function setGutRank(n) {
+    selectedGutRank = n;
+    for (let i=1;i<=5;i++) {
+        let btn = document.getElementById('gut-'+i);
+        if (btn) { btn.style.background = i<=n ? '#fef9c3' : '#f8fafc'; btn.style.borderColor = i<=n ? '#fde68a' : '#e2e8f0'; }
+    }
+}
+function setIvGut(n) {
+    selectedIvGut = n;
+    for (let i=1;i<=5;i++) {
+        let btn = document.getElementById('ivgut-'+i);
+        if (btn) { btn.style.background = i<=n ? '#fef9c3' : '#f8fafc'; btn.style.borderColor = i<=n ? '#fde68a' : '#e2e8f0'; }
+    }
+}
+
+// ── Program CRUD ──
 function openFellowshipModal(id) {
     let prog = id ? getFellowshipPrograms().find(p=>p.id===id) : null;
-    document.getElementById('fpId').value     = prog ? prog.id    : '';
-    document.getElementById('fpName').value   = prog ? prog.name  : '';
-    document.getElementById('fpCity').value   = prog ? prog.city  : '';
-    document.getElementById('fpStage').value  = prog ? prog.stage : 'applied';
-    document.getElementById('fpDate').value   = prog ? (prog.date||'') : '';
-    document.getElementById('fpNotes').value  = prog ? (prog.notes||'') : '';
+    document.getElementById('fpId').value       = prog ? prog.id : '';
+    document.getElementById('fpName').value     = prog ? prog.name : '';
+    document.getElementById('fpCity').value     = prog ? (prog.city||'') : '';
+    document.getElementById('fpSubspec').value  = prog ? (prog.subspec||'') : '';
+    document.getElementById('fpStage').value    = prog ? (prog.stage||'applied') : 'applied';
+    document.getElementById('fpDeadline').value = prog ? (prog.deadline||'') : '';
+    document.getElementById('fpDate').value     = prog ? (prog.date||'') : '';
+    document.getElementById('fpFormat').value   = prog ? (prog.format||'') : '';
+    document.getElementById('fpNotes').value    = prog ? (prog.notes||'') : '';
+    selectedGutRank = prog ? (prog.gutRank||0) : 0;
+    for (let i=1;i<=5;i++) {
+        let btn = document.getElementById('gut-'+i);
+        if (btn) { btn.style.background = i<=selectedGutRank ? '#fef9c3' : '#f8fafc'; btn.style.borderColor = i<=selectedGutRank ? '#fde68a' : '#e2e8f0'; }
+    }
     document.getElementById('fellowshipModal').style.display = 'flex';
 }
 function closeFellowshipModal() {
     document.getElementById('fellowshipModal').style.display = 'none';
+    selectedGutRank = 0;
 }
 function saveFellowshipProgram() {
     let name = document.getElementById('fpName').value.trim();
@@ -6170,16 +6226,25 @@ function saveFellowshipProgram() {
     let programs = getFellowshipPrograms();
     let id = document.getElementById('fpId').value;
     let prog = {
-        id:    id || crypto.randomUUID(),
+        id:       id || crypto.randomUUID(),
         name,
-        city:  document.getElementById('fpCity').value.trim(),
-        stage: document.getElementById('fpStage').value,
-        date:  document.getElementById('fpDate').value,
-        notes: document.getElementById('fpNotes').value.trim(),
+        city:     document.getElementById('fpCity').value.trim(),
+        subspec:  document.getElementById('fpSubspec').value,
+        stage:    document.getElementById('fpStage').value,
+        deadline: document.getElementById('fpDeadline').value,
+        date:     document.getElementById('fpDate').value,
+        format:   document.getElementById('fpFormat').value,
+        gutRank:  selectedGutRank,
+        notes:    document.getElementById('fpNotes').value.trim(),
     };
     if (id) { let i = programs.findIndex(p=>p.id===id); if (i>=0) programs[i]=prog; else programs.unshift(prog); }
     else programs.unshift(prog);
     saveFellowshipPrograms(programs);
+    // Auto-add to rank list if interviewed/ranked and not already there
+    if (['interviewed','ranked'].includes(prog.stage)) {
+        let rl = getRankList();
+        if (!rl.includes(prog.id)) { rl.push(prog.id); saveRankList_(rl); }
+    }
     closeFellowshipModal();
     renderFellowshipBoard();
     showToast('Program saved!');
@@ -6187,72 +6252,439 @@ function saveFellowshipProgram() {
 function deleteFellowshipProgram(id) {
     if (!confirm('Remove this program?')) return;
     saveFellowshipPrograms(getFellowshipPrograms().filter(p=>p.id!==id));
+    saveRankList_(getRankList().filter(rid=>rid!==id));
     renderFellowshipBoard();
 }
 
+// ── Pipeline render ──
 function renderFellowshipBoard() {
     let el = document.getElementById('fellowshipBoard');
     if (!el) return;
     let programs = getFellowshipPrograms();
     const stages = [
-        { key:'wishlist',           label:'Wish List',        color:'#94a3b8', bg:'#f8fafc' },
-        { key:'applied',            label:'Applied',           color:'#2563eb', bg:'#eff6ff' },
-        { key:'interview-offered',  label:'Interview Offered', color:'#d97706', bg:'#fffbeb' },
-        { key:'interviewed',        label:'Interviewed',       color:'#7c3aed', bg:'#faf5ff' },
-        { key:'ranked',             label:'Ranked',            color:'#059669', bg:'#f0fdf4' },
-        { key:'matched',            label:'Matched',           color:'#16a34a', bg:'#dcfce7' },
-        { key:'not-matched',        label:'Not Matched',       color:'#dc2626', bg:'#fef2f2' },
+        { key:'wishlist',          label:'Wish List',         color:'#94a3b8', bg:'#f8fafc' },
+        { key:'researching',       label:'Researching',        color:'#0891b2', bg:'#ecfeff' },
+        { key:'applied',           label:'Applied',            color:'#2563eb', bg:'#eff6ff' },
+        { key:'interview-offered', label:'Interview Offered',  color:'#d97706', bg:'#fffbeb' },
+        { key:'interviewed',       label:'Interviewed',        color:'#7c3aed', bg:'#faf5ff' },
+        { key:'ranked',            label:'Ranked',             color:'#059669', bg:'#f0fdf4' },
+        { key:'matched',           label:'Matched 🎉',         color:'#16a34a', bg:'#dcfce7' },
+        { key:'not-matched',       label:'Not Matched',        color:'#dc2626', bg:'#fef2f2' },
+        { key:'withdrawn',         label:'Withdrawn',          color:'#64748b', bg:'#f8fafc' },
     ];
     if (!programs.length) {
         el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:#94a3b8">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 12px;display:block"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            <div style="font-size:36px;margin-bottom:8px">🎓</div>
             <p style="font-size:14px;font-weight:600;color:#64748b;margin:0 0 6px">No programs yet</p>
-            <p style="font-size:13px;margin:0">Add programs to start tracking your applications</p>
+            <p style="font-size:13px;margin:0">Add fellowship programs to start tracking your applications</p>
         </div>`;
         return;
     }
-    // Count by stage
-    let html = '';
+    // Stats bar
+    let applied      = programs.filter(p=>['applied','interview-offered','interviewed','ranked','matched'].includes(p.stage)).length;
+    let interviewed  = programs.filter(p=>['interviewed','ranked','matched'].includes(p.stage)).length;
+    let matched      = programs.filter(p=>p.stage==='matched').length;
+    let statsHtml = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+        ${[
+            {label:'Total',       val:programs.length,  col:'#64748b'},
+            {label:'Applied',     val:applied,           col:'#2563eb'},
+            {label:'Interviewed', val:interviewed,       col:'#7c3aed'},
+            {label:'Matched',     val:matched,           col:'#16a34a'},
+        ].map(s=>`<div style="background:white;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px;text-align:center">
+            <div style="font-size:20px;font-weight:800;color:${s.col}">${s.val}</div>
+            <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.4px;margin-top:2px">${s.label}</div>
+        </div>`).join('')}
+    </div>`;
+
+    let stagesHtml = '';
     stages.forEach(stage => {
-        let stageProg = programs.filter(p => p.stage === stage.key);
-        if (!stageProg.length) return;
-        html += `<div style="margin-bottom:20px">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-                <div style="width:10px;height:10px;border-radius:50%;background:${stage.color}"></div>
-                <span style="font-size:12px;font-weight:700;color:${stage.color};text-transform:uppercase;letter-spacing:0.5px">${stage.label}</span>
-                <span style="font-size:11px;color:#94a3b8;font-weight:500">${stageProg.length}</span>
+        let sp = programs.filter(p => p.stage === stage.key);
+        if (!sp.length) return;
+        stagesHtml += `<div style="margin-bottom:18px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <div style="width:9px;height:9px;border-radius:50%;background:${stage.color}"></div>
+                <span style="font-size:11px;font-weight:700;color:${stage.color};text-transform:uppercase;letter-spacing:0.5px">${stage.label}</span>
+                <span style="font-size:11px;color:#94a3b8">${sp.length}</span>
             </div>
-            <div style="display:flex;flex-direction:column;gap:8px">
-            ${stageProg.map(p=>`<div style="background:${stage.bg};border:1.5px solid ${stage.color}33;border-radius:12px;padding:12px 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+            ${sp.map(p=>`<div style="background:${stage.bg};border:1.5px solid ${stage.color}22;border-radius:12px;padding:12px 14px;margin-bottom:7px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
                 <div style="flex:1;min-width:0">
-                    <div style="font-weight:700;font-size:14px;color:#0f172a;margin-bottom:2px">${p.name}</div>
-                    ${p.city?`<div style="font-size:12px;color:#64748b">${p.city}</div>`:''}
-                    ${p.date?`<div style="font-size:11px;color:${stage.color};font-weight:600;margin-top:4px">${new Date(p.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>`:''}
-                    ${p.notes?`<div style="font-size:12px;color:#64748b;margin-top:6px;line-height:1.4">${p.notes.slice(0,120)}</div>`:''}
+                    <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:2px">${p.name}</div>
+                    <div style="font-size:11px;color:#64748b">${[p.city,p.subspec].filter(Boolean).join(' · ')}</div>
+                    ${p.date ? `<div style="font-size:11px;color:${stage.color};font-weight:600;margin-top:4px">📅 ${new Date(p.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>` : ''}
+                    ${p.deadline ? `<div style="font-size:11px;color:#dc2626;font-weight:600">⏰ Deadline: ${new Date(p.deadline+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>` : ''}
+                    ${p.gutRank ? `<div style="font-size:12px;margin-top:4px">${'⭐'.repeat(p.gutRank)}</div>` : ''}
+                    ${p.notes ? `<div style="font-size:11px;color:#64748b;margin-top:5px;line-height:1.4">${p.notes.slice(0,100)}${p.notes.length>100?'…':''}</div>` : ''}
                 </div>
                 <div style="display:flex;gap:4px;flex-shrink:0">
-                    <button onclick="openFellowshipModal('${p.id}')" title="Edit" style="width:26px;height:26px;padding:0;margin:0;background:#f1f5f9;border-radius:7px;box-shadow:none;display:flex;align-items:center;justify-content:center">
+                    <button onclick="openFellowshipModal('${p.id}')" title="Edit" style="width:26px;height:26px;padding:0;margin:0;background:#f1f5f9;border-radius:7px;box-shadow:none;display:flex;align-items:center;justify-content:center;border:1px solid #e2e8f0">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
-                    <button onclick="deleteFellowshipProgram('${p.id}')" title="Delete" style="width:26px;height:26px;padding:0;margin:0;background:#fef2f2;border-radius:7px;box-shadow:none;display:flex;align-items:center;justify-content:center">
+                    <button onclick="deleteFellowshipProgram('${p.id}')" title="Delete" style="width:26px;height:26px;padding:0;margin:0;background:#fef2f2;border-radius:7px;box-shadow:none;display:flex;align-items:center;justify-content:center;border:1px solid #fecaca">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
                     </button>
                 </div>
             </div>`).join('')}
-            </div>
         </div>`;
     });
-    // Summary stats
-    let matched = programs.filter(p=>p.stage==='matched').length;
-    let interviewed = programs.filter(p=>['interviewed','ranked','matched'].includes(p.stage)).length;
-    html = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
-        ${[{label:'Total Programs',val:programs.length,col:'#2563eb'},{label:'Interviewed',val:interviewed,col:'#7c3aed'},{label:'Matched',val:matched,col:'#16a34a'}]
-        .map(s=>`<div style="background:white;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;text-align:center">
-            <div style="font-size:22px;font-weight:800;color:${s.col}">${s.val}</div>
-            <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px">${s.label}</div>
-        </div>`).join('')}
-    </div>` + html;
-    el.innerHTML = html;
+    el.innerHTML = statsHtml + stagesHtml;
+}
+
+// ── Interview CRUD ──
+function openInterviewModal(id) {
+    let interviews = getInterviews();
+    let iv = id ? interviews.find(x=>x.id===id) : null;
+    // Populate program dropdown from programs that have been offered/interviewed/ranked/matched
+    let programs = getFellowshipPrograms().filter(p=>['interview-offered','interviewed','ranked','matched'].includes(p.stage));
+    let sel = document.getElementById('ivProgram');
+    if (sel) {
+        sel.innerHTML = `<option value="">— Select Program —</option>` +
+            programs.map(p=>`<option value="${p.id}" ${iv&&iv.programId===p.id?'selected':''}>${p.name}</option>`).join('');
+    }
+    document.getElementById('ivId').value           = iv ? iv.id : '';
+    document.getElementById('ivDate').value         = iv ? (iv.date||'') : getTodayStr();
+    document.getElementById('ivFormat').value       = iv ? (iv.format||'In-Person') : 'In-Person';
+    document.getElementById('ivInterviewers').value = iv ? (iv.interviewers||'') : '';
+    document.getElementById('ivQuestions').value   = iv ? (iv.questions||'') : '';
+    document.getElementById('ivImpressions').value = iv ? (iv.impressions||'') : '';
+    document.getElementById('ivThankYou').checked  = iv ? !!iv.thankYou : false;
+    selectedIvGut = iv ? (iv.gut||0) : 0;
+    for (let i=1;i<=5;i++) {
+        let btn = document.getElementById('ivgut-'+i);
+        if (btn) { btn.style.background = i<=selectedIvGut ? '#fef9c3' : '#f8fafc'; btn.style.borderColor = i<=selectedIvGut ? '#fde68a' : '#e2e8f0'; }
+    }
+    document.getElementById('interviewModal').style.display = 'flex';
+}
+function closeInterviewModal() {
+    document.getElementById('interviewModal').style.display = 'none';
+    selectedIvGut = 0;
+}
+function saveInterview() {
+    let programId = document.getElementById('ivProgram').value;
+    if (!programId) { showToast('Select a program', 'warning'); return; }
+    let interviews = getInterviews();
+    let id = document.getElementById('ivId').value;
+    let iv = {
+        id:           id || crypto.randomUUID(),
+        programId,
+        date:         document.getElementById('ivDate').value,
+        format:       document.getElementById('ivFormat').value,
+        interviewers: document.getElementById('ivInterviewers').value.trim(),
+        questions:    document.getElementById('ivQuestions').value.trim(),
+        impressions:  document.getElementById('ivImpressions').value.trim(),
+        gut:          selectedIvGut,
+        thankYou:     document.getElementById('ivThankYou').checked,
+    };
+    if (id) { let i = interviews.findIndex(x=>x.id===id); if (i>=0) interviews[i]=iv; else interviews.push(iv); }
+    else interviews.push(iv);
+    interviews.sort((a,b)=>b.date.localeCompare(a.date));
+    saveInterviews_(interviews);
+    // Mark program as interviewed
+    let programs = getFellowshipPrograms();
+    let pi = programs.findIndex(p=>p.id===programId);
+    if (pi>=0 && programs[pi].stage === 'interview-offered') {
+        programs[pi].stage = 'interviewed';
+        saveFellowshipPrograms(programs);
+    }
+    // Add to rank list
+    let rl = getRankList();
+    if (!rl.includes(programId)) { rl.push(programId); saveRankList_(rl); }
+    closeInterviewModal();
+    renderInterviews();
+    showToast('Interview notes saved!');
+}
+function deleteInterview(id) {
+    if (!confirm('Delete this interview record?')) return;
+    saveInterviews_(getInterviews().filter(x=>x.id!==id));
+    renderInterviews();
+}
+
+function renderInterviews() {
+    let el = document.getElementById('interviewList');
+    if (!el) return;
+    let interviews = getInterviews();
+    let programs   = getFellowshipPrograms();
+    if (!interviews.length) {
+        el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#94a3b8">
+            <div style="font-size:36px;margin-bottom:8px">📅</div>
+            <div style="font-size:14px;font-weight:600">No interviews logged yet</div>
+            <div style="font-size:12px;margin-top:4px">Add interview notes as you complete interviews</div>
+        </div>`;
+        return;
+    }
+    let pending = interviews.filter(iv=>!iv.thankYou).length;
+    let thankYouBar = pending ? `<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;font-weight:700;color:#92400e">✉️ ${pending} thank-you note${pending>1?'s':''} not yet sent</div>` : `<div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;font-weight:700;color:#166534">✅ All thank-you notes sent</div>`;
+    el.innerHTML = thankYouBar + interviews.map(iv => {
+        let prog = programs.find(p=>p.id===iv.programId);
+        return `<div style="background:white;border:1.5px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+                <div style="flex:1">
+                    <div style="font-weight:800;font-size:13px;color:#0f172a">${prog?prog.name:'Unknown Program'}</div>
+                    <div style="font-size:11px;color:#64748b;margin-top:2px">${iv.date} · ${iv.format} ${iv.gut ? '· '+'⭐'.repeat(iv.gut) : ''}</div>
+                    ${iv.thankYou ? '<div style="display:inline-block;background:#f0fdf4;color:#16a34a;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid #86efac;margin-top:4px">✉️ Thank-you sent</div>' : '<div style="display:inline-block;background:#fef9c3;color:#92400e;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid #fde68a;margin-top:4px">⏳ Thank-you pending</div>'}
+                    ${iv.interviewers ? `<div style="font-size:11px;color:#475569;margin-top:8px"><strong>Interviewers:</strong> ${iv.interviewers}</div>` : ''}
+                    ${iv.questions ? `<div style="font-size:11px;color:#475569;margin-top:6px"><strong>Questions:</strong> ${iv.questions}</div>` : ''}
+                    ${iv.impressions ? `<div style="font-size:11px;color:#475569;margin-top:6px"><strong>Impressions:</strong> ${iv.impressions}</div>` : ''}
+                </div>
+                <div style="display:flex;gap:4px;flex-shrink:0">
+                    <button onclick="openInterviewModal('${iv.id}')" style="width:26px;height:26px;padding:0;margin:0;background:#f1f5f9;border-radius:7px;box-shadow:none;display:flex;align-items:center;justify-content:center;border:1px solid #e2e8f0">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button onclick="deleteInterview('${iv.id}')" style="width:26px;height:26px;padding:0;margin:0;background:#fef2f2;border-radius:7px;box-shadow:none;display:flex;align-items:center;justify-content:center;border:1px solid #fecaca">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ── Rank List ──
+function moveRank(id, dir) {
+    let rl = getRankList();
+    let i = rl.indexOf(id);
+    if (i < 0) return;
+    let newI = i + dir;
+    if (newI < 0 || newI >= rl.length) return;
+    [rl[i], rl[newI]] = [rl[newI], rl[i]];
+    saveRankList_(rl);
+    renderRankList();
+}
+function removeFromRankList(id) {
+    saveRankList_(getRankList().filter(rid=>rid!==id));
+    renderRankList();
+}
+
+function renderRankList() {
+    let el = document.getElementById('rankListEl');
+    if (!el) return;
+    let rl       = getRankList();
+    let programs = getFellowshipPrograms();
+    // Filter rank list to only programs that still exist and are in relevant stages
+    rl = rl.filter(id => programs.find(p=>p.id===id));
+    if (rl.length !== getRankList().length) saveRankList_(rl);
+
+    if (!rl.length) {
+        el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#94a3b8">
+            <div style="font-size:36px;margin-bottom:8px">🏆</div>
+            <div style="font-size:14px;font-weight:600">No programs ranked yet</div>
+            <div style="font-size:12px;margin-top:4px">Programs move here automatically when you mark them as Interviewed or Ranked</div>
+        </div>`;
+        return;
+    }
+    el.innerHTML = `
+    <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#1e40af">
+        💡 This is your working rank list. Order programs with ↑↓ — share it with yourself before submitting to the match.
+    </div>` +
+    rl.map((id, idx) => {
+        let prog = programs.find(p=>p.id===id);
+        if (!prog) return '';
+        return `<div style="background:white;border:1.5px solid #e2e8f0;border-radius:14px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
+            <div style="font-size:22px;font-weight:900;color:#e2e8f0;min-width:28px;text-align:center">${idx+1}</div>
+            <div style="flex:1;min-width:0">
+                <div style="font-weight:700;font-size:13px;color:#0f172a">${prog.name}</div>
+                <div style="font-size:11px;color:#64748b">${[prog.city,prog.subspec].filter(Boolean).join(' · ')}${prog.gutRank?' · '+'⭐'.repeat(prog.gutRank):''}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">
+                <button onclick="moveRank('${id}',-1)" style="width:26px;height:22px;padding:0;margin:0;background:#f1f5f9;border-radius:5px;font-size:12px;box-shadow:none;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center" ${idx===0?'disabled':''}>↑</button>
+                <button onclick="moveRank('${id}',1)"  style="width:26px;height:22px;padding:0;margin:0;background:#f1f5f9;border-radius:5px;font-size:12px;box-shadow:none;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center" ${idx===rl.length-1?'disabled':''}>↓</button>
+            </div>
+            <button onclick="removeFromRankList('${id}')" style="width:26px;height:26px;padding:0;margin:0;background:#fef2f2;border-radius:7px;box-shadow:none;border:1px solid #fecaca;display:flex;align-items:center;justify-content:center">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            </button>
+        </div>`;
+    }).join('');
+}
+
+// ── Stats Letter ──
+const ACGME_CATS = [
+    { key:'phaco',        label:'Cataract (Phacoemulsification)', min:86,  procs:['Phacoemulsification','Cataract'] },
+    { key:'cornea',       label:'Cornea',                         min:35,  procs:['Cornea','DSEK','DMEK','PKP','Keratoplasty','PTK'] },
+    { key:'glaucoma',     label:'Glaucoma',                       min:30,  procs:['Glaucoma','Trabeculectomy','Tube Shunt','MIGS','SLT','iStent'] },
+    { key:'retina',       label:'Vitreoretinal',                  min:25,  procs:['Retina','Vitrectomy','Scleral Buckle','Laser','Injection','Anti-VEGF'] },
+    { key:'oculoplastics',label:'Oculoplastics',                  min:30,  procs:['Oculoplastics','Blepharoplasty','Ptosis','Entropion','Ectropion','Dacryocystorhinostomy','DCR','Orbital','Enucleation'] },
+    { key:'peds',         label:'Pediatric',                      min:20,  procs:['Pediatric','Strabismus','Esotropia','Exotropia','Amblyopia'] },
+    { key:'neuro',        label:'Neuro-Ophthalmology',            min:null, procs:['Neuro','Botox'] },
+    { key:'other',        label:'Other Procedures',               min:null, procs:[] },
+];
+
+function _categorizeCases(cases) {
+    let cats = {};
+    ACGME_CATS.forEach(c => { cats[c.key] = { primary:0, assistant:0, observer:0, total:0 }; });
+    cases.forEach(c => {
+        let proc  = (c.procedure || c.type || '').toLowerCase();
+        let role  = (c.role || '').toLowerCase();
+        let matched = false;
+        for (let cat of ACGME_CATS) {
+            if (cat.key === 'other') continue;
+            if (cat.procs.some(p => proc.includes(p.toLowerCase()))) {
+                if (role.includes('primary'))   cats[cat.key].primary++;
+                else if (role.includes('assist')) cats[cat.key].assistant++;
+                else cats[cat.key].observer++;
+                cats[cat.key].total++;
+                matched = true;
+                break;
+            }
+        }
+        if (!matched) {
+            if (role.includes('primary'))   cats['other'].primary++;
+            else if (role.includes('assist')) cats['other'].assistant++;
+            else cats['other'].observer++;
+            cats['other'].total++;
+        }
+    });
+    return cats;
+}
+
+let statsLetterSubspecialty = '';
+function setSubspec(btn, subspec) {
+    statsLetterSubspecialty = subspec;
+    document.querySelectorAll('.subspec-btn').forEach(b => {
+        b.style.background  = '#f8fafc';
+        b.style.color       = '#64748b';
+        b.style.borderColor = '#e2e8f0';
+    });
+    btn.style.background  = '#eff6ff';
+    btn.style.color       = '#2563eb';
+    btn.style.borderColor = '#bfdbfe';
+    renderStatsLetter();
+}
+
+function renderStatsLetter() {
+    let el = document.getElementById('statsLetterPreview');
+    if (!el) return;
+    let cases = getCases ? getCases() : (JSON.parse(localStorage.getItem('eyeCases')||'[]'));
+    if (!cases.length) {
+        el.innerHTML = `<div style="text-align:center;padding:40px 20px;background:#f8fafc;border-radius:14px;color:#94a3b8">
+            <div style="font-size:36px;margin-bottom:8px">📊</div>
+            <div style="font-size:14px;font-weight:600">No cases logged yet</div>
+            <div style="font-size:12px;margin-top:4px">Log cases in the Case Log tab — your stats letter will auto-generate here</div>
+        </div>`;
+        return;
+    }
+    let cats      = _categorizeCases(cases);
+    let name      = localStorage.getItem('eyeName') || localStorage.getItem('userName') || 'Resident Physician';
+    let pgy       = localStorage.getItem('eyePGY')  || localStorage.getItem('userPGY')  || '';
+    let program   = localStorage.getItem('eyeProgram') || localStorage.getItem('userProgram') || 'Ophthalmology Residency Program';
+    let today     = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+    let grandTotalPrimary   = Object.values(cats).reduce((s,c)=>s+c.primary,0);
+    let grandTotalAssistant = Object.values(cats).reduce((s,c)=>s+c.assistant,0);
+    let grandTotal          = Object.values(cats).reduce((s,c)=>s+c.total,0);
+    let phacoPrimary        = cats.phaco.primary;
+    let subspec             = statsLetterSubspecialty || '[Fellowship Subspecialty]';
+
+    // Generate letter text
+    let letterText = `Dr. ${name}${pgy?' · PGY-'+pgy:''}\n${program}\nDate: ${today}\n\nDEAR FELLOWSHIP SELECTION COMMITTEE,\n\nI am applying for fellowship training in ${subspec}. The following is a summary of my surgical and clinical case experience during ophthalmology residency, accurate as of ${today}.\n\nCASE LOG SUMMARY\n${'─'.repeat(60)}\n\n`;
+    ACGME_CATS.forEach(cat => {
+        let c = cats[cat.key];
+        if (!c.total) return;
+        letterText += `${cat.label}\n`;
+        letterText += `  Primary: ${c.primary}   Assistant: ${c.assistant}   Observer: ${c.observer}   Total: ${c.total}`;
+        if (cat.min) letterText += `   (ACGME min: ${cat.min})`;
+        letterText += `\n\n`;
+    });
+    letterText += `${'─'.repeat(60)}\nGRAND TOTAL: ${grandTotal} cases  (${grandTotalPrimary} as Primary Surgeon)\n\nOf ${cases.length} logged cases, ${phacoPrimary} were performed as primary surgeon for phacoemulsification.\n\nSincerely,\nDr. ${name}\n${pgy?'PGY-'+pgy+' ':''}Ophthalmology Resident\n${program}`;
+
+    // Render the preview card
+    let tableRows = ACGME_CATS.map(cat => {
+        let c = cats[cat.key];
+        if (!c.total) return '';
+        let minOk = cat.min ? (c.primary >= cat.min) : true;
+        let pct   = cat.min ? Math.min(100, Math.round(c.primary/cat.min*100)) : null;
+        return `<tr style="border-bottom:1px solid #f1f5f9">
+            <td style="padding:9px 10px;font-size:12px;font-weight:600;color:#0f172a">${cat.label}</td>
+            <td style="padding:9px 10px;text-align:center;font-size:13px;font-weight:800;color:${c.primary>0?'#2563eb':'#94a3b8'}">${c.primary}</td>
+            <td style="padding:9px 10px;text-align:center;font-size:12px;color:#64748b">${c.assistant}</td>
+            <td style="padding:9px 10px;text-align:center;font-size:12px;color:#94a3b8">${c.observer}</td>
+            <td style="padding:9px 10px;text-align:center;font-size:12px;font-weight:700;color:#0f172a">${c.total}</td>
+            <td style="padding:9px 10px;text-align:center;font-size:11px">${cat.min ? `<span style="color:${minOk?'#16a34a':'#dc2626'};font-weight:700">${c.primary}/${cat.min}</span>` : '—'}</td>
+        </tr>`;
+    }).join('');
+
+    el.innerHTML = `
+    <div style="background:white;border:1.5px solid #e2e8f0;border-radius:16px;overflow:hidden;margin-bottom:14px">
+        <div style="background:#0f172a;padding:16px 18px">
+            <div style="color:white;font-size:15px;font-weight:800">Dr. ${name}${pgy?' · PGY-'+pgy:''}</div>
+            <div style="color:#94a3b8;font-size:12px;margin-top:2px">${program}</div>
+            <div style="color:#64748b;font-size:11px;margin-top:1px">As of ${today} · Applying: ${subspec}</div>
+        </div>
+        <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse">
+                <thead>
+                    <tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0">
+                        <th style="padding:9px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px">Category</th>
+                        <th style="padding:9px 10px;text-align:center;font-size:10px;font-weight:700;color:#2563eb;text-transform:uppercase;letter-spacing:0.5px">Primary</th>
+                        <th style="padding:9px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px">Assist</th>
+                        <th style="padding:9px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px">Obs</th>
+                        <th style="padding:9px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px">Total</th>
+                        <th style="padding:9px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px">vs Min</th>
+                    </tr>
+                </thead>
+                <tbody>${tableRows}</tbody>
+                <tfoot>
+                    <tr style="background:#f8fafc;border-top:2px solid #e2e8f0">
+                        <td style="padding:10px;font-size:12px;font-weight:800;color:#0f172a">TOTAL</td>
+                        <td style="padding:10px;text-align:center;font-size:14px;font-weight:900;color:#2563eb">${grandTotalPrimary}</td>
+                        <td style="padding:10px;text-align:center;font-size:13px;font-weight:700;color:#64748b">${grandTotalAssistant}</td>
+                        <td style="padding:10px;text-align:center;font-size:12px;color:#94a3b8">${grandTotal-grandTotalPrimary-grandTotalAssistant}</td>
+                        <td style="padding:10px;text-align:center;font-size:14px;font-weight:900;color:#0f172a">${grandTotal}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div style="padding:12px 14px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:11px;color:#64748b">
+            🔵 Primary surgeon count shown in blue — this is what fellowship programs care most about.
+        </div>
+    </div>
+    <textarea id="statsLetterText" style="width:100%;height:300px;font-family:monospace;font-size:11px;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px;color:#374151;background:#f8fafc;resize:vertical;box-sizing:border-box" readonly>${letterText}</textarea>`;
+    // Store for copy/PDF
+    window._statsLetterText = letterText;
+    window._statsLetterCats = cats;
+    window._statsLetterMeta = { name, pgy, program, today, grandTotal, grandTotalPrimary, subspec };
+}
+
+function copyStatsLetter() {
+    let ta = document.getElementById('statsLetterText');
+    if (!ta) return;
+    navigator.clipboard.writeText(ta.value).then(()=>showToast('Copied to clipboard!')).catch(()=>{
+        ta.select(); document.execCommand('copy'); showToast('Copied!');
+    });
+}
+
+function exportStatsLetterPDF() {
+    let meta = window._statsLetterMeta;
+    let cats = window._statsLetterCats;
+    if (!meta || !cats) { renderStatsLetter(); meta=window._statsLetterMeta; cats=window._statsLetterCats; }
+    if (!meta) { showToast('Generate the letter first','warning'); return; }
+    let doc = new jspdf.jsPDF();
+    let y = 20;
+    doc.setFontSize(18); doc.setFont(undefined,'bold');
+    doc.text('Fellowship Case Statistics', 14, y); y+=10;
+    doc.setFontSize(11); doc.setFont(undefined,'normal');
+    doc.text(`Dr. ${meta.name}${meta.pgy?' · PGY-'+meta.pgy:''}`, 14, y); y+=6;
+    doc.text(meta.program, 14, y); y+=6;
+    doc.text(`Date: ${meta.today}   Applying for: ${meta.subspec}`, 14, y); y+=12;
+    // Table header
+    doc.setFont(undefined,'bold'); doc.setFontSize(9);
+    doc.text('Category', 14, y);
+    doc.text('Primary', 100, y); doc.text('Assist', 120, y); doc.text('Observer', 138, y); doc.text('Total', 162, y); doc.text('ACGME Min', 176, y);
+    y+=2; doc.line(14,y,196,y); y+=5;
+    doc.setFont(undefined,'normal'); doc.setFontSize(9);
+    ACGME_CATS.forEach(cat => {
+        let c = cats[cat.key]; if (!c||!c.total) return;
+        doc.text(cat.label.slice(0,35), 14, y);
+        doc.text(String(c.primary),   103, y);
+        doc.text(String(c.assistant), 123, y);
+        doc.text(String(c.observer),  142, y);
+        doc.text(String(c.total),     164, y);
+        doc.text(cat.min ? String(cat.min) : '—', 182, y);
+        y+=7;
+    });
+    y+=2; doc.line(14,y,196,y); y+=7;
+    doc.setFont(undefined,'bold');
+    doc.text(`GRAND TOTAL: ${meta.grandTotal} cases (${meta.grandTotalPrimary} as Primary Surgeon)`, 14, y);
+    doc.save(`fellowship-stats-${(meta.name||'resident').replace(/\s+/g,'-').toLowerCase()}.pdf`);
+    showToast('PDF exported!');
 }
 
 // ── Wellness Check-in ─────────────────────────────────────────────────────────
