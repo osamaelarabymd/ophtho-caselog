@@ -1254,6 +1254,10 @@
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                     <span style="color:#ec4899">Wellness</span>
                 </button>
+                <button class="ws-grid-card" onclick="showWorkspaceTab('qbank')" style="background:#fefce8;border-color:#fde68a">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span style="color:#ca8a04">QBank</span>
+                </button>
             </div>
 
             <div style="overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-bottom:16px" class="ws-tab-scroll">
@@ -1269,6 +1273,7 @@
                     <button id="ws-tab-compl"      onclick="showWorkspaceTab('compl')"      class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Compl.</button>
                     <button id="ws-tab-didactics"  onclick="showWorkspaceTab('didactics')"  class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Edu.</button>
                     <button id="ws-tab-wellness"   onclick="showWorkspaceTab('wellness')"   class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Well.</button>
+                    <button id="ws-tab-qbank" onclick="showWorkspaceTab('qbank')" class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>QBank</button>
                 </div>
             </div>
             <!-- Calendar section -->
@@ -1518,6 +1523,50 @@
                 <div id="wellnessStats" style="margin-bottom:16px"></div>
                 <div id="wellnessWins" style="margin-bottom:16px"></div>
                 <div id="wellnessList"></div>
+            </div>
+
+            <!-- QBank -->
+            <div id="ws-qbank" style="display:none">
+                <div id="qbankHome"></div>
+                <div id="qbankQuiz" style="display:none"></div>
+            </div>
+        </div>
+
+        <!-- QBank Settings Modal -->
+        <div id="qbankModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)" onclick="if(event.target===this)closeQbankModal()">
+            <div style="background:white;border-radius:24px 24px 0 0;padding:24px 24px max(24px,env(safe-area-inset-bottom));width:100%;max-width:560px;box-shadow:0 -8px 40px rgba(0,0,0,0.15);max-height:90vh;overflow-y:auto">
+                <div style="width:40px;height:4px;background:#e2e8f0;border-radius:2px;margin:0 auto 20px"></div>
+                <h2 style="margin:0 0 18px;font-size:17px;font-weight:800">Start Quiz</h2>
+                <label style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px">Subject</label>
+                <select id="qbSubject" style="margin-bottom:14px">
+                    <option value="all">All Subjects</option>
+                    <option value="optics">Optics &amp; Refraction</option>
+                    <option value="cataract">Cataract &amp; Lens</option>
+                    <option value="cornea">Cornea &amp; External Disease</option>
+                    <option value="glaucoma">Glaucoma</option>
+                    <option value="retina">Retina &amp; Vitreous</option>
+                    <option value="oculoplastics">Oculoplastics &amp; Orbit</option>
+                    <option value="pediatrics">Pediatric &amp; Strabismus</option>
+                    <option value="neuro">Neuro-Ophthalmology</option>
+                    <option value="uveitis">Uveitis</option>
+                    <option value="basic">Basic Science</option>
+                    <option value="weak">&#x26A1; My Weak Areas</option>
+                    <option value="bookmarks">&#x1F516; Bookmarked</option>
+                    <option value="wrong">&#x274C; Previously Wrong</option>
+                </select>
+                <label style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px">Mode</label>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+                    <button id="qmode-study" onclick="selectQMode('study')" style="margin:0;padding:12px 8px;border-radius:12px;font-size:12px;font-weight:700;background:#eff6ff;color:#2563eb;border:2px solid #2563eb;box-shadow:none">&#x1F4D6; Study<br><span style="font-weight:500;font-size:10px">See answer after each</span></button>
+                    <button id="qmode-quiz" onclick="selectQMode('quiz')" style="margin:0;padding:12px 8px;border-radius:12px;font-size:12px;font-weight:700;background:#f8fafc;color:#64748b;border:2px solid #e2e8f0;box-shadow:none">&#x23F1; Quiz<br><span style="font-weight:500;font-size:10px">Answer all then review</span></button>
+                </div>
+                <label style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px">Number of Questions</label>
+                <div style="display:flex;gap:8px;margin-bottom:20px">
+                    <button onclick="selectQCount(10)"  id="qcount-10"  style="flex:1;margin:0;padding:10px 4px;border-radius:10px;font-size:13px;font-weight:700;background:#eff6ff;color:#2563eb;border:2px solid #2563eb;box-shadow:none">10</button>
+                    <button onclick="selectQCount(20)"  id="qcount-20"  style="flex:1;margin:0;padding:10px 4px;border-radius:10px;font-size:13px;font-weight:700;background:#f8fafc;color:#64748b;border:2px solid #e2e8f0;box-shadow:none">20</button>
+                    <button onclick="selectQCount(40)"  id="qcount-40"  style="flex:1;margin:0;padding:10px 4px;border-radius:10px;font-size:13px;font-weight:700;background:#f8fafc;color:#64748b;border:2px solid #e2e8f0;box-shadow:none">40</button>
+                    <button onclick="selectQCount(999)" id="qcount-all" style="flex:1;margin:0;padding:10px 4px;border-radius:10px;font-size:12px;font-weight:700;background:#f8fafc;color:#64748b;border:2px solid #e2e8f0;box-shadow:none">All</button>
+                </div>
+                <button onclick="beginQbankQuiz()" style="width:100%;margin:0;background:#0f172a;font-size:14px;font-weight:700;padding:14px;border-radius:14px">Start &#x2192;</button>
             </div>
         </div>
 
@@ -2348,6 +2397,7 @@
         <p style="margin-top:4px">Your data is private and secure | <a href="https://docs.google.com/forms/d/e/1FAIpQLSev-87zwv0Ot_7LNJuuNNTBpKpcOvS_vEtSnGbgLGjMVP-iMA/viewform" target="_blank" style="color:#2563eb">Contact & Feedback</a></p>
     </div>
 
+    <script src="questions.js"></script>
     <script src="app.js"></script>
     <!-- Voice Recording Overlay -->
     <div id="voiceOverlay" style="display:none;position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:99999;background:white;border-radius:22px;padding:18px 22px 16px;box-shadow:0 12px 48px rgba(0,0,0,0.18),0 2px 8px rgba(0,0,0,0.08);min-width:300px;max-width:92vw;border:1.5px solid #f1f5f9">

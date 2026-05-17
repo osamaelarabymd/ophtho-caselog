@@ -128,6 +128,7 @@ const _CP_COMMANDS = [
     { section:'Navigate', label:'Didactics',     sub:'Grand rounds · conferences',icon:'#f0fdf4', iconColor:'#059669', iconPath:'<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>', action:"showTab('journal',null);showWorkspaceTab('didactics');closeGlobalSearch()" },
     { section:'Navigate', label:'Complications', sub:'Private intraop log',     icon:'#fef2f2', iconColor:'#dc2626', iconPath:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>', action:"showTab('journal',null);showWorkspaceTab('compl');closeGlobalSearch()" },
     { section:'Navigate', label:'Wellness',      sub:'Wellbeing check-in tracker', icon:'#fdf4ff', iconColor:'#ec4899', iconPath:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>', action:"showTab('journal',null);showWorkspaceTab('wellness');closeGlobalSearch()" },
+    { section:'Navigate', label:'Question Bank', sub:'OKAP practice questions', icon:'#fefce8', iconColor:'#ca8a04', iconPath:'<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>', action:"showTab('journal',null);showWorkspaceTab('qbank');closeGlobalSearch()" },
     { section:'Navigate', label:'Settings',     sub:'App settings',           icon:'#f1f5f9', iconColor:'#64748b', iconPath:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', action:"showTab('settings',null);closeGlobalSearch()" },
     // Create
     { section:'Create', label:'New Journal Entry',  sub:'Write a reflection',             icon:'#faf5ff', iconColor:'#7c3aed', iconPath:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/>', action:"showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch();setTimeout(()=>openJournalModal(),100)" },
@@ -3659,9 +3660,9 @@ function showWorkspaceTab(tab) {
     let wsSectionLabel  = document.getElementById('wsSectionLabel');
     if (wsGrid) wsGrid.style.display = 'none';
     if (wsSectionHeader) { wsSectionHeader.style.display = 'flex'; wsSectionHeader.classList.add('active'); }
-    const WS_LABELS = { calendar:'📅 Calendar', journal:'📓 Journal', todo:'✅ To-Do', notes:'📌 Notes', study:'📚 Study List', fellowship:'🎓 Fellowship', duty:'⏰ Duty Hours', ite:'📊 OKAP', compl:'⚠️ Complications', didactics:'📖 Didactics', wellness:'💆 Wellness' };
+    const WS_LABELS = { calendar:'📅 Calendar', journal:'📓 Journal', todo:'✅ To-Do', notes:'📌 Notes', study:'📚 Study List', fellowship:'🎓 Fellowship', duty:'⏰ Duty Hours', ite:'📊 OKAP', compl:'⚠️ Complications', didactics:'📖 Didactics', wellness:'💆 Wellness', qbank:'📝 Question Bank' };
     if (wsSectionLabel) wsSectionLabel.textContent = WS_LABELS[tab] || tab;
-    ['calendar','journal','todo','notes','study','fellowship','duty','ite','compl','didactics','wellness'].forEach(t => {
+    ['calendar','journal','todo','notes','study','fellowship','duty','ite','compl','didactics','wellness','qbank'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = t === tab ? 'block' : 'none';
         let btn = document.getElementById('ws-tab-'+t);
@@ -3688,6 +3689,7 @@ function showWorkspaceTab(tab) {
     if (tab === 'compl')      renderCompls();
     if (tab === 'didactics')  renderDidactics();
     if (tab === 'wellness')   renderWellness();
+    if (tab === 'qbank')      renderQbankHome();
 }
 
 function backToWsGrid() {
@@ -3696,7 +3698,7 @@ function backToWsGrid() {
     if (wsGrid) wsGrid.style.display = 'grid';
     if (wsSectionHeader) { wsSectionHeader.style.display = 'none'; wsSectionHeader.classList.remove('active'); }
     // Hide all workspace panels
-    ['calendar','journal','todo','notes','study','fellowship','duty','ite','compl','didactics','wellness'].forEach(t => {
+    ['calendar','journal','todo','notes','study','fellowship','duty','ite','compl','didactics','wellness','qbank'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = 'none';
         let btn = document.getElementById('ws-tab-'+t);
@@ -7020,6 +7022,358 @@ function renderWellness() {
             });
         }, 50);
     }
+}
+
+// ── OKAP / ITE Question Bank ──────────────────────────────────────────────────
+const QB_ATTEMPTS_KEY  = 'eyeQBankAttempts';
+const QB_BOOKMARKS_KEY = 'eyeQBankBookmarks';
+
+function getQBAttempts()   { return JSON.parse(localStorage.getItem(QB_ATTEMPTS_KEY)||'[]'); }
+function saveQBAttempts(a) { localStorage.setItem(QB_ATTEMPTS_KEY, JSON.stringify(a)); }
+function getQBBookmarks()  { return JSON.parse(localStorage.getItem(QB_BOOKMARKS_KEY)||'[]'); }
+function saveQBBookmarks(b){ localStorage.setItem(QB_BOOKMARKS_KEY, JSON.stringify(b)); }
+
+const QB_SUBJECTS = {
+    optics:'Optics & Refraction', cataract:'Cataract & Lens',
+    cornea:'Cornea & External Disease', glaucoma:'Glaucoma',
+    retina:'Retina & Vitreous', oculoplastics:'Oculoplastics & Orbit',
+    pediatrics:'Pediatric & Strabismus', neuro:'Neuro-Ophthalmology',
+    uveitis:'Uveitis', basic:'Basic Science'
+};
+
+const QB_COLORS = {
+    optics:'#7c3aed', cataract:'#2563eb', cornea:'#0891b2', glaucoma:'#059669',
+    retina:'#dc2626', oculoplastics:'#d97706', pediatrics:'#ea580c',
+    neuro:'#0f172a', uveitis:'#be185d', basic:'#64748b'
+};
+
+let qbMode    = 'study';
+let qbCount   = 10;
+let qbQueue   = [];
+let qbCurrent = 0;
+let qbAnswers = {};
+let qbRevealed = {};
+
+function openQbankModal() {
+    selectQMode('study');
+    selectQCount(10);
+    document.getElementById('qbankModal').style.display = 'flex';
+}
+function closeQbankModal() {
+    document.getElementById('qbankModal').style.display = 'none';
+}
+function selectQMode(mode) {
+    qbMode = mode;
+    ['study','quiz'].forEach(m => {
+        let btn = document.getElementById('qmode-'+m);
+        if (!btn) return;
+        btn.style.background  = m===mode ? '#eff6ff' : '#f8fafc';
+        btn.style.color       = m===mode ? '#2563eb' : '#64748b';
+        btn.style.borderColor = m===mode ? '#2563eb' : '#e2e8f0';
+    });
+}
+function selectQCount(n) {
+    qbCount = n;
+    [10,20,40,999].forEach(c => {
+        let btn = document.getElementById('qcount-'+(c===999?'all':c));
+        if (!btn) return;
+        btn.style.background  = c===n ? '#eff6ff' : '#f8fafc';
+        btn.style.color       = c===n ? '#2563eb' : '#64748b';
+        btn.style.borderColor = c===n ? '#2563eb' : '#e2e8f0';
+    });
+}
+
+function _buildQueue(subject) {
+    let all = typeof EYELOG_QUESTIONS !== 'undefined' ? EYELOG_QUESTIONS : [];
+    let attempts  = getQBAttempts();
+    let bookmarks = getQBBookmarks();
+    let wrongIds  = new Set(attempts.filter(a=>!a.correct).map(a=>a.qid));
+
+    let pool;
+    if (subject === 'all')       pool = all;
+    else if (subject === 'weak') {
+        let iteScores = typeof getIteScores === 'function' ? getIteScores() : [];
+        let weakSubjects = new Set();
+        if (iteScores.length) {
+            let latest = iteScores[0];
+            if (latest.subjects) {
+                Object.entries(latest.subjects).forEach(([s,pct]) => { if (pct < 50) weakSubjects.add(s); });
+            }
+        }
+        pool = weakSubjects.size ? all.filter(q => weakSubjects.has(q.subject)) : all;
+        if (!pool.length) pool = all;
+    }
+    else if (subject === 'bookmarks') pool = all.filter(q => bookmarks.includes(q.id));
+    else if (subject === 'wrong')     pool = all.filter(q => wrongIds.has(q.id));
+    else pool = all.filter(q => q.subject === subject);
+
+    if (!pool.length) pool = all;
+    let shuffled = [...pool].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, qbCount === 999 ? shuffled.length : qbCount);
+}
+
+function beginQbankQuiz() {
+    let subject = document.getElementById('qbSubject').value;
+    qbQueue   = _buildQueue(subject);
+    qbCurrent = 0;
+    qbAnswers = {};
+    qbRevealed = {};
+    closeQbankModal();
+    if (!qbQueue.length) { showToast('No questions found for that filter', 'warning'); return; }
+    document.getElementById('qbankHome').style.display  = 'none';
+    document.getElementById('qbankQuiz').style.display  = 'block';
+    renderQbankQuestion();
+}
+
+function renderQbankQuestion() {
+    let el = document.getElementById('qbankQuiz');
+    if (!el) return;
+    if (qbCurrent >= qbQueue.length) { renderQbankResults(); return; }
+
+    let q         = qbQueue[qbCurrent];
+    let bookmarks = getQBBookmarks();
+    let isBookmarked = bookmarks.includes(q.id);
+    let selected  = qbAnswers[q.id];
+    let revealed  = qbRevealed[q.id];
+    let col       = QB_COLORS[q.subject] || '#2563eb';
+    let subLabel  = QB_SUBJECTS[q.subject] || q.subject;
+    let progress  = Math.round((qbCurrent/qbQueue.length)*100);
+
+    let optionsHtml = q.options.map(opt => {
+        let letter = opt[0];
+        let isSelected = selected === letter;
+        let isCorrect  = letter === q.correct;
+        let bg = '#f8fafc', border = '#e2e8f0', textCol = '#374151';
+        if (revealed) {
+            if (isCorrect)               { bg='#f0fdf4'; border='#86efac'; textCol='#166534'; }
+            else if (isSelected)         { bg='#fef2f2'; border='#fca5a5'; textCol='#991b1b'; }
+        } else if (isSelected) {
+            bg='#eff6ff'; border='#93c5fd'; textCol='#1e40af';
+        }
+        return `<button onclick="selectQBAnswer('${letter}')" style="width:100%;margin:0 0 8px;padding:12px 14px;border-radius:12px;border:2px solid ${border};background:${bg};color:${textCol};font-size:13px;font-weight:600;text-align:left;box-shadow:none;display:block;line-height:1.4">
+            <span style="font-weight:800;margin-right:6px">${letter}.</span>${opt.slice(3)}
+            ${revealed && isCorrect ? ' <span style="float:right">&#x2713;</span>' : ''}
+            ${revealed && isSelected && !isCorrect ? ' <span style="float:right">&#x2717;</span>' : ''}
+        </button>`;
+    }).join('');
+
+    let explanationHtml = revealed ? `
+    <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:14px;padding:14px;margin-top:12px">
+        <div style="font-size:11px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Explanation</div>
+        <div style="font-size:13px;color:#166534;line-height:1.6">${q.explanation}</div>
+        ${q.reference ? `<div style="font-size:11px;color:#16a34a;margin-top:6px;font-weight:600">&#x1F4DA; ${q.reference}</div>` : ''}
+    </div>` : '';
+
+    let actionBtn = '';
+    if (qbMode === 'study') {
+        if (!revealed && selected) {
+            actionBtn = `<button onclick="revealQBAnswer()" style="width:100%;margin:12px 0 0;background:#0f172a;font-size:13px;font-weight:700;padding:13px;border-radius:12px">Check Answer</button>`;
+        } else if (revealed) {
+            actionBtn = qbCurrent < qbQueue.length-1
+                ? `<button onclick="nextQBQuestion()" style="width:100%;margin:12px 0 0;background:#2563eb;font-size:13px;font-weight:700;padding:13px;border-radius:12px">Next Question &#x2192;</button>`
+                : `<button onclick="renderQbankResults()" style="width:100%;margin:12px 0 0;background:#16a34a;font-size:13px;font-weight:700;padding:13px;border-radius:12px">See Results &#x1F389;</button>`;
+        }
+    } else {
+        actionBtn = qbCurrent < qbQueue.length-1
+            ? `<button onclick="nextQBQuestion()" ${!selected?'disabled style="opacity:0.4;cursor:not-allowed;"':''} style="width:100%;margin:12px 0 0;background:#2563eb;font-size:13px;font-weight:700;padding:13px;border-radius:12px">Next &#x2192;</button>`
+            : `<button onclick="renderQbankResults()" ${!selected?'disabled style="opacity:0.4;cursor:not-allowed;"':''} style="width:100%;margin:12px 0 0;background:#16a34a;font-size:13px;font-weight:700;padding:13px;border-radius:12px">Finish &amp; Review &#x1F389;</button>`;
+    }
+
+    el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <button onclick="exitQBQuiz()" style="width:32px;height:32px;border-radius:10px;background:#f1f5f9;border:1.5px solid #e2e8f0;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin:0;padding:0;box-shadow:none;color:#374151">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div style="flex:1">
+            <div style="background:#e2e8f0;border-radius:4px;height:4px;overflow:hidden">
+                <div style="background:${col};height:100%;width:${progress}%;transition:width 0.3s;border-radius:4px"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:4px">
+                <span style="font-size:10px;font-weight:700;color:${col}">${subLabel}</span>
+                <span style="font-size:10px;color:#94a3b8">${qbCurrent+1} / ${qbQueue.length}</span>
+            </div>
+        </div>
+        <button onclick="toggleQBBookmark('${q.id}')" style="width:32px;height:32px;border-radius:10px;background:${isBookmarked?'#fef9c3':'#f1f5f9'};border:1.5px solid ${isBookmarked?'#fde68a':'#e2e8f0'};display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin:0;padding:0;box-shadow:none;font-size:16px">&#x1F516;</button>
+    </div>
+    <div style="background:white;border:1.5px solid #e2e8f0;border-radius:16px;padding:18px;margin-bottom:14px">
+        <div style="font-size:13px;font-weight:600;color:#374151;line-height:1.6">${q.stem}</div>
+    </div>
+    ${optionsHtml}
+    ${explanationHtml}
+    ${actionBtn}`;
+}
+
+function selectQBAnswer(letter) {
+    let q = qbQueue[qbCurrent];
+    if (!q) return;
+    if (qbMode === 'study' && qbRevealed[q.id]) return;
+    qbAnswers[q.id] = letter;
+    renderQbankQuestion();
+}
+
+function revealQBAnswer() {
+    let q = qbQueue[qbCurrent];
+    if (!q) return;
+    qbRevealed[q.id] = true;
+    let attempts = getQBAttempts();
+    let correct = qbAnswers[q.id] === q.correct;
+    attempts.push({ qid: q.id, subject: q.subject, answer: qbAnswers[q.id], correct, date: getTodayStr() });
+    saveQBAttempts(attempts);
+    renderQbankQuestion();
+}
+
+function nextQBQuestion() {
+    let q = qbQueue[qbCurrent];
+    if (qbMode === 'quiz' && q && qbAnswers[q.id]) {
+        let attempts = getQBAttempts();
+        let correct = qbAnswers[q.id] === q.correct;
+        attempts.push({ qid: q.id, subject: q.subject, answer: qbAnswers[q.id], correct, date: getTodayStr() });
+        saveQBAttempts(attempts);
+    }
+    qbCurrent++;
+    renderQbankQuestion();
+}
+
+function toggleQBBookmark(qid) {
+    let bookmarks = getQBBookmarks();
+    let i = bookmarks.indexOf(qid);
+    if (i >= 0) bookmarks.splice(i,1); else bookmarks.push(qid);
+    saveQBBookmarks(bookmarks);
+    renderQbankQuestion();
+    showToast(i >= 0 ? 'Bookmark removed' : 'Bookmarked!');
+}
+
+function exitQBQuiz() {
+    qbQueue = []; qbAnswers = {}; qbRevealed = {};
+    document.getElementById('qbankQuiz').style.display = 'none';
+    document.getElementById('qbankHome').style.display = 'block';
+    renderQbankHome();
+}
+
+function renderQbankResults() {
+    let total   = qbQueue.length;
+    let correct = qbQueue.filter(q => qbAnswers[q.id] === q.correct).length;
+    let pct     = total ? Math.round(correct/total*100) : 0;
+    let col     = pct >= 70 ? '#16a34a' : pct >= 50 ? '#d97706' : '#dc2626';
+    let emoji   = pct >= 80 ? '&#x1F3C6;' : pct >= 60 ? '&#x1F44D;' : pct >= 40 ? '&#x1F4AA;' : '&#x1F4DA;';
+
+    let bySubject = {};
+    qbQueue.forEach(q => {
+        if (!bySubject[q.subject]) bySubject[q.subject] = { correct:0, total:0 };
+        bySubject[q.subject].total++;
+        if (qbAnswers[q.id] === q.correct) bySubject[q.subject].correct++;
+    });
+
+    let subjectRows = Object.entries(bySubject).map(([s,v]) => {
+        let sp = Math.round(v.correct/v.total*100);
+        let sc = sp>=70?'#16a34a':sp>=50?'#d97706':'#dc2626';
+        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <div style="font-size:12px;font-weight:600;color:#374151;width:140px;flex-shrink:0">${QB_SUBJECTS[s]||s}</div>
+            <div style="flex:1;background:#f1f5f9;border-radius:4px;height:6px;overflow:hidden">
+                <div style="background:${sc};width:${sp}%;height:100%;border-radius:4px"></div>
+            </div>
+            <div style="font-size:11px;font-weight:700;color:${sc};min-width:40px;text-align:right">${v.correct}/${v.total}</div>
+        </div>`;
+    }).join('');
+
+    let reviewHtml = qbQueue.map(q => {
+        let ans    = qbAnswers[q.id];
+        let isOk   = ans === q.correct;
+        let corOpt = q.options.find(o=>o[0]===q.correct);
+        return `<div style="background:white;border:1.5px solid ${isOk?'#86efac':'#fca5a5'};border-radius:12px;padding:12px 14px;margin-bottom:8px">
+            <div style="display:flex;align-items:flex-start;gap:8px">
+                <div style="font-size:16px;flex-shrink:0">${isOk?'&#x2705;':'&#x274C;'}</div>
+                <div style="flex:1">
+                    <div style="font-size:12px;font-weight:600;color:#374151;line-height:1.5;margin-bottom:6px">${q.stem.slice(0,120)}${q.stem.length>120?'&hellip;':''}</div>
+                    ${!isOk ? `<div style="font-size:11px;color:#dc2626">Your answer: <strong>${ans||'&mdash;'}</strong></div>` : ''}
+                    <div style="font-size:11px;color:#16a34a">Correct: <strong>${q.correct}. ${corOpt?corOpt.slice(3):''}</strong></div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+
+    let el = document.getElementById('qbankQuiz');
+    el.innerHTML = `
+    <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:56px;margin-bottom:8px">${emoji}</div>
+        <div style="font-size:36px;font-weight:900;color:${col}">${pct}%</div>
+        <div style="font-size:14px;color:#64748b">${correct} of ${total} correct</div>
+    </div>
+    ${Object.keys(bySubject).length > 1 ? `
+    <div style="background:white;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">By Subject</div>
+        ${subjectRows}
+    </div>` : ''}
+    <div style="background:white;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">Review Answers</div>
+        ${reviewHtml}
+    </div>
+    <button onclick="exitQBQuiz()" style="width:100%;margin:0;background:#0f172a;font-size:13px;font-weight:700;padding:14px;border-radius:14px">Back to Question Bank</button>`;
+}
+
+function renderQbankHome() {
+    let el = document.getElementById('qbankHome');
+    if (!el) return;
+    let all       = typeof EYELOG_QUESTIONS !== 'undefined' ? EYELOG_QUESTIONS : [];
+    let attempts  = getQBAttempts();
+    let bookmarks = getQBBookmarks();
+
+    let totalAttempted = new Set(attempts.map(a=>a.qid)).size;
+    let totalCorrect   = attempts.filter(a=>a.correct).length;
+    let totalAttempts  = attempts.length;
+    let pct            = totalAttempts ? Math.round(totalCorrect/totalAttempts*100) : 0;
+    let pctCol         = pct>=70?'#16a34a':pct>=50?'#d97706':'#dc2626';
+
+    let subjectStats = {};
+    Object.keys(QB_SUBJECTS).forEach(s => {
+        let qCount      = all.filter(q=>q.subject===s).length;
+        let subAttempts = attempts.filter(a=>a.subject===s);
+        let subCorrect  = subAttempts.filter(a=>a.correct).length;
+        subjectStats[s] = { total: qCount, attempted: new Set(subAttempts.map(a=>a.qid)).size, correct: subCorrect, attempts: subAttempts.length };
+    });
+
+    let subjectGrid = Object.entries(QB_SUBJECTS).map(([s,label]) => {
+        let st  = subjectStats[s];
+        let sp  = st.attempts ? Math.round(st.correct/st.attempts*100) : null;
+        let col = QB_COLORS[s] || '#64748b';
+        return `<div style="background:white;border:1.5px solid #e2e8f0;border-radius:14px;padding:14px;cursor:pointer" onclick="document.getElementById('qbSubject').value='${s}';openQbankModal()">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <div style="font-size:12px;font-weight:700;color:${col}">${label}</div>
+                ${sp!==null ? `<div style="font-size:11px;font-weight:800;color:${sp>=70?'#16a34a':sp>=50?'#d97706':'#dc2626'}">${sp}%</div>` : ''}
+            </div>
+            <div style="background:#f1f5f9;border-radius:4px;height:4px;overflow:hidden;margin-bottom:6px">
+                <div style="background:${col};width:${st.total?Math.round(st.attempted/st.total*100):0}%;height:100%;border-radius:4px"></div>
+            </div>
+            <div style="font-size:10px;color:#94a3b8">${st.attempted}/${st.total} attempted</div>
+        </div>`;
+    }).join('');
+
+    el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+            <div style="font-size:18px;font-weight:800;color:#1e1b4b">OKAP Question Bank</div>
+            <div style="font-size:12px;color:#94a3b8;margin-top:2px">${all.length} questions &middot; BCSC-aligned</div>
+        </div>
+        <button onclick="openQbankModal()" style="width:auto;margin:0;padding:10px 16px;font-size:12px;font-weight:700;border-radius:12px;background:#0f172a;color:white">Start Quiz &#x2192;</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px">
+        ${[
+            { label:'Questions', val:all.length, col:'#2563eb' },
+            { label:'Attempted', val:totalAttempted, col:'#7c3aed' },
+            { label:'Avg Score', val:totalAttempts?pct+'%':'&mdash;', col:pctCol },
+        ].map(s=>`<div style="background:white;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;text-align:center">
+            <div style="font-size:22px;font-weight:900;color:${s.col}">${s.val}</div>
+            <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.4px;margin-top:2px">${s.label}</div>
+        </div>`).join('')}
+    </div>
+    ${bookmarks.length ? `<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="document.getElementById('qbSubject').value='bookmarks';openQbankModal()">
+        <div style="font-size:13px;font-weight:700;color:#92400e">&#x1F516; ${bookmarks.length} Bookmarked Questions</div>
+        <div style="font-size:12px;color:#d97706">Review &#x2192;</div>
+    </div>` : ''}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+        ${subjectGrid}
+    </div>
+    <button onclick="document.getElementById('qbSubject').value='wrong';openQbankModal()" style="width:100%;margin:0;background:#fef2f2;color:#dc2626;border:1.5px solid #fecaca;font-size:12px;font-weight:700;padding:12px;border-radius:12px;box-shadow:none">&#x274C; Review Wrong Answers</button>`;
 }
 
 if ('serviceWorker' in navigator) {
