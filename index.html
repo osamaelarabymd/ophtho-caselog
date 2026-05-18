@@ -1297,16 +1297,37 @@
             </div>
             <!-- Journal section -->
             <div id="ws-journal">
-                <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap">
-                    <input type="text" id="journalSearch" placeholder="Search…" oninput="renderJournalList()" style="flex:1;margin:0;padding:10px 14px;border-radius:12px;font-size:13px;min-width:100px">
-                    <select id="journalMoodFilter" onchange="renderJournalList()" style="width:auto;margin:0;padding:10px 10px;border-radius:12px;font-size:12px">
-                        <option value="">All Moods</option>
-                        <option value="💪">💪</option><option value="😊">😊</option>
-                        <option value="😐">😐</option><option value="😤">😤</option><option value="🤔">🤔</option>
-                    </select>
-                    <button onclick="openJournalModal()" style="width:auto;margin:0;padding:10px 14px;font-size:13px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#2563eb);display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>New</button>
+                <!-- Stats bar -->
+                <div id="journalStats" style="display:flex;gap:10px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none"></div>
+                <!-- Daily prompt banner -->
+                <div id="journalPromptBanner" style="display:none;background:linear-gradient(135deg,rgba(124,58,237,0.07),rgba(37,99,235,0.05));border:1.5px solid rgba(124,58,237,0.18);border-radius:14px;padding:14px 16px;margin-bottom:14px">
+                    <div style="font-size:10px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">✨ Today's Prompt</div>
+                    <div id="journalPromptText" style="font-size:13px;font-weight:600;color:#1e293b;margin-bottom:10px;line-height:1.5"></div>
+                    <button onclick="openJournalWithPrompt()" style="width:auto;margin:0;padding:7px 16px;background:#7c3aed;color:white;border-radius:9px;font-size:12px;font-weight:700;border:none;box-shadow:none">Write about it →</button>
+                </div>
+                <!-- Search + view toggle + New -->
+                <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+                    <input type="text" id="journalSearch" placeholder="Search entries…" oninput="renderJournalList()" style="flex:1;margin:0;padding:10px 14px;border-radius:12px;font-size:13px;min-width:80px">
+                    <select id="journalMoodFilter" onchange="renderJournalList()" style="display:none"><option value="">All Moods</option><option value="💪">💪</option><option value="😊">😊</option><option value="😐">😐</option><option value="😤">😤</option><option value="🤔">🤔</option></select>
+                    <div style="display:flex;gap:0;background:#f1f5f9;border-radius:10px;padding:2px;flex-shrink:0">
+                        <button onclick="showJournalView('list')" id="jv-list" style="padding:7px 12px;border-radius:8px;font-size:11px;font-weight:700;border:none;background:#0f172a;color:white;margin:0;box-shadow:0 1px 3px rgba(0,0,0,0.15)">List</button>
+                        <button onclick="showJournalView('insights')" id="jv-insights" style="padding:7px 12px;border-radius:8px;font-size:11px;font-weight:700;border:none;background:transparent;color:#64748b;margin:0;box-shadow:none">Insights</button>
+                    </div>
+                    <button onclick="openJournalModal()" style="width:auto;margin:0;padding:10px 14px;font-size:13px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#2563eb);display:flex;align-items:center;gap:6px;flex-shrink:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>New</button>
+                </div>
+                <!-- Type filter chips -->
+                <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none">
+                    <button onclick="setJournalTypeFilter('')" id="jtf-all" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #0f172a;background:#0f172a;color:white;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">All</button>
+                    <button onclick="setJournalTypeFilter('personal')" id="jtf-personal" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">✍️ Personal</button>
+                    <button onclick="setJournalTypeFilter('case')" id="jtf-case" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🔬 Case</button>
+                    <button onclick="setJournalTypeFilter('postcall')" id="jtf-postcall" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🌙 Post-Call</button>
+                    <button onclick="setJournalTypeFilter('grandrounds')" id="jtf-grandrounds" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🎤 Grand Rounds</button>
+                    <button onclick="setJournalTypeFilter('procedure')" id="jtf-procedure" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">👁️ Procedure</button>
+                    <button onclick="setJournalTypeFilter('rotation')" id="jtf-rotation" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🔄 Rotation</button>
+                    <button onclick="setJournalTypeFilter('weekly')" id="jtf-weekly" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">📋 Weekly</button>
                 </div>
                 <div id="journalList"></div>
+                <div id="journalInsights" style="display:none"></div>
             </div>
             <!-- Notes section -->
             <div id="ws-notes" style="display:none">
@@ -1931,19 +1952,27 @@
                         </div>
                     </div>
                     <div style="display:flex;align-items:center;gap:8px">
-                        <!-- Template picker — single small select -->
-                        <select onchange="if(this.value){applyJournalTemplate(this.value);this.value=''}" style="margin:0;padding:5px 10px;font-size:11px;font-weight:600;color:#64748b;border:1.5px solid #e2e8f0;border-radius:8px;background:#f8fafc;height:30px;width:auto;box-shadow:none">
-                            <option value="">Template…</option>
-                            <option value="postcall">Post-Call</option>
-                            <option value="grandrounds">Grand Rounds</option>
-                            <option value="rotation">End of Rotation</option>
-                            <option value="weekly">Weekly Review</option>
-                        </select>
                         <button onclick="closeJournalModal()" style="width:30px;height:30px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:15px;color:#94a3b8;border:none;box-shadow:none;line-height:1">✕</button>
                     </div>
                 </div>
 
                 <input type="hidden" id="journalEntryId">
+
+                <!-- Entry Type -->
+                <div style="margin-bottom:14px">
+                    <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;display:block">Type</label>
+                    <div style="display:flex;gap:5px;flex-wrap:wrap">
+                        <button onclick="selectEntryType('personal')" id="et-personal" class="entry-type-btn" style="padding:5px 11px;border-radius:20px;border:1.5px solid #cbd5e1;background:#f8fafc;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none">✍️ Personal</button>
+                        <button onclick="selectEntryType('case')" id="et-case" class="entry-type-btn" style="padding:5px 11px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none">🔬 Case</button>
+                        <button onclick="selectEntryType('postcall')" id="et-postcall" class="entry-type-btn" style="padding:5px 11px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none">🌙 Post-Call</button>
+                        <button onclick="selectEntryType('grandrounds')" id="et-grandrounds" class="entry-type-btn" style="padding:5px 11px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none">🎤 Grand Rounds</button>
+                        <button onclick="selectEntryType('procedure')" id="et-procedure" class="entry-type-btn" style="padding:5px 11px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none">👁️ Procedure</button>
+                        <button onclick="selectEntryType('rotation')" id="et-rotation" class="entry-type-btn" style="padding:5px 11px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none">🔄 Rotation</button>
+                        <button onclick="selectEntryType('weekly')" id="et-weekly" class="entry-type-btn" style="padding:5px 11px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none">📋 Weekly</button>
+                    </div>
+                </div>
+                <!-- Type-specific writing prompt -->
+                <div id="entryTypePrompt" style="display:none;background:#f8fafc;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#64748b;font-style:italic;border-left:3px solid #7c3aed;line-height:1.5"></div>
 
                 <!-- Date + Title on one row -->
                 <div style="display:grid;grid-template-columns:140px 1fr;gap:10px;margin-bottom:14px;align-items:end">

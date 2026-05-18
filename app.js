@@ -4208,11 +4208,117 @@ function deleteEvent(id) {
 const JOURNAL_KEY = 'eyeJournal';
 let selectedMood  = '😊';
 
+const ENTRY_TYPES = {
+    personal:    { label:'Personal',       color:'#64748b', bg:'#f8fafc',  border:'#cbd5e1', icon:'✍️' },
+    case:        { label:'Case Reflection', color:'#7c3aed', bg:'#faf5ff',  border:'#ddd6fe', icon:'🔬' },
+    postcall:    { label:'Post-Call',       color:'#d97706', bg:'#fffbeb',  border:'#fde68a', icon:'🌙' },
+    grandrounds: { label:'Grand Rounds',    color:'#2563eb', bg:'#eff6ff',  border:'#bfdbfe', icon:'🎤' },
+    procedure:   { label:'Procedure Log',   color:'#16a34a', bg:'#f0fdf4',  border:'#bbf7d0', icon:'👁️' },
+    rotation:    { label:'Rotation',        color:'#4f46e5', bg:'#eef2ff',  border:'#c7d2fe', icon:'🔄' },
+    weekly:      { label:'Weekly Review',   color:'#f59e0b', bg:'#fef3c7',  border:'#fde68a', icon:'📋' },
+};
+
+const ENTRY_TYPE_PROMPTS = {
+    personal:    'What\'s on your mind today?',
+    case:        'Which case stood out and why? What would you do differently next time?',
+    postcall:    'How did the call go? What was the hardest moment, and what did you learn?',
+    grandrounds: 'What was the key learning from today\'s session? How will it change your practice?',
+    procedure:   'Which procedure did you perform? What went smoothly, and what needs work?',
+    rotation:    'How has this rotation shaped you as a clinician? What will you carry forward?',
+    weekly:      'How would you rate this week? What defined it — a case, a moment, a lesson?',
+};
+
+let selectedEntryType     = 'personal';
+let activeJournalTypeFilter = '';
+
 function getJournalEntries() {
     return JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]');
 }
 function saveJournalEntries(entries) {
     localStorage.setItem(JOURNAL_KEY, JSON.stringify(entries));
+}
+
+function selectEntryType(type, applyTemplate, force) {
+    // If applyTemplate is undefined, auto-detect: apply template only if body is empty
+    if (applyTemplate === undefined) {
+        let bodyEl = document.getElementById('journalBody');
+        applyTemplate = !bodyEl || bodyEl.textContent.trim() === '';
+    }
+    selectedEntryType = type;
+    document.querySelectorAll('.entry-type-btn').forEach(btn => {
+        btn.style.background  = '#f8fafc';
+        btn.style.color       = '#64748b';
+        btn.style.borderColor = '#e2e8f0';
+    });
+    let active = document.getElementById('et-' + type);
+    if (active) {
+        let t = ENTRY_TYPES[type] || ENTRY_TYPES.personal;
+        active.style.background  = t.bg;
+        active.style.color       = t.color;
+        active.style.borderColor = t.border;
+    }
+    let hint = document.getElementById('entryTypePrompt');
+    if (hint) {
+        let prompt = ENTRY_TYPE_PROMPTS[type];
+        if (prompt) {
+            hint.textContent = prompt;
+            hint.style.borderLeftColor = (ENTRY_TYPES[type] || ENTRY_TYPES.personal).color;
+            hint.style.display = 'block';
+        } else {
+            hint.style.display = 'none';
+        }
+    }
+    let ratingRow = document.getElementById('weeklyRatingRow');
+    if (ratingRow) ratingRow.style.display = type === 'weekly' ? 'block' : 'none';
+    if (type !== 'weekly') { selectedWeeklyRating = 0; setWeeklyRating(0); }
+    if (applyTemplate && type !== 'personal') applyJournalTemplate(type);
+}
+
+function setJournalTypeFilter(type) {
+    activeJournalTypeFilter = type;
+    const allTypes = ['', 'personal', 'case', 'postcall', 'grandrounds', 'procedure', 'rotation', 'weekly'];
+    allTypes.forEach(t => {
+        let btn = document.getElementById('jtf-' + (t || 'all'));
+        if (!btn) return;
+        if (t === type) {
+            if (t === '') {
+                btn.style.background = '#0f172a'; btn.style.color = 'white'; btn.style.borderColor = '#0f172a';
+            } else {
+                let et = ENTRY_TYPES[t] || ENTRY_TYPES.personal;
+                btn.style.background = et.bg; btn.style.color = et.color; btn.style.borderColor = et.border;
+            }
+        } else {
+            btn.style.background = 'white'; btn.style.color = '#64748b'; btn.style.borderColor = '#e2e8f0';
+        }
+    });
+    renderJournalList();
+}
+
+function showJournalView(view) {
+    let listEl     = document.getElementById('journalList');
+    let insightsEl = document.getElementById('journalInsights');
+    let listBtn    = document.getElementById('jv-list');
+    let insBtn     = document.getElementById('jv-insights');
+    if (!listEl || !insightsEl) return;
+    if (view === 'insights') {
+        listEl.style.display = 'none'; insightsEl.style.display = 'block';
+        listBtn.style.background = 'transparent'; listBtn.style.color = '#64748b'; listBtn.style.boxShadow = 'none';
+        insBtn.style.background  = '#0f172a';      insBtn.style.color  = 'white';   insBtn.style.boxShadow  = '0 1px 3px rgba(0,0,0,0.15)';
+        renderJournalInsights();
+    } else {
+        listEl.style.display = 'block'; insightsEl.style.display = 'none';
+        listBtn.style.background = '#0f172a';      listBtn.style.color = 'white';   listBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15)';
+        insBtn.style.background  = 'transparent';  insBtn.style.color  = '#64748b'; insBtn.style.boxShadow  = 'none';
+    }
+}
+
+function openJournalWithPrompt() {
+    let promptText = document.getElementById('journalPromptText')?.textContent || '';
+    openJournalModal();
+    setTimeout(() => {
+        let titleEl = document.getElementById('journalTitle');
+        if (titleEl && promptText) titleEl.value = promptText;
+    }, 80);
 }
 
 // ── Journal linked records ─────────────────────────────────────────────────────
@@ -4289,17 +4395,19 @@ function _renderJLinkPills() {
 function openJournalModal(id) {
     let entry = id ? getJournalEntries().find(e => e.id === id) : null;
 
-    // Update header title
     let hdr = document.querySelector('#journalModal h2');
     if (hdr) hdr.textContent = entry ? 'Edit Entry' : 'New Entry';
 
-    document.getElementById('journalEntryId').value = entry ? entry.id : '';
-    document.getElementById('journalDate').value    = entry ? entry.date : getTodayStr();
-    document.getElementById('journalTitle').value   = entry ? (entry.title || '') : '';
+    document.getElementById('journalEntryId').value  = entry ? entry.id : '';
+    document.getElementById('journalDate').value     = entry ? entry.date : getTodayStr();
+    document.getElementById('journalTitle').value    = entry ? (entry.title || '') : '';
     document.getElementById('journalBody').innerHTML = entry ? (entry.body || '') : '';
 
-    selectedMood = entry ? entry.mood : '😊';
+    selectedMood = entry ? (entry.mood || '😊') : '😊';
     updateMoodButtons();
+
+    // Entry type — restore from entry or default to personal
+    selectEntryType(entry ? (entry.type || 'personal') : 'personal', false);
 
     // Populate case link dropdown
     let sel = document.getElementById('journalCaseLink');
@@ -4328,10 +4436,12 @@ function closeJournalModal() {
     let dd = document.getElementById('jLinkDropdown');
     if (dd) dd.style.display = 'none';
     _jLinks = [];
-    // Reset weekly rating
     let ratingRow = document.getElementById('weeklyRatingRow');
     if (ratingRow) ratingRow.style.display = 'none';
     selectedWeeklyRating = 0;
+    let hint = document.getElementById('entryTypePrompt');
+    if (hint) hint.style.display = 'none';
+    selectedEntryType = 'personal';
 }
 
 function selectMood(mood) {
@@ -4355,6 +4465,151 @@ function updateMoodButtons() {
         active.style.boxShadow   = '0 2px 8px rgba(0,0,0,0.12)';
         active.style.opacity     = '1';
     }
+}
+
+function renderJournalStats() {
+    let el = document.getElementById('journalStats');
+    if (!el) return;
+    let entries  = getJournalEntries();
+    let today    = getTodayStr();
+    let sevenAgo = new Date(); sevenAgo.setDate(sevenAgo.getDate() - 6);
+    let weekISO  = sevenAgo.toISOString().slice(0,10);
+    let thisWeek = entries.filter(e => e.date && e.date >= weekISO && e.date <= today).length;
+    let totalWords = entries.reduce((s,e) => s + (e.body||'').replace(/<[^>]*>/g,' ').split(/\s+/).filter(Boolean).length, 0);
+
+    // Streak: consecutive days back from today that have at least one entry
+    let dateSet = new Set(entries.map(e => e.date));
+    let streak  = 0;
+    let cur     = new Date(today + 'T12:00:00');
+    while (dateSet.has(cur.toISOString().slice(0,10))) {
+        streak++;
+        cur.setDate(cur.getDate() - 1);
+    }
+
+    // Show daily prompt banner if no entry today
+    let banner = document.getElementById('journalPromptBanner');
+    if (banner) {
+        if (!dateSet.has(today)) {
+            let promptIdx = new Date().getDay() % JOURNAL_PROMPTS.length;
+            let promptEl  = document.getElementById('journalPromptText');
+            if (promptEl) promptEl.textContent = JOURNAL_PROMPTS[promptIdx];
+            banner.style.display = 'block';
+        } else {
+            banner.style.display = 'none';
+        }
+    }
+
+    const stat = (val, label, color) =>
+        `<div style="flex-shrink:0;background:white;border:1.5px solid #f1f5f9;border-radius:12px;padding:10px 14px;text-align:center;min-width:72px">
+            <div style="font-size:20px;font-weight:800;color:${color};line-height:1">${val}</div>
+            <div style="font-size:10px;font-weight:600;color:#94a3b8;margin-top:2px;white-space:nowrap">${label}</div>
+        </div>`;
+
+    el.innerHTML =
+        stat(entries.length, 'Total', '#0f172a') +
+        stat(thisWeek, 'This Week', '#7c3aed') +
+        stat(streak, streak === 1 ? 'Day Streak' : 'Day Streak', streak >= 7 ? '#f59e0b' : streak >= 3 ? '#7c3aed' : '#94a3b8') +
+        stat(totalWords >= 1000 ? Math.round(totalWords/1000)+'k' : totalWords, 'Words', '#2563eb');
+}
+
+function renderJournalInsights() {
+    let el = document.getElementById('journalInsights');
+    if (!el) return;
+    let entries = getJournalEntries();
+    if (!entries.length) {
+        el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:#94a3b8">
+            <div style="font-size:32px;margin-bottom:10px">📊</div>
+            <p style="font-size:14px;font-weight:600;color:#64748b">No entries yet</p>
+            <p style="font-size:13px">Start journaling to see your insights</p>
+        </div>`;
+        return;
+    }
+
+    // Mood distribution
+    let moodCounts = {};
+    entries.forEach(e => { moodCounts[e.mood || '😊'] = (moodCounts[e.mood || '😊'] || 0) + 1; });
+    let moodMax = Math.max(...Object.values(moodCounts));
+    let moodColors = { '💪':'#16a34a', '😊':'#2563eb', '😐':'#94a3b8', '😤':'#ea580c', '🤔':'#7c3aed' };
+    let moodBars = Object.entries(moodCounts).sort((a,b) => b[1]-a[1]).map(([m,n]) =>
+        `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="font-size:18px;width:24px">${m}</span>
+            <div style="flex:1;background:#f1f5f9;border-radius:99px;height:8px;overflow:hidden">
+                <div style="background:${moodColors[m]||'#94a3b8'};width:${Math.round(n/moodMax*100)}%;height:8px;border-radius:99px;transition:width 0.6s ease"></div>
+            </div>
+            <span style="font-size:12px;font-weight:700;color:#374151;min-width:20px;text-align:right">${n}</span>
+        </div>`).join('');
+
+    // Entry type breakdown
+    let typeCounts = {};
+    entries.forEach(e => { typeCounts[e.type || 'personal'] = (typeCounts[e.type || 'personal'] || 0) + 1; });
+    let typeMax = Math.max(...Object.values(typeCounts));
+    let typeBars = Object.entries(typeCounts).sort((a,b) => b[1]-a[1]).map(([t,n]) => {
+        let et = ENTRY_TYPES[t] || ENTRY_TYPES.personal;
+        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="font-size:14px;width:20px">${et.icon}</span>
+            <span style="font-size:11px;font-weight:600;color:#374151;min-width:90px">${et.label}</span>
+            <div style="flex:1;background:#f1f5f9;border-radius:99px;height:8px;overflow:hidden">
+                <div style="background:${et.color};width:${Math.round(n/typeMax*100)}%;height:8px;border-radius:99px;transition:width 0.6s ease"></div>
+            </div>
+            <span style="font-size:12px;font-weight:700;color:#374151;min-width:20px;text-align:right">${n}</span>
+        </div>`;
+    }).join('');
+
+    // Monthly writing count (last 6 months)
+    let monthlyCounts = {};
+    entries.forEach(e => { if (e.date) { let m = e.date.slice(0,7); monthlyCounts[m] = (monthlyCounts[m]||0)+1; } });
+    let last6 = [];
+    let now = new Date();
+    for (let i = 5; i >= 0; i--) {
+        let d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        let key = d.toLocaleDateString('en-CA').slice(0,7);
+        let lbl = d.toLocaleString('default', { month:'short' });
+        last6.push({ key, lbl, count: monthlyCounts[key] || 0 });
+    }
+    let monthMax = Math.max(...last6.map(m => m.count), 1);
+    let monthBars = last6.map(m =>
+        `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
+            <div style="width:100%;background:#f1f5f9;border-radius:4px;height:50px;display:flex;align-items:flex-end;overflow:hidden">
+                <div style="width:100%;background:${m.count ? '#7c3aed' : 'transparent'};height:${Math.round(m.count/monthMax*100)}%;border-radius:3px;transition:height 0.6s ease;min-height:${m.count?'4px':'0'}"></div>
+            </div>
+            <span style="font-size:9px;font-weight:600;color:#94a3b8">${m.lbl}</span>
+            <span style="font-size:10px;font-weight:700;color:${m.count?'#374151':'#d1d5db'}">${m.count||''}</span>
+        </div>`).join('');
+
+    // Summary stats
+    let avgWords = Math.round(entries.reduce((s,e)=>s+(e.body||'').replace(/<[^>]*>/g,' ').split(/\s+/).filter(Boolean).length,0) / entries.length);
+    let longestEntry = entries.reduce((best,e) => {
+        let w = (e.body||'').replace(/<[^>]*>/g,' ').split(/\s+/).filter(Boolean).length;
+        return w > (best.w||0) ? { ...e, w } : best;
+    }, {});
+    let months = Object.keys(monthlyCounts);
+    let mostActive = months.sort((a,b)=>(monthlyCounts[b]||0)-(monthlyCounts[a]||0))[0];
+    let mostActiveLabel = mostActive ? new Date(mostActive+'-02').toLocaleString('default',{month:'long',year:'numeric'}) : '—';
+
+    el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div style="background:#f8fafc;border-radius:12px;padding:12px;text-align:center">
+            <div style="font-size:22px;font-weight:800;color:#7c3aed">${avgWords}</div>
+            <div style="font-size:10px;font-weight:600;color:#94a3b8;margin-top:2px">Avg words/entry</div>
+        </div>
+        <div style="background:#f8fafc;border-radius:12px;padding:12px;text-align:center">
+            <div style="font-size:22px;font-weight:800;color:#2563eb">${longestEntry.w || 0}</div>
+            <div style="font-size:10px;font-weight:600;color:#94a3b8;margin-top:2px">Longest entry</div>
+        </div>
+    </div>
+    <div style="background:white;border:1.5px solid #f1f5f9;border-radius:14px;padding:16px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">Mood Distribution</div>
+        ${moodBars}
+    </div>
+    <div style="background:white;border:1.5px solid #f1f5f9;border-radius:14px;padding:16px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">Entry Types</div>
+        ${typeBars}
+    </div>
+    <div style="background:white;border:1.5px solid #f1f5f9;border-radius:14px;padding:16px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">Writing Activity</div>
+        <div style="display:flex;gap:6px;align-items:flex-end">${monthBars}</div>
+        <div style="font-size:11px;color:#94a3b8;margin-top:10px">Most active: <strong style="color:#374151">${mostActiveLabel}</strong></div>
+    </div>`;
 }
 
 const JOURNAL_PROMPTS = [
@@ -4723,9 +4978,12 @@ function applyJournalTemplate(tpl) {
 <h3>🎯 Next Week's Focus</h3><p></p>`;
     } else {
         const templates = {
-            postcall: `<h3>Post-Call Reflection</h3><p>Sleep hours: </p><p>Energy level today: </p><h3>Hardest Case</h3><p></p><h3>What I'd Do Differently</h3><p></p><h3>Win of the Call</h3><p></p>`,
-            grandrounds: `<h3>Grand Rounds Notes</h3><p><strong>Topic:</strong> </p><p><strong>Speaker:</strong> </p><h3>Key Learnings</h3><ul><li></li><li></li></ul><h3>Follow-Up Action</h3><p></p>`,
-            rotation: `<h3>End of Rotation Summary</h3><p><strong>Rotation:</strong> </p><p><strong>Dates:</strong> </p><h3>Cases Highlights</h3><p></p><h3>Skills Gained</h3><ul><li></li><li></li></ul><h3>What to Work On Next</h3><p></p><h3>Overall Rating</h3><p> / 10</p>`
+            postcall:    `<h3>🌙 Post-Call Reflection</h3><p><strong>Sleep hours:</strong> </p><p><strong>Energy level (1–10):</strong> </p><h3>Hardest Case</h3><p></p><h3>What I'd Do Differently</h3><p></p><h3>Win of the Call</h3><p></p><h3>📚 What I Learned</h3><p></p>`,
+            grandrounds: `<h3>🎤 Grand Rounds / Conference Notes</h3><p><strong>Topic:</strong> </p><p><strong>Speaker:</strong> </p><p><strong>Date:</strong> </p><h3>Key Learnings</h3><ul><li></li><li></li><li></li></ul><h3>How This Changes My Practice</h3><p></p><h3>Follow-Up / Action Items</h3><p></p>`,
+            rotation:    `<h3>🔄 End of Rotation Summary</h3><p><strong>Rotation:</strong> </p><p><strong>Dates:</strong> </p><p><strong>Attending(s):</strong> </p><h3>Cases Highlights</h3><p></p><h3>Skills Gained</h3><ul><li></li><li></li></ul><h3>What to Work On Next</h3><p></p><h3>Overall Rating</h3><p> / 10</p>`,
+            procedure:   `<h3>👁️ Procedure Log</h3><p><strong>Procedure:</strong> </p><p><strong>Role:</strong> </p><p><strong>Attending:</strong> </p><h3>Steps That Went Well</h3><ul><li></li><li></li></ul><h3>Steps That Needed Work</h3><ul><li></li></ul><h3>Intraoperative Findings / Complications</h3><p></p><h3>What I'll Focus On Next Time</h3><p></p>`,
+            case:        `<h3>🔬 Case Reflection</h3><p><strong>Diagnosis:</strong> </p><p><strong>Procedure / Plan:</strong> </p><h3>What Was Interesting About This Case</h3><p></p><h3>What I Learned</h3><p></p><h3>What I'd Do Differently</h3><p></p>`,
+            personal:    ``,
         };
         content = templates[tpl] || '';
     }
@@ -4773,6 +5031,7 @@ function saveJournalEntry() {
         id:        id || crypto.randomUUID(),
         date:      document.getElementById('journalDate').value || getTodayStr(),
         mood:      selectedMood,
+        type:      selectedEntryType || 'personal',
         title:     document.getElementById('journalTitle').value.trim(),
         body,
         caseId:    document.getElementById('journalCaseLink').value || null,
@@ -4794,6 +5053,12 @@ function saveJournalEntry() {
     showToast('📔 Journal entry saved!');
 }
 
+function editJournalEntry(id) {
+    showTab('journal', null);
+    showWorkspaceTab('journal');
+    setTimeout(() => openJournalModal(id), 100);
+}
+
 function deleteJournalEntry(id) {
     if (!confirm('Delete this journal entry?')) return;
     let entries = getJournalEntries().filter(e => e.id !== id);
@@ -4807,20 +5072,23 @@ function renderJournalList() {
     let el = document.getElementById('journalList');
     if (!el) return;
 
-    let search    = (document.getElementById('journalSearch')?.value || '').toLowerCase();
-    let moodFilter = document.getElementById('journalMoodFilter')?.value || '';
-    let entries   = getJournalEntries();
+    renderJournalStats();
 
-    if (search)     entries = entries.filter(e => (e.title+(e.body||'').replace(/<[^>]*>/g,' ')).toLowerCase().includes(search));
-    if (moodFilter) entries = entries.filter(e => e.mood === moodFilter);
+    let search     = (document.getElementById('journalSearch')?.value || '').toLowerCase();
+    let moodFilter = document.getElementById('journalMoodFilter')?.value || '';
+    let entries    = getJournalEntries();
+
+    if (search)                entries = entries.filter(e => (e.title+(e.body||'').replace(/<[^>]*>/g,' ')).toLowerCase().includes(search));
+    if (moodFilter)            entries = entries.filter(e => e.mood === moodFilter);
+    if (activeJournalTypeFilter) entries = entries.filter(e => (e.type || 'personal') === activeJournalTypeFilter);
 
     if (entries.length === 0) {
         el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:#94a3b8">
             <div style="width:52px;height:52px;background:#f1f5f9;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/></svg>
             </div>
-            <p style="font-size:15px;font-weight:600;color:#64748b;margin-bottom:6px">${search || moodFilter ? 'No entries match' : 'No entries yet'}</p>
-            <p style="font-size:13px">${search || moodFilter ? 'Try a different search' : 'Tap <strong>New Entry</strong> to start journaling'}</p>
+            <p style="font-size:15px;font-weight:600;color:#64748b;margin-bottom:6px">${search || moodFilter || activeJournalTypeFilter ? 'No entries match' : 'No entries yet'}</p>
+            <p style="font-size:13px">${search || moodFilter || activeJournalTypeFilter ? 'Try a different filter' : 'Tap <strong>New</strong> to start journaling'}</p>
         </div>`;
         return;
     }
@@ -4833,46 +5101,48 @@ function renderJournalList() {
         grouped[key].push(e);
     });
 
-    let moodColors = { '💪':'#f0fdf4', '😊':'#eff6ff', '😐':'#f8fafc', '😤':'#fff7ed', '🤔':'#faf5ff' };
-    let moodBorder = { '💪':'#16a34a', '😊':'#2563eb', '😐':'#94a3b8', '😤':'#ea580c', '🤔':'#7c3aed' };
-
     let html = '';
     for (let month of Object.keys(grouped).sort().reverse()) {
         let label = new Date(month+'-02').toLocaleString('default',{month:'long',year:'numeric'});
         html += `<div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px">${label}</div>`;
         for (let e of grouped[month]) {
-            let plainBody = (e.body||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
-            let preview = plainBody.length > 120 ? plainBody.slice(0,120)+'…' : plainBody;
-            let dateStr = e.date ? new Date(e.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) : '';
+            let plainBody  = (e.body||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+            let preview    = plainBody.length > 130 ? plainBody.slice(0,130)+'…' : plainBody;
+            let dateStr    = e.date ? new Date(e.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) : '';
+            let wordCount  = plainBody.split(/\s+/).filter(Boolean).length;
             let linkedCase = e.caseId ? allCases.find(c => c.id === e.caseId) : null;
-            html += `<div style="background:${moodColors[e.mood]||'#f8fafc'};border:1.5px solid ${moodBorder[e.mood]||'#e2e8f0'};border-radius:16px;padding:16px;margin-bottom:10px;cursor:pointer;transition:box-shadow 0.15s"
+            let et = ENTRY_TYPES[e.type || 'personal'] || ENTRY_TYPES.personal;
+
+            html += `<div style="background:white;border:1.5px solid #f1f5f9;border-radius:16px;padding:16px;margin-bottom:10px;cursor:pointer;transition:box-shadow 0.15s,border-color 0.15s"
                 onclick="openJournalModal('${e.id}')"
-                onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,0.09)'"
-                onmouseout="this.style.boxShadow='none'">
+                onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,0.08)';this.style.borderColor='${et.border}'"
+                onmouseout="this.style.boxShadow='none';this.style.borderColor='#f1f5f9'">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-                    <div style="display:flex;align-items:center;gap:8px">
-                        <span style="font-size:22px">${e.mood}</span>
-                        <div>
-                            ${e.title ? `<div style="font-weight:700;font-size:14px;color:#0f172a">${e.title}</div>` : ''}
-                            <div style="font-size:12px;color:#64748b">${dateStr}</div>
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+                        <span style="font-size:20px;flex-shrink:0">${e.mood || '😊'}</span>
+                        <div style="flex:1;min-width:0">
+                            ${e.title ? `<div style="font-weight:700;font-size:14px;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.title}</div>` : ''}
+                            <div style="font-size:11px;color:#94a3b8;margin-top:1px">${dateStr} · ${wordCount} words</div>
                         </div>
                     </div>
-                    <button onclick="event.stopPropagation();deleteJournalEntry('${e.id}')" title="Delete"
-                        style="background:transparent;border:none;color:#D1D5DB;padding:4px;margin:0;width:auto;min-width:0;cursor:pointer;line-height:0;border-radius:6px" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#D1D5DB'">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-                    </button>
+                    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:8px">
+                        <span style="font-size:10px;font-weight:700;color:${et.color};background:${et.bg};border:1px solid ${et.border};border-radius:20px;padding:2px 8px;white-space:nowrap">${et.icon} ${et.label}</span>
+                        <button onclick="event.stopPropagation();deleteJournalEntry('${e.id}')" title="Delete"
+                            style="background:transparent;border:none;color:#d1d5db;padding:4px;margin:0;width:auto;min-width:0;cursor:pointer;line-height:0;border-radius:6px" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#d1d5db'">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                        </button>
+                    </div>
                 </div>
-                <p style="font-size:13px;color:#374151;line-height:1.6;margin:0 0 ${(linkedCase||e.links?.length)?'8px':'0'}">${preview}</p>
-                ${linkedCase ? `<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#7c3aed;font-weight:600;margin-top:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>${linkedCase.procedure} · ${linkedCase.date}</div>` : ''}
+                <p style="font-size:13px;color:#374151;line-height:1.65;margin:0 0 ${(linkedCase||e.links?.length)?'8px':'0'}">${preview || '<span style="color:#94a3b8;font-style:italic">No content</span>'}</p>
+                ${linkedCase ? `<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#7c3aed;font-weight:600;margin-top:6px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>${linkedCase.procedure} · ${linkedCase.date}</div>` : ''}
                 ${e.links && e.links.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${e.links.map(l=>`<span onclick="event.stopPropagation();_jLinkNavigate('${l.type}','${l.id}')" style="display:inline-flex;align-items:center;gap:4px;background:${l.bg||'#f1f5f9'};color:${l.color||'#374151'};border:1px solid ${l.color||'#e2e8f0'}33;border-radius:20px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer" title="Go to ${l.type}">${l.icon||'🔗'} ${l.label.length>28?l.label.slice(0,28)+'…':l.label}</span>`).join('')}</div>` : ''}
             </div>`;
         }
     }
 
-    // Word count footer
     let total = getJournalEntries().length;
-    let words = getJournalEntries().reduce((sum,e)=>sum+(e.body||'').replace(/<[^>]*>/g,' ').split(/\s+/).filter(Boolean).length,0);
-    html += `<div style="text-align:center;padding:16px;color:#94a3b8;font-size:12px;margin-top:8px">
+    let words = getJournalEntries().reduce((s,e)=>s+(e.body||'').replace(/<[^>]*>/g,' ').split(/\s+/).filter(Boolean).length,0);
+    html += `<div style="text-align:center;padding:16px;color:#94a3b8;font-size:12px;margin-top:4px">
         ${total} entr${total===1?'y':'ies'} · ${words.toLocaleString()} words written
     </div>`;
 
