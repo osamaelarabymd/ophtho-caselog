@@ -4153,9 +4153,18 @@ function renderCalendar() {
             else                  { circleBg = 'transparent'; circleColor = isWknd ? '#94a3b8' : '#111827'; circleWeight = '400'; }
 
             // Activity dots — priority order, max 3 visible
+            let evDotColor = '#2563eb'; // default blue
+            if (hasEv) {
+                let dayEvs = events.filter(e => e.date === dk);
+                let allDone = dayEvs.length > 0 && dayEvs.every(e => e.status === 'done');
+                let anyInProgress = dayEvs.some(e => e.status === 'inprogress');
+                if (allDone) evDotColor = '#16a34a';
+                else if (anyInProgress) evDotColor = '#2563eb';
+                else evDotColor = '#d97706';
+            }
             let dotColors = [
                 hasCase  && '#16a34a',
-                hasEv    && '#2563eb',
+                hasEv    && evDotColor,
                 hasTodo  && '#d97706',
                 hasJ     && '#7c3aed'
             ].filter(Boolean).slice(0, 3);
@@ -4221,20 +4230,64 @@ function renderDayDetail(dk) {
 
     let html = '';
 
-    // Events
+    const statusMeta = {
+        pending:    { label:'Pending',     color:'#d97706', bg:'#fffbeb', icon:'🕐' },
+        inprogress: { label:'In Progress', color:'#2563eb', bg:'#eff6ff', icon:'⚡' },
+        done:       { label:'Done',        color:'#16a34a', bg:'#f0fdf4', icon:'✅' },
+        cancelled:  { label:'Cancelled',   color:'#94a3b8', bg:'#f8fafc', icon:'✕'  },
+    };
+    const priorityMeta = {
+        high:   { label:'High',   color:'#dc2626', dot:'🔴' },
+        medium: { label:'Medium', color:'#d97706', dot:'🟡' },
+        low:    { label:'Low',    color:'#16a34a', dot:'🟢' },
+    };
+
+    // Events / Missions
     if (events.length > 0) {
-        html += '<div style="margin-bottom:16px"><p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">EVENTS</p>';
+        html += '<div style="margin-bottom:16px"><p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">MISSIONS</p>';
         for (let ev of events) {
-            html += `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:${evTypeBg[ev.type]||'#f8fafc'};border-radius:12px;margin-bottom:6px;border-left:3px solid ${evTypeColor[ev.type]||'#64748b'}">
-                <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">${evTypeIcon[ev.type]||'Event'}</span>
-                <div style="flex:1">
-                    <p style="font-weight:700;font-size:14px;color:#0f172a;margin-bottom:2px">${ev.title}</p>
-                    ${ev.time?`<p style="font-size:12px;color:#64748b;margin-bottom:2px">🕐 ${formatTime(ev.time)}</p>`:''}
-                    ${ev.notes?`<p style="font-size:12px;color:#64748b">${ev.notes}</p>`:''}
+            let sm = statusMeta[ev.status || 'pending'];
+            let pm = priorityMeta[ev.priority || 'medium'];
+            let isDone = ev.status === 'done';
+            let isCancelled = ev.status === 'cancelled';
+            let titleStyle = (isDone || isCancelled) ? 'text-decoration:line-through;opacity:0.55;' : '';
+
+            // Week days for move-to picker
+            let evDate = new Date(ev.date + 'T12:00:00');
+            let weekStart = _getWeekStart(evDate);
+            let weekDaysBtns = '';
+            for (let i = 0; i < 7; i++) {
+                let wd = new Date(weekStart);
+                wd.setDate(weekStart.getDate() + i);
+                let wdk = _dayKey(wd);
+                let dayLabel = wd.toLocaleDateString('en-US', { weekday:'short' }).slice(0,2);
+                let dayNum = wd.getDate();
+                let isSelected = wdk === ev.date;
+                weekDaysBtns += `<button onclick="moveMissionToDay('${ev.id}','${wdk}','${dk}')" style="flex:1;margin:0;padding:4px 2px;font-size:10px;font-weight:${isSelected?'800':'600'};border-radius:7px;border:1.5px solid ${isSelected?sm.color:'#e2e8f0'};background:${isSelected?sm.color:'#f8fafc'};color:${isSelected?'#fff':'#64748b'};line-height:1.3">${dayLabel}<br>${dayNum}</button>`;
+            }
+
+            html += `<div style="padding:12px;background:${sm.bg};border-radius:14px;margin-bottom:8px;border-left:3px solid ${sm.color}">
+                <div style="display:flex;align-items:flex-start;gap:10px">
+                    <button onclick="quickToggleMissionStatus('${ev.id}','${dk}')" title="Toggle status" style="flex-shrink:0;width:34px;height:34px;padding:0;margin:0;background:${sm.color};border-radius:10px;box-shadow:none;display:flex;align-items:center;justify-content:center;font-size:15px">${sm.icon}</button>
+                    <div style="flex:1;min-width:0">
+                        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px">
+                            <p style="font-weight:700;font-size:14px;color:#0f172a;margin:0;${titleStyle}">${ev.title}</p>
+                            <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${pm.color}18;color:${pm.color}">${pm.dot} ${pm.label}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                            <span style="font-size:11px;font-weight:600;color:${sm.color}">${sm.label}</span>
+                            ${ev.time ? `<span style="font-size:11px;color:#94a3b8">🕐 ${formatTime(ev.time)}</span>` : ''}
+                            ${ev.notes ? `<span style="font-size:11px;color:#64748b">${ev.notes}</span>` : ''}
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:4px;flex-shrink:0">
+                        <button onclick="openEventModal('${dk}','${ev.id}')" style="width:28px;height:28px;padding:0;margin:0;background:rgba(255,255,255,0.7);border-radius:8px;box-shadow:none;display:flex;align-items:center;justify-content:center" title="Edit"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                        <button onclick="deleteEvent('${ev.id}')" style="width:28px;height:28px;padding:0;margin:0;background:rgba(255,255,255,0.7);border-radius:8px;box-shadow:none;display:flex;align-items:center;justify-content:center" title="Delete"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
+                    </div>
                 </div>
-                <div style="display:flex;gap:4px">
-                    <button onclick="openEventModal('${dk}','${ev.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;box-shadow:none;display:flex;align-items:center;justify-content:center" title="Edit"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                    <button onclick="deleteEvent('${ev.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#fef2f2;border-radius:8px;box-shadow:none;display:flex;align-items:center;justify-content:center" title="Delete"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
+                <div style="margin-top:10px">
+                    <p style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px">Move to this week</p>
+                    <div style="display:flex;gap:4px">${weekDaysBtns}</div>
                 </div>
             </div>`;
         }
@@ -4297,6 +4350,48 @@ function formatTime(t) {
     return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${ampm}`;
 }
 
+let selectedMissionStatus   = 'pending';
+let selectedMissionPriority = 'medium';
+
+function selectMissionStatus(s) {
+    selectedMissionStatus = s;
+    ['pending','inprogress','done','cancelled'].forEach(v => {
+        let btn = document.getElementById('ms-' + v);
+        if (!btn) return;
+        let active = v === s;
+        let styles = {
+            pending:     { border:'#fde68a', bg:'#fffbeb',  color:'#d97706' },
+            inprogress:  { border:'#bfdbfe', bg:'#eff6ff',  color:'#2563eb' },
+            done:        { border:'#bbf7d0', bg:'#f0fdf4',  color:'#16a34a' },
+            cancelled:   { border:'#e2e8f0', bg:'#f8fafc',  color:'#94a3b8' },
+        };
+        let st = styles[v];
+        btn.style.border    = active ? `2px solid ${st.color}` : `2px solid ${st.border}`;
+        btn.style.background = active ? st.color : st.bg;
+        btn.style.color     = active ? '#fff' : st.color;
+        btn.style.transform  = active ? 'scale(1.03)' : '';
+    });
+}
+
+function selectMissionPriority(p) {
+    selectedMissionPriority = p;
+    ['high','medium','low'].forEach(v => {
+        let btn = document.getElementById('mp-' + v);
+        if (!btn) return;
+        let active = v === p;
+        let styles = {
+            high:   { border:'#fecaca', bg:'#fef2f2', color:'#dc2626' },
+            medium: { border:'#fde68a', bg:'#fffbeb', color:'#d97706' },
+            low:    { border:'#bbf7d0', bg:'#f0fdf4', color:'#16a34a' },
+        };
+        let st = styles[v];
+        btn.style.border     = active ? `2px solid ${st.color}` : `2px solid ${st.border}`;
+        btn.style.background = active ? st.color : st.bg;
+        btn.style.color      = active ? '#fff' : st.color;
+        btn.style.transform  = active ? 'scale(1.03)' : '';
+    });
+}
+
 function openEventModal(date, id) {
     let ev = id ? getEvents().find(e => e.id === id) : null;
     document.getElementById('eventId').value    = ev ? ev.id : '';
@@ -4304,6 +4399,8 @@ function openEventModal(date, id) {
     document.getElementById('eventDate').value  = ev ? ev.date : (date || (selectedCalDate || getTodayStr()));
     document.getElementById('eventTime').value  = ev ? (ev.time || '') : '';
     document.getElementById('eventNotes').value = ev ? (ev.notes || '') : '';
+    selectMissionStatus(ev ? (ev.status || 'pending') : 'pending');
+    selectMissionPriority(ev ? (ev.priority || 'medium') : 'medium');
     document.getElementById('eventModal').style.display = 'flex';
     setTimeout(() => document.getElementById('eventTitle').focus(), 100);
 }
@@ -4317,7 +4414,17 @@ function saveEvent() {
 
     let events = getEvents();
     let id     = document.getElementById('eventId').value;
-    let ev     = { id: id || crypto.randomUUID(), title, date, time: document.getElementById('eventTime').value || null, notes: document.getElementById('eventNotes').value.trim(), createdAt: new Date().toISOString() };
+    let existing = id ? events.find(e => e.id === id) : null;
+    let ev = {
+        id:        id || crypto.randomUUID(),
+        title,
+        date,
+        time:      document.getElementById('eventTime').value || null,
+        notes:     document.getElementById('eventNotes').value.trim(),
+        status:    selectedMissionStatus,
+        priority:  selectedMissionPriority,
+        createdAt: existing ? existing.createdAt : new Date().toISOString(),
+    };
 
     if (id) { let idx = events.findIndex(e => e.id === id); if (idx !== -1) events[idx] = ev; else events.push(ev); }
     else events.push(ev);
@@ -4326,17 +4433,50 @@ function saveEvent() {
     closeEventModal();
     selectedCalDate = date;
     renderCalendar();
+    if (selectedCalDate) renderDayDetail(selectedCalDate);
     let dd = document.getElementById('dayDetail');
     if (dd) dd.style.display = 'block';
-    showToast('Event saved');
+    showToast('Mission saved');
 }
 
 function deleteEvent(id) {
-    if (!confirm('Delete this event?')) return;
+    if (!confirm('Delete this mission?')) return;
     saveEvents(getEvents().filter(e => e.id !== id));
     _cloudDelete('workspace_events', id);
     renderCalendar();
-    showToast('🗑️ Event deleted', 'warning');
+    if (selectedCalDate) renderDayDetail(selectedCalDate);
+    showToast('🗑️ Mission deleted', 'warning');
+}
+
+function quickToggleMissionStatus(id, dk) {
+    let events = getEvents();
+    let ev = events.find(e => e.id === id);
+    if (!ev) return;
+    const cycle = { pending:'inprogress', inprogress:'done', done:'pending', cancelled:'pending' };
+    ev.status = cycle[ev.status || 'pending'] || 'pending';
+    saveEvents(events);
+    _cloudUpsert('workspace_events', ev, _wsMap.events);
+    renderCalendar();
+    renderDayDetail(dk);
+}
+
+function moveMissionToDay(id, newDate, currentDk) {
+    let events = getEvents();
+    let ev = events.find(e => e.id === id);
+    if (!ev) return;
+    ev.date = newDate;
+    saveEvents(events);
+    _cloudUpsert('workspace_events', ev, _wsMap.events);
+    renderCalendar();
+    selectedCalDate = newDate;
+    renderDayDetail(newDate);
+    let dd = document.getElementById('dayDetail');
+    if (dd) {
+        let d = new Date(newDate + 'T12:00:00');
+        let titleEl = document.getElementById('dayDetailTitle');
+        if (titleEl) titleEl.textContent = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+    }
+    showToast('Mission moved to ' + new Date(newDate + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }));
 }
 
 // ── Journal ──────────────────────────────────────────────────────────────────
@@ -4517,14 +4657,21 @@ function renderWeeklyReport() {
         </div>`).join('') : '';
 
     // Missions section
-    let missionsHtml = missions.length ? missions.map(m =>
-        `<div style="padding:5px 0;border-bottom:1px solid #f8fafc;font-size:13px;display:flex;align-items:center;gap:8px">
-            <span style="font-size:14px">📌</span>
-            <div>
-                <span style="font-weight:600;color:#0f172a">${m.title}</span>
-                <span style="font-size:11px;color:#94a3b8;margin-left:8px">${new Date(m.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}${m.time ? ' ' + m.time : ''}</span>
+    const _rSmeta = { pending:{icon:'🕐',color:'#d97706'}, inprogress:{icon:'⚡',color:'#2563eb'}, done:{icon:'✅',color:'#16a34a'}, cancelled:{icon:'✕',color:'#94a3b8'} };
+    const _rPmeta = { high:{dot:'🔴'}, medium:{dot:'🟡'}, low:{dot:'🟢'} };
+    let missionsHtml = missions.length ? missions.map(m => {
+        let sm = _rSmeta[m.status || 'pending'];
+        let pm = _rPmeta[m.priority || 'medium'];
+        return `<div style="padding:7px 0;border-bottom:1px solid #f8fafc;font-size:13px;display:flex;align-items:center;gap:8px">
+            <span style="font-size:14px">${sm.icon}</span>
+            <div style="flex:1">
+                <span style="font-weight:600;color:#0f172a;${m.status==='done'?'text-decoration:line-through;opacity:0.6':''}">${m.title}</span>
+                <span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;background:${sm.color}15;color:${sm.color};margin-left:6px">${sm.icon.length>1?sm.icon:''} ${m.status==='inprogress'?'In Progress':m.status||'Pending'}</span>
+                <span style="font-size:10px;margin-left:4px">${pm.dot}</span>
+                <span style="font-size:11px;color:#94a3b8;margin-left:6px">${new Date(m.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}${m.time ? ' ' + m.time : ''}</span>
             </div>
-        </div>`).join('') : '';
+        </div>`;
+    }).join('') : '';
 
     // Completed todos
     let todosHtml = todos.length ? todos.map(t =>
