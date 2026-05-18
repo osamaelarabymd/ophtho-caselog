@@ -119,23 +119,21 @@ const _CP_COMMANDS = [
     { section:'Navigate', label:'Log a Case',   sub:'Open case logging form', icon:'#dcfce7', iconColor:'#16a34a', iconPath:'<circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>', action:"showTab('logCase',null);closeGlobalSearch()" },
     { section:'Navigate', label:'My Cases',     sub:'Browse case history',    icon:'#f3e8ff', iconColor:'#7c3aed', iconPath:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>', action:"showTab('caseList',null);closeGlobalSearch()" },
     { section:'Navigate', label:'Journal',      sub:'Open journal workspace', icon:'#faf5ff', iconColor:'#7c3aed', iconPath:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/>', action:"showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch()" },
-    { section:'Navigate', label:'To-Do',        sub:'View tasks',             icon:'#fff7ed', iconColor:'#ea580c', iconPath:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>', action:"showTab('journal',null);showWorkspaceTab('todo');closeGlobalSearch()" },
     { section:'Navigate', label:'Notes',        sub:'Clinical pearls & notes',icon:'#ecfdf5', iconColor:'#059669', iconPath:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>', action:"showTab('journal',null);showWorkspaceTab('notes');closeGlobalSearch()" },
-    { section:'Navigate', label:'Study List',   sub:'Reading list & resources',icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>', action:"showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch()" },
-    { section:'Navigate', label:'Calendar',     sub:'Plan & events view',     icon:'#fef9c3', iconColor:'#ca8a04', iconPath:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', action:"showTab('journal',null);showWorkspaceTab('calendar');closeGlobalSearch()" },
-    { section:'Navigate', label:'Duty Hours',    sub:'ACGME 80-hour compliance',icon:'#fef9c3', iconColor:'#d97706', iconPath:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>', action:"showTab('journal',null);showWorkspaceTab('duty');closeGlobalSearch()" },
-    { section:'Navigate', label:'OKAP / ITE',   sub:'In-training exam scores', icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>', action:"showTab('journal',null);showWorkspaceTab('ite');closeGlobalSearch()" },
-    { section:'Navigate', label:'Didactics',     sub:'Grand rounds · conferences',icon:'#f0fdf4', iconColor:'#059669', iconPath:'<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>', action:"showTab('journal',null);showWorkspaceTab('didactics');closeGlobalSearch()" },
-    { section:'Navigate', label:'Complications', sub:'Private intraop log',     icon:'#fef2f2', iconColor:'#dc2626', iconPath:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>', action:"showTab('journal',null);showWorkspaceTab('compl');closeGlobalSearch()" },
-    { section:'Navigate', label:'Wellness',      sub:'Wellbeing check-in tracker', icon:'#fdf4ff', iconColor:'#ec4899', iconPath:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>', action:"showTab('journal',null);showWorkspaceTab('wellness');closeGlobalSearch()" },
-    { section:'Navigate', label:'Question Bank', sub:'OKAP practice questions', icon:'#fefce8', iconColor:'#ca8a04', iconPath:'<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>', action:"showTab('journal',null);showWorkspaceTab('qbank');closeGlobalSearch()" },
+    { section:'Navigate', label:'Missions',     sub:'Calendar & daily missions',icon:'#fef9c3', iconColor:'#ca8a04', iconPath:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', action:"showTab('journal',null);showWorkspaceTab('calendar');closeGlobalSearch()" },
+    { section:'Navigate', label:'Study',        sub:'QBank · OKAP scores · Didactics',icon:'#faf5ff', iconColor:'#7c3aed', iconPath:'<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>', action:"showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch()" },
+    { section:'Navigate', label:'Reading List', sub:'Papers & resources tracker',icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>', action:"showTab('journal',null);showWorkspaceTab('reading');closeGlobalSearch()" },
+    { section:'Navigate', label:'Duty Hours',   sub:'ACGME 80-hour compliance',icon:'#fef9c3', iconColor:'#d97706', iconPath:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>', action:"showTab('journal',null);showWorkspaceTab('duty');closeGlobalSearch()" },
+    { section:'Navigate', label:'Complications',sub:'Private intraop log',     icon:'#fef2f2', iconColor:'#dc2626', iconPath:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>', action:"showTab('journal',null);showWorkspaceTab('compl');closeGlobalSearch()" },
+    { section:'Navigate', label:'Wellness',     sub:'Wellbeing check-in tracker',icon:'#fdf4ff', iconColor:'#ec4899', iconPath:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>', action:"showTab('journal',null);showWorkspaceTab('wellness');closeGlobalSearch()" },
+    { section:'Navigate', label:'Match',        sub:'Fellowship pipeline & rank list',icon:'#f0fdf4', iconColor:'#059669', iconPath:'<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>', action:"showTab('journal',null);showWorkspaceTab('fellowship');closeGlobalSearch()" },
     { section:'Navigate', label:'Settings',     sub:'App settings',           icon:'#f1f5f9', iconColor:'#64748b', iconPath:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', action:"showTab('settings',null);closeGlobalSearch()" },
     // Create
     { section:'Create', label:'New Journal Entry',  sub:'Write a reflection',             icon:'#faf5ff', iconColor:'#7c3aed', iconPath:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/>', action:"showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch();setTimeout(()=>openJournalModal(),100)" },
     { section:'Create', label:'Weekly Review',       sub:'Structured weekly reflection',    icon:'#fffbeb', iconColor:'#f59e0b', iconPath:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', action:"showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch();setTimeout(()=>{openJournalModal();setTimeout(()=>applyJournalTemplate('weekly'),80)},100)" },
-    { section:'Create', label:'Add Task',            sub:'Create a to-do item',             icon:'#fff7ed', iconColor:'#ea580c', iconPath:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>', action:"showTab('journal',null);showWorkspaceTab('todo');closeGlobalSearch();setTimeout(()=>openTodoModal(),100)" },
+    { section:'Create', label:'Add Mission',         sub:'Add to calendar / mission list',  icon:'#fef9c3', iconColor:'#ca8a04', iconPath:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', action:"showTab('journal',null);showWorkspaceTab('calendar');closeGlobalSearch();setTimeout(()=>openEventModal(),100)" },
     { section:'Create', label:'Add Note',            sub:'Quick clinical pearl',            icon:'#ecfdf5', iconColor:'#059669', iconPath:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>', action:"showTab('journal',null);showWorkspaceTab('notes');closeGlobalSearch();setTimeout(()=>openNoteModal(),100)" },
-    { section:'Create', label:'Add Study Item',      sub:'Add to reading list',             icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>', action:"showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch();setTimeout(()=>openStudyModal(),100)" },
+    { section:'Create', label:'Add to Reading List', sub:'Add paper or resource',           icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>', action:"showTab('journal',null);showWorkspaceTab('reading');closeGlobalSearch();setTimeout(()=>openStudyModal(),100)" },
     { section:'Create', label:'Wellness Check-in',   sub:'Log how you\'re feeling today',   icon:'#fdf4ff', iconColor:'#ec4899', iconPath:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>', action:"showTab('journal',null);showWorkspaceTab('wellness');closeGlobalSearch();setTimeout(()=>openWellnessModal(),100)" },
 ];
 
@@ -322,7 +320,7 @@ function runGlobalSearch() {
         html += tHits.map(t => _cpItemHTML('#fff7ed', priColor[t.priority]||'#64748b',
             '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
             t.text, `${t.priority} priority${t.due?' · due '+t.due:''}`,
-            `showTab('journal',null);showWorkspaceTab('todo');closeGlobalSearch()`)).join('');
+            `showTab('journal',null);showWorkspaceTab('calendar');closeGlobalSearch()`)).join('');
         html += `<div class="cp-divider"></div>`;
     }
 
@@ -332,11 +330,11 @@ function runGlobalSearch() {
         (s.topic||'').toLowerCase().includes(q) || (s.notes||'').toLowerCase().includes(q)
     ).slice(0, 4);
     if (sHits.length) {
-        html += `<div class="cp-section">Study List</div>`;
+        html += `<div class="cp-section">Reading List</div>`;
         html += sHits.map(s => _cpItemHTML('#eff6ff', stColor[s.status]||'#64748b',
             '<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>',
             s.topic, `${s.type||''} · ${s.status||''}`,
-            `showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch()`)).join('');
+            `showTab('journal',null);showWorkspaceTab('reading');closeGlobalSearch()`)).join('');
     }
 
     if (!html) {
@@ -3654,15 +3652,14 @@ let activeWorkspaceTab = 'journal';
 
 function showWorkspaceTab(tab) {
     activeWorkspaceTab = tab;
-    // Mobile: show section header, hide grid
     let wsGrid = document.getElementById('wsGrid');
     let wsSectionHeader = document.getElementById('wsSectionHeader');
     let wsSectionLabel  = document.getElementById('wsSectionLabel');
     if (wsGrid) wsGrid.style.display = 'none';
     if (wsSectionHeader) { wsSectionHeader.style.display = 'flex'; wsSectionHeader.classList.add('active'); }
-    const WS_LABELS = { calendar:'📅 Calendar', journal:'📓 Journal', todo:'✅ To-Do', notes:'📌 Notes', study:'📚 Study List', fellowship:'🎓 Fellowship', duty:'⏰ Duty Hours', ite:'📊 OKAP', compl:'⚠️ Complications', didactics:'📖 Didactics', wellness:'💆 Wellness', qbank:'📝 Question Bank' };
+    const WS_LABELS = { calendar:'📅 Missions', journal:'📓 Journal', notes:'📌 Notes', study:'📝 Study', reading:'📚 Reading', fellowship:'🎓 Match', duty:'⏰ Duty Hours', compl:'⚠️ Complications', wellness:'💆 Wellness' };
     if (wsSectionLabel) wsSectionLabel.textContent = WS_LABELS[tab] || tab;
-    ['calendar','journal','todo','notes','study','fellowship','duty','ite','compl','didactics','wellness','qbank'].forEach(t => {
+    ['calendar','journal','notes','study','reading','fellowship','duty','compl','wellness'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = t === tab ? 'block' : 'none';
         let btn = document.getElementById('ws-tab-'+t);
@@ -3680,16 +3677,35 @@ function showWorkspaceTab(tab) {
     });
     if (tab === 'calendar')   { if (calView === 'week') renderWeekView(); else renderCalendar(); }
     if (tab === 'journal')    renderJournalList();
-    if (tab === 'todo')       renderTodos();
     if (tab === 'notes')      renderNotes();
-    if (tab === 'study')      renderStudyList();
+    if (tab === 'study')      showStudySubTab('qbank');
+    if (tab === 'reading')    renderStudyList();
     if (tab === 'fellowship') { showFpTab('pipeline'); }
     if (tab === 'duty')       renderDutyHours();
-    if (tab === 'ite')        renderIteScores();
     if (tab === 'compl')      renderCompls();
-    if (tab === 'didactics')  renderDidactics();
     if (tab === 'wellness')   renderWellness();
-    if (tab === 'qbank')      renderQbankHome();
+}
+
+function showStudySubTab(sub) {
+    ['qbank','okap','didactics'].forEach(s => {
+        let el = document.getElementById('st-'+s);
+        if (el) el.style.display = s === sub ? 'block' : 'none';
+        let btn = document.getElementById('st-tab-'+s);
+        if (btn) {
+            if (s === sub) {
+                btn.style.background = s === 'qbank' ? '#7c3aed' : s === 'okap' ? '#2563eb' : '#059669';
+                btn.style.color = 'white';
+                btn.style.boxShadow = '0 1px 4px rgba(0,0,0,0.12)';
+            } else {
+                btn.style.background = 'transparent';
+                btn.style.color = '#64748b';
+                btn.style.boxShadow = 'none';
+            }
+        }
+    });
+    if (sub === 'qbank')     renderQbankHome();
+    if (sub === 'okap')      renderIteScores();
+    if (sub === 'didactics') renderDidactics();
 }
 
 function backToWsGrid() {
@@ -3697,8 +3713,7 @@ function backToWsGrid() {
     let wsSectionHeader = document.getElementById('wsSectionHeader');
     if (wsGrid) wsGrid.style.display = 'grid';
     if (wsSectionHeader) { wsSectionHeader.style.display = 'none'; wsSectionHeader.classList.remove('active'); }
-    // Hide all workspace panels
-    ['calendar','journal','todo','notes','study','fellowship','duty','ite','compl','didactics','wellness','qbank'].forEach(t => {
+    ['calendar','journal','notes','study','reading','fellowship','duty','compl','wellness'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = 'none';
         let btn = document.getElementById('ws-tab-'+t);
@@ -4147,8 +4162,6 @@ function formatTime(t) {
     return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${ampm}`;
 }
 
-let selectedEventType = 'clinic';
-
 function openEventModal(date, id) {
     let ev = id ? getEvents().find(e => e.id === id) : null;
     document.getElementById('eventId').value    = ev ? ev.id : '';
@@ -4156,32 +4169,20 @@ function openEventModal(date, id) {
     document.getElementById('eventDate').value  = ev ? ev.date : (date || (selectedCalDate || getTodayStr()));
     document.getElementById('eventTime').value  = ev ? (ev.time || '') : '';
     document.getElementById('eventNotes').value = ev ? (ev.notes || '') : '';
-    selectedEventType = ev ? ev.type : 'clinic';
-    updateEventTypeButtons();
     document.getElementById('eventModal').style.display = 'flex';
     setTimeout(() => document.getElementById('eventTitle').focus(), 100);
 }
 function closeEventModal() { document.getElementById('eventModal').style.display = 'none'; }
 
-function selectEventType(t) { selectedEventType = t; updateEventTypeButtons(); }
-function updateEventTypeButtons() {
-    ['clinic','meeting','or','education','personal'].forEach(t => {
-        let btn = document.getElementById('et-'+t);
-        if (!btn) return;
-        btn.style.borderColor = t === selectedEventType ? '#2563eb' : '#e2e8f0';
-        btn.style.transform   = t === selectedEventType ? 'scale(1.05)' : 'scale(1)';
-    });
-}
-
 function saveEvent() {
     let title = document.getElementById('eventTitle').value.trim();
     let date  = document.getElementById('eventDate').value;
-    if (!title) { showToast('⚠️ Enter a title', 'warning'); return; }
+    if (!title) { showToast('⚠️ Enter a mission title', 'warning'); return; }
     if (!date)  { showToast('⚠️ Pick a date', 'warning'); return; }
 
     let events = getEvents();
     let id     = document.getElementById('eventId').value;
-    let ev     = { id: id || crypto.randomUUID(), title, date, time: document.getElementById('eventTime').value || null, type: selectedEventType, notes: document.getElementById('eventNotes').value.trim(), createdAt: new Date().toISOString() };
+    let ev     = { id: id || crypto.randomUUID(), title, date, time: document.getElementById('eventTime').value || null, notes: document.getElementById('eventNotes').value.trim(), createdAt: new Date().toISOString() };
 
     if (id) { let idx = events.findIndex(e => e.id === id); if (idx !== -1) events[idx] = ev; else events.push(ev); }
     else events.push(ev);
@@ -4888,7 +4889,7 @@ function _jLinkNavigate(type, id) {
         }, 150);
     } else if (type === 'study') {
         showTab('journal', null);
-        showWorkspaceTab('study');
+        showWorkspaceTab('reading');
     }
 }
 
