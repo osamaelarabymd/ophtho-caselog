@@ -3657,9 +3657,9 @@ function showWorkspaceTab(tab) {
     let wsSectionLabel  = document.getElementById('wsSectionLabel');
     if (wsGrid) wsGrid.style.display = 'none';
     if (wsSectionHeader) { wsSectionHeader.style.display = 'flex'; wsSectionHeader.classList.add('active'); }
-    const WS_LABELS = { calendar:'📅 Missions', journal:'📓 Journal', notes:'📌 Notes', study:'📝 Study', reading:'📚 Reading', fellowship:'🎓 Match', duty:'⏰ Duty Hours', compl:'⚠️ Complications', wellness:'💆 Wellness' };
+    const WS_LABELS = { calendar:'📅 Missions', journal:'📓 Journal', notes:'📌 Notes', study:'📝 Study', reading:'📚 Reading', fellowship:'🎓 Match', duty:'⏰ Duty Hours', compl:'⚠️ Complications', wellness:'💆 Wellness', fitness:'💪 Fitness' };
     if (wsSectionLabel) wsSectionLabel.textContent = WS_LABELS[tab] || tab;
-    ['calendar','journal','notes','study','reading','fellowship','duty','compl','wellness'].forEach(t => {
+    ['calendar','journal','notes','study','reading','fellowship','duty','compl','wellness','fitness'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = t === tab ? 'block' : 'none';
         let btn = document.getElementById('ws-tab-'+t);
@@ -3684,6 +3684,7 @@ function showWorkspaceTab(tab) {
     if (tab === 'duty')       renderDutyHours();
     if (tab === 'compl')      renderCompls();
     if (tab === 'wellness')   renderWellness();
+    if (tab === 'fitness')    renderFitness();
 }
 
 function showStudySubTab(sub) {
@@ -3713,7 +3714,7 @@ function backToWsGrid() {
     let wsSectionHeader = document.getElementById('wsSectionHeader');
     if (wsGrid) wsGrid.style.display = 'grid';
     if (wsSectionHeader) { wsSectionHeader.style.display = 'none'; wsSectionHeader.classList.remove('active'); }
-    ['calendar','journal','notes','study','reading','fellowship','duty','compl','wellness'].forEach(t => {
+    ['calendar','journal','notes','study','reading','fellowship','duty','compl','wellness','fitness'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = 'none';
         let btn = document.getElementById('ws-tab-'+t);
@@ -4295,21 +4296,202 @@ function setJournalTypeFilter(type) {
 }
 
 function showJournalView(view) {
-    let listEl     = document.getElementById('journalList');
-    let insightsEl = document.getElementById('journalInsights');
-    let listBtn    = document.getElementById('jv-list');
-    let insBtn     = document.getElementById('jv-insights');
-    if (!listEl || !insightsEl) return;
+    let listEl   = document.getElementById('journalList');
+    let insEl    = document.getElementById('journalInsights');
+    let weekEl   = document.getElementById('journalWeekReport');
+    let listBtn  = document.getElementById('jv-list');
+    let insBtn   = document.getElementById('jv-insights');
+    let weekBtn  = document.getElementById('jv-week');
+    if (!listEl) return;
+
+    // Reset all panels and buttons
+    [listEl, insEl, weekEl].forEach(el => { if (el) el.style.display = 'none'; });
+    [listBtn, insBtn, weekBtn].forEach(btn => {
+        if (btn) { btn.style.background = 'transparent'; btn.style.color = '#64748b'; btn.style.boxShadow = 'none'; }
+    });
+
     if (view === 'insights') {
-        listEl.style.display = 'none'; insightsEl.style.display = 'block';
-        listBtn.style.background = 'transparent'; listBtn.style.color = '#64748b'; listBtn.style.boxShadow = 'none';
-        insBtn.style.background  = '#0f172a';      insBtn.style.color  = 'white';   insBtn.style.boxShadow  = '0 1px 3px rgba(0,0,0,0.15)';
+        insEl.style.display = 'block';
+        insBtn.style.background = '#0f172a'; insBtn.style.color = 'white'; insBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15)';
         renderJournalInsights();
+    } else if (view === 'week') {
+        weekEl.style.display = 'block';
+        weekBtn.style.background = '#0f172a'; weekBtn.style.color = 'white'; weekBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15)';
+        renderWeeklyReport();
     } else {
-        listEl.style.display = 'block'; insightsEl.style.display = 'none';
-        listBtn.style.background = '#0f172a';      listBtn.style.color = 'white';   listBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15)';
-        insBtn.style.background  = 'transparent';  insBtn.style.color  = '#64748b'; insBtn.style.boxShadow  = 'none';
+        listEl.style.display = 'block';
+        listBtn.style.background = '#0f172a'; listBtn.style.color = 'white'; listBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15)';
     }
+}
+
+function renderWeeklyReport() {
+    let el = document.getElementById('journalWeekReport');
+    if (!el) return;
+
+    // Week bounds (Mon–Sun)
+    let todayStr = getTodayStr();
+    let today    = new Date(todayStr + 'T12:00:00');
+    let dow      = today.getDay();
+    let monday   = new Date(today); monday.setDate(today.getDate() - ((dow + 6) % 7));
+    let sunday   = new Date(monday); sunday.setDate(monday.getDate() + 6);
+    let monISO   = monday.toLocaleDateString('en-CA');
+    let sunISO   = sunday.toLocaleDateString('en-CA');
+    let fmt      = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+
+    const inRange = date => date && date >= monISO && date <= sunISO;
+
+    // ── Collect all section data ──
+    let cases      = allCases.filter(c => inRange(c.date));
+    let missions   = JSON.parse(localStorage.getItem('calEvents') || '[]').filter(e => inRange(e.date));
+    let todos      = JSON.parse(localStorage.getItem('eyeTodos')  || '[]').filter(t => t.done && inRange(t.doneAt?.slice(0,10)));
+    let journals   = getJournalEntries().filter(e => inRange(e.date));
+    let notes      = JSON.parse(localStorage.getItem('eyeNotes')  || '[]').filter(n => inRange(n.date || n.createdAt?.slice(0,10)));
+    let didactics  = getDidactics().filter(d => inRange(d.date));
+    let duty       = JSON.parse(localStorage.getItem('eyeDutyShifts') || '[]').filter(s => inRange(s.date));
+    let wellness   = getWellness().filter(w => inRange(w.date));
+    let fitness    = getFitness().filter(f => inRange(f.date));
+
+    // ── Summary numbers ──
+    let primaryCases = cases.filter(c => c.role === 'Primary Surgeon').length;
+    let dutyHrs      = duty.reduce((s, d) => s + (parseFloat(d.hours) || 0), 0);
+    let fitnessMins  = fitness.reduce((s, f) => s + (f.duration || 0), 0);
+    let avgWellness  = wellness.length ? Math.round(wellness.reduce((s, w) => s + (w.wellbeing || 0), 0) / wellness.length * 10) / 10 : null;
+
+    const section = (icon, title, color, content) => content ? `
+        <div style="background:white;border:1.5px solid #f1f5f9;border-radius:14px;padding:14px 16px;margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px">${icon} ${title}</div>
+            ${content}
+        </div>` : '';
+
+    const pill = (text, color, bg) =>
+        `<span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;color:${color};background:${bg};margin:2px 3px 2px 0">${text}</span>`;
+
+    const row = (label, val) =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f8fafc;font-size:13px">
+            <span style="color:#374151">${label}</span>
+            <span style="font-weight:700;color:#0f172a">${val}</span>
+        </div>`;
+
+    // Cases section
+    let casesHtml = cases.length ? cases.sort((a,b) => a.date > b.date ? 1 : -1).map(c =>
+        `<div style="padding:5px 0;border-bottom:1px solid #f8fafc;font-size:13px;display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">${c.role === 'Primary Surgeon' ? '🔵' : c.role === 'Assistant' ? '⚪' : '👁️'}</span>
+            <div>
+                <div style="font-weight:600;color:#0f172a">${c.procedure || 'Unknown'}</div>
+                <div style="font-size:11px;color:#94a3b8">${new Date(c.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}${c.attending ? ' · ' + c.attending : ''}</div>
+            </div>
+        </div>`).join('') : '';
+
+    // Missions section
+    let missionsHtml = missions.length ? missions.map(m =>
+        `<div style="padding:5px 0;border-bottom:1px solid #f8fafc;font-size:13px;display:flex;align-items:center;gap:8px">
+            <span style="font-size:14px">📌</span>
+            <div>
+                <span style="font-weight:600;color:#0f172a">${m.title}</span>
+                <span style="font-size:11px;color:#94a3b8;margin-left:8px">${new Date(m.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}${m.time ? ' ' + m.time : ''}</span>
+            </div>
+        </div>`).join('') : '';
+
+    // Completed todos
+    let todosHtml = todos.length ? todos.map(t =>
+        `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f8fafc;font-size:13px">
+            <span style="color:#16a34a">✓</span>
+            <span style="color:#374151">${t.text}</span>
+        </div>`).join('') : '';
+
+    // Journal entries
+    let journalsHtml = journals.length ? journals.map(e => {
+        let et = ENTRY_TYPES[e.type || 'personal'] || ENTRY_TYPES.personal;
+        let words = (e.body||'').replace(/<[^>]*>/g,' ').split(/\s+/).filter(Boolean).length;
+        return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f8fafc;font-size:13px;cursor:pointer" onclick="openJournalModal('${e.id}')">
+            <span style="font-size:16px">${e.mood || '😊'}</span>
+            <div style="flex:1">
+                <span style="font-weight:600;color:#0f172a">${e.title || 'Journal Entry'}</span>
+                <span style="display:inline-block;padding:1px 7px;border-radius:20px;font-size:10px;font-weight:700;color:${et.color};background:${et.bg};margin-left:6px">${et.icon} ${et.label}</span>
+            </div>
+            <span style="font-size:11px;color:#94a3b8">${words}w</span>
+        </div>`;
+    }).join('') : '';
+
+    // Notes section
+    let notesHtml = notes.length ? notes.map(n =>
+        `<div style="padding:5px 0;border-bottom:1px solid #f8fafc;font-size:13px">
+            <span style="font-weight:600;color:#0f172a">${n.title || 'Note'}</span>
+            ${n.content ? `<div style="font-size:11px;color:#64748b;margin-top:2px">${(n.content||'').replace(/<[^>]*>/g,' ').slice(0,80)}…</div>` : ''}
+        </div>`).join('') : '';
+
+    // Didactics section
+    let didacticsHtml = didactics.length ? didactics.map(d =>
+        `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f8fafc;font-size:13px">
+            <span style="font-size:14px">🎤</span>
+            <div><span style="font-weight:600;color:#0f172a">${d.title || d.type || 'Session'}</span>
+            ${d.speaker ? `<span style="font-size:11px;color:#94a3b8;margin-left:6px">— ${d.speaker}</span>` : ''}</div>
+        </div>`).join('') : '';
+
+    // Fitness section
+    let fitnessHtml = fitness.length ? fitness.map(f => {
+        let ft = FITNESS_TYPES[f.type] || FITNESS_TYPES.other;
+        return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid #f8fafc;font-size:13px">
+            <span style="font-size:18px">${ft.icon}</span>
+            <div>
+                <span style="font-weight:600;color:#0f172a">${ft.label}${f.details ? ' — ' + f.details : ''}</span>
+                <span style="font-size:11px;color:#94a3b8;margin-left:6px">${f.duration}min</span>
+            </div>
+        </div>`;
+    }).join('') : '';
+
+    // Wellness section
+    let wellnessHtml = wellness.length ? wellness.map(w =>
+        `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid #f8fafc;font-size:13px">
+            <div style="width:28px;height:28px;border-radius:8px;background:${w.wellbeing >= 8 ? '#f0fdf4' : w.wellbeing >= 5 ? '#fffbeb' : '#fef2f2'};border:1.5px solid ${w.wellbeing >= 8 ? '#86efac' : w.wellbeing >= 5 ? '#fde68a' : '#fca5a5'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:${w.wellbeing >= 8 ? '#16a34a' : w.wellbeing >= 5 ? '#d97706' : '#dc2626'};flex-shrink:0">${w.wellbeing || '–'}</div>
+            <div>
+                <span style="font-size:11px;color:#94a3b8">${new Date(w.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</span>
+                ${w.win ? `<div style="font-size:12px;color:#374151;font-style:italic">🏆 ${w.win}</div>` : ''}
+                ${w.stressors?.length ? `<div style="font-size:11px;color:#94a3b8">Stressors: ${w.stressors.join(', ')}</div>` : ''}
+            </div>
+        </div>`).join('') : '';
+
+    // Duty hours
+    let dutyHtml = duty.length ? row('Shifts logged', duty.length) + row('Total hours', dutyHrs.toFixed(1) + 'h') : '';
+
+    el.innerHTML = `
+    <!-- Week header -->
+    <div style="background:linear-gradient(135deg,#0f172a,#1e40af);border-radius:16px;padding:18px 20px;margin-bottom:14px;color:white">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:0.7;margin-bottom:4px">Weekly Report</div>
+        <div style="font-size:18px;font-weight:800;margin-bottom:12px">${fmt(monday)} – ${fmt(sunday)}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${pill(`${cases.length} cases`, 'white', 'rgba(255,255,255,0.15)')}
+            ${pill(`${primaryCases} primary`, 'white', 'rgba(255,255,255,0.15)')}
+            ${missions.length ? pill(`${missions.length} missions`, 'white', 'rgba(255,255,255,0.15)') : ''}
+            ${todos.length ? pill(`${todos.length} tasks done`, 'white', 'rgba(255,255,255,0.15)') : ''}
+            ${journals.length ? pill(`${journals.length} journal entries`, 'white', 'rgba(255,255,255,0.15)') : ''}
+            ${fitness.length ? pill(`${fitness.length} workouts · ${fitnessMins}min`, 'white', 'rgba(255,255,255,0.15)') : ''}
+            ${avgWellness !== null ? pill(`Wellness ${avgWellness}/10`, 'white', 'rgba(255,255,255,0.15)') : ''}
+            ${dutyHrs > 0 ? pill(`${dutyHrs.toFixed(0)}h duty`, 'white', 'rgba(255,255,255,0.15)') : ''}
+        </div>
+    </div>
+
+    ${section('🔬', 'Cases Logged', '#7c3aed', casesHtml)}
+    ${section('📌', 'Missions', '#ca8a04', missionsHtml)}
+    ${section('✅', 'Tasks Completed', '#16a34a', todosHtml)}
+    ${section('📓', 'Journal Entries', '#7c3aed', journalsHtml)}
+    ${section('📌', 'Notes Added', '#059669', notesHtml)}
+    ${section('🎤', 'Didactics & Education', '#2563eb', didacticsHtml)}
+    ${section('💪', 'Fitness', '#e11d48', fitnessHtml)}
+    ${section('💆', 'Wellness Check-ins', '#ec4899', wellnessHtml)}
+    ${dutyHrs > 0 ? section('⏰', 'Duty Hours', '#d97706', dutyHtml) : ''}
+
+    ${!cases.length && !missions.length && !journals.length && !fitness.length ? `
+    <div style="text-align:center;padding:40px 20px;color:#94a3b8">
+        <div style="font-size:36px;margin-bottom:10px">📅</div>
+        <p style="font-size:14px;font-weight:600;color:#64748b">Nothing logged this week yet</p>
+        <p style="font-size:13px">Start logging cases, missions, and journal entries</p>
+    </div>` : ''}
+
+    <button onclick="showTab('journal',null);showWorkspaceTab('journal');setTimeout(()=>{openJournalModal();setTimeout(()=>{selectEntryType('weekly',true)},80)},100)"
+        style="width:100%;margin:14px 0 0;background:#0f172a;color:white;border:none;border-radius:12px;font-size:14px;font-weight:700;padding:13px">
+        ✍️ Write Weekly Review Entry
+    </button>`;
 }
 
 function openJournalWithPrompt() {
@@ -4968,9 +5150,40 @@ function applyJournalTemplate(tpl) {
         selectedWeeklyRating = 0;
         setWeeklyRating(0);
 
+        // Missions for the week
+        let weekMissions = JSON.parse(localStorage.getItem('calEvents') || '[]').filter(e => e.date >= monISO && e.date <= sunISO);
+        let missionLines = weekMissions.length === 0 ? '' : '<h3>📌 Missions</h3><ul>' +
+            weekMissions.map(m => `<li>${m.title}${m.time ? ' (' + m.time + ')' : ''}</li>`).join('') + '</ul>';
+
+        // Completed todos
+        let weekTodos = JSON.parse(localStorage.getItem('eyeTodos') || '[]').filter(t => t.done && t.doneAt && t.doneAt.slice(0,10) >= monISO && t.doneAt.slice(0,10) <= sunISO);
+        let todoLines = weekTodos.length === 0 ? '' : '<h3>✅ Tasks Completed</h3><ul>' +
+            weekTodos.map(t => `<li>${t.text}</li>`).join('') + '</ul>';
+
+        // Fitness for the week
+        let weekFitness = getFitness().filter(f => f.date >= monISO && f.date <= sunISO);
+        let fitnessMins = weekFitness.reduce((s, f) => s + (f.duration || 0), 0);
+        let fitnessLines = weekFitness.length === 0 ? '' : '<h3>💪 Fitness</h3><ul>' +
+            weekFitness.map(f => { let ft = FITNESS_TYPES[f.type] || FITNESS_TYPES.other; return `<li>${ft.icon} ${ft.label}${f.details ? ' — ' + f.details : ''} (${f.duration}min)</li>`; }).join('') + '</ul>';
+
+        // Didactics for the week
+        let weekDidactics = getDidactics().filter(d => d.date >= monISO && d.date <= sunISO);
+        let didacticsLines = weekDidactics.length === 0 ? '' : '<h3>🎤 Education</h3><ul>' +
+            weekDidactics.map(d => `<li>${d.title || d.type || 'Session'}${d.speaker ? ' — ' + d.speaker : ''}</li>`).join('') + '</ul>';
+
+        // Wellness average
+        let weekWellness = getWellness().filter(w => w.date >= monISO && w.date <= sunISO);
+        let avgWell = weekWellness.length ? (weekWellness.reduce((s, w) => s + (w.wellbeing || 0), 0) / weekWellness.length).toFixed(1) : null;
+        let wellnessLine = avgWell !== null ? `<p><strong>💆 Avg Wellbeing:</strong> ${avgWell}/10 over ${weekWellness.length} check-in${weekWellness.length !== 1 ? 's' : ''}</p>` : '';
+
         content = `<h3>Weekly Review — ${fmt(monday)} to ${fmt(sunday)}</h3>
-<p><strong>📊 Stats:</strong> ${weekCases.length} case${weekCases.length!==1?'s':''} · ${primary} primary · ${weekJournals.length} journal entr${weekJournals.length!==1?'ies':'y'}</p>
-<h3>Cases Logged</h3><ul>${caseLines}</ul>
+<p><strong>📊 Stats:</strong> ${weekCases.length} case${weekCases.length!==1?'s':''} · ${primary} primary · ${weekJournals.length} journal entr${weekJournals.length!==1?'ies':'y'}${weekFitness.length ? ' · ' + weekFitness.length + ' workout' + (weekFitness.length!==1?'s':'') + ' (' + fitnessMins + 'min)' : ''}${avgWell ? ' · Wellness ' + avgWell + '/10' : ''}</p>
+<h3>🔬 Cases Logged</h3><ul>${caseLines}</ul>
+${missionLines}
+${todoLines}
+${didacticsLines}
+${fitnessLines}
+${wellnessLine}
 <h3>🏆 Biggest Win This Week</h3><p></p>
 <h3>😤 Hardest Moment</h3><p></p>
 <h3>🔁 What I'd Do Differently</h3><p></p>
@@ -5161,6 +5374,185 @@ function _jLinkNavigate(type, id) {
         showTab('journal', null);
         showWorkspaceTab('reading');
     }
+}
+
+// ── Fitness Tracker ───────────────────────────────────────────────────────────
+const FITNESS_KEY = 'eyeFitness';
+const FITNESS_TYPES = {
+    run:     { label:'Run',     icon:'🏃', color:'#16a34a', bg:'#f0fdf4', border:'#bbf7d0' },
+    lift:    { label:'Lift',    icon:'🏋️', color:'#7c3aed', bg:'#faf5ff', border:'#ddd6fe' },
+    cardio:  { label:'Cardio',  icon:'❤️', color:'#dc2626', bg:'#fef2f2', border:'#fecaca' },
+    yoga:    { label:'Yoga',    icon:'🧘', color:'#0891b2', bg:'#ecfeff', border:'#a5f3fc' },
+    cycling: { label:'Cycling', icon:'🚴', color:'#d97706', bg:'#fffbeb', border:'#fde68a' },
+    walk:    { label:'Walk',    icon:'🚶', color:'#059669', bg:'#ecfdf5', border:'#a7f3d0' },
+    hiit:    { label:'HIIT',    icon:'⚡', color:'#ea580c', bg:'#fff7ed', border:'#fed7aa' },
+    swim:    { label:'Swim',    icon:'🏊', color:'#2563eb', bg:'#eff6ff', border:'#bfdbfe' },
+    other:   { label:'Other',   icon:'💪', color:'#64748b', bg:'#f8fafc', border:'#e2e8f0' },
+};
+
+function getFitness()        { return JSON.parse(localStorage.getItem(FITNESS_KEY) || '[]'); }
+function saveFitness_(arr)   { localStorage.setItem(FITNESS_KEY, JSON.stringify(arr)); }
+
+let selectedFitnessType  = 'run';
+let activeFitnessFilter  = '';
+
+function selectFitnessType(type) {
+    selectedFitnessType = type;
+    document.querySelectorAll('.fitness-type-btn').forEach(btn => {
+        btn.style.background  = '#f8fafc';
+        btn.style.color       = '#64748b';
+        btn.style.borderColor = '#e2e8f0';
+    });
+    let active = document.getElementById('ft-' + type);
+    if (active) {
+        let t = FITNESS_TYPES[type] || FITNESS_TYPES.other;
+        active.style.background  = t.bg;
+        active.style.color       = t.color;
+        active.style.borderColor = t.border;
+    }
+}
+
+function setFitnessFilter(type) {
+    activeFitnessFilter = type;
+    const all = ['', 'run', 'lift', 'cardio', 'yoga', 'cycling', 'walk', 'hiit', 'swim'];
+    all.forEach(t => {
+        let btn = document.getElementById('ff-' + (t || 'all'));
+        if (!btn) return;
+        if (t === type) {
+            if (!t) { btn.style.background = '#0f172a'; btn.style.color = 'white'; btn.style.borderColor = '#0f172a'; }
+            else { let ft = FITNESS_TYPES[t]; btn.style.background = ft.bg; btn.style.color = ft.color; btn.style.borderColor = ft.border; }
+        } else {
+            btn.style.background = 'white'; btn.style.color = '#64748b'; btn.style.borderColor = '#e2e8f0';
+        }
+    });
+    renderFitness();
+}
+
+function openFitnessModal(id) {
+    let w = id ? getFitness().find(e => e.id === id) : null;
+    document.getElementById('fitnessId').value       = w ? w.id : '';
+    document.getElementById('fitnessDate').value     = w ? w.date : getTodayStr();
+    document.getElementById('fitnessDuration').value = w ? (w.duration || '') : '';
+    document.getElementById('fitnessDetails').value  = w ? (w.details || '') : '';
+    document.getElementById('fitnessNotes').value    = w ? (w.notes || '') : '';
+    selectFitnessType(w ? (w.type || 'run') : 'run');
+    document.getElementById('fitnessModal').style.display = 'flex';
+}
+
+function closeFitnessModal() {
+    document.getElementById('fitnessModal').style.display = 'none';
+}
+
+function saveFitnessEntry() {
+    let date     = document.getElementById('fitnessDate').value || getTodayStr();
+    let duration = parseInt(document.getElementById('fitnessDuration').value) || 0;
+    let details  = document.getElementById('fitnessDetails').value.trim();
+    let notes    = document.getElementById('fitnessNotes').value.trim();
+    let id       = document.getElementById('fitnessId').value;
+
+    if (!duration) { showToast('Enter a duration', 'warning'); return; }
+
+    let entry = { id: id || crypto.randomUUID(), date, type: selectedFitnessType, duration, details, notes, createdAt: new Date().toISOString() };
+    let arr   = getFitness();
+    if (id) { let i = arr.findIndex(e => e.id === id); if (i !== -1) arr[i] = entry; else arr.unshift(entry); }
+    else arr.unshift(entry);
+
+    saveFitness_(arr);
+    closeFitnessModal();
+    renderFitness();
+    showToast('💪 Workout logged!');
+}
+
+function deleteFitnessEntry(id) {
+    if (!confirm('Delete this workout?')) return;
+    saveFitness_(getFitness().filter(e => e.id !== id));
+    renderFitness();
+    showToast('🗑️ Workout deleted', 'warning');
+}
+
+function renderFitnessStats() {
+    let el = document.getElementById('fitnessStats');
+    if (!el) return;
+    let all     = getFitness();
+    let today   = getTodayStr();
+    let weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 6);
+    let weekISO = weekAgo.toISOString().slice(0, 10);
+    let thisWeek   = all.filter(e => e.date >= weekISO && e.date <= today);
+    let totalMins  = all.reduce((s, e) => s + (e.duration || 0), 0);
+    let weekMins   = thisWeek.reduce((s, e) => s + (e.duration || 0), 0);
+
+    // Streak
+    let dateSet = new Set(all.map(e => e.date));
+    let streak  = 0;
+    let cur     = new Date(today + 'T12:00:00');
+    while (dateSet.has(cur.toISOString().slice(0, 10))) { streak++; cur.setDate(cur.getDate() - 1); }
+
+    const stat = (val, label, color) =>
+        `<div style="flex-shrink:0;background:white;border:1.5px solid #f1f5f9;border-radius:12px;padding:10px 14px;text-align:center;min-width:72px">
+            <div style="font-size:20px;font-weight:800;color:${color};line-height:1">${val}</div>
+            <div style="font-size:10px;font-weight:600;color:#94a3b8;margin-top:2px;white-space:nowrap">${label}</div>
+        </div>`;
+
+    el.innerHTML =
+        stat(thisWeek.length, 'This Week', '#e11d48') +
+        stat(streak, 'Day Streak', streak >= 7 ? '#f59e0b' : streak >= 3 ? '#e11d48' : '#94a3b8') +
+        stat(weekMins, 'Mins/Week', '#7c3aed') +
+        stat(totalMins >= 1000 ? Math.round(totalMins / 60) + 'h' : totalMins + 'm', 'Total Time', '#2563eb');
+}
+
+function renderFitness() {
+    let el = document.getElementById('fitnessList');
+    if (!el) return;
+    renderFitnessStats();
+
+    let entries = getFitness();
+    if (activeFitnessFilter) entries = entries.filter(e => e.type === activeFitnessFilter);
+
+    if (!entries.length) {
+        el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:#94a3b8">
+            <div style="font-size:40px;margin-bottom:10px">🏃</div>
+            <p style="font-size:14px;font-weight:600;color:#64748b;margin-bottom:6px">${activeFitnessFilter ? 'No workouts of this type' : 'No workouts yet'}</p>
+            <p style="font-size:13px">Tap <strong>Log Workout</strong> to start tracking</p>
+        </div>`;
+        return;
+    }
+
+    // Group by month
+    let grouped = {};
+    entries.forEach(e => { let k = e.date.slice(0,7); if (!grouped[k]) grouped[k] = []; grouped[k].push(e); });
+
+    let html = '';
+    for (let month of Object.keys(grouped).sort().reverse()) {
+        let label = new Date(month + '-02').toLocaleString('default', { month:'long', year:'numeric' });
+        let monthMins = grouped[month].reduce((s, e) => s + (e.duration || 0), 0);
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px">
+            <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">${label}</span>
+            <span style="font-size:11px;font-weight:600;color:#94a3b8">${grouped[month].length} sessions · ${monthMins}min</span>
+        </div>`;
+        for (let e of grouped[month]) {
+            let ft      = FITNESS_TYPES[e.type] || FITNESS_TYPES.other;
+            let dateStr = new Date(e.date + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+            html += `<div style="background:white;border:1.5px solid #f1f5f9;border-radius:14px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:box-shadow 0.15s,border-color 0.15s"
+                onclick="openFitnessModal('${e.id}')"
+                onmouseover="this.style.boxShadow='0 4px 14px rgba(0,0,0,0.07)';this.style.borderColor='${ft.border}'"
+                onmouseout="this.style.boxShadow='none';this.style.borderColor='#f1f5f9'">
+                <div style="width:42px;height:42px;border-radius:12px;background:${ft.bg};border:1.5px solid ${ft.border};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${ft.icon}</div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:700;font-size:14px;color:#0f172a">${ft.label}${e.details ? ' — ' + e.details : ''}</div>
+                    <div style="font-size:11px;color:#94a3b8;margin-top:2px">${dateStr} · ${e.duration} min</div>
+                    ${e.notes ? `<div style="font-size:12px;color:#64748b;margin-top:4px;font-style:italic">${e.notes}</div>` : ''}
+                </div>
+                <button onclick="event.stopPropagation();deleteFitnessEntry('${e.id}')" style="background:transparent;border:none;color:#d1d5db;padding:4px;margin:0;width:auto;min-width:0;cursor:pointer;line-height:0;border-radius:6px" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#d1d5db'">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                </button>
+            </div>`;
+        }
+    }
+
+    let total = getFitness().length;
+    let totalMin = getFitness().reduce((s, e) => s + (e.duration || 0), 0);
+    html += `<div style="text-align:center;padding:16px;color:#94a3b8;font-size:12px;margin-top:4px">${total} workout${total !== 1 ? 's' : ''} · ${Math.round(totalMin / 60)}h ${totalMin % 60}m total</div>`;
+    el.innerHTML = html;
 }
 
 // ── To-Do ─────────────────────────────────────────────────────────────────────

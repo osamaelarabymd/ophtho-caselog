@@ -1242,6 +1242,10 @@
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                     <span style="color:#ec4899">Wellness</span>
                 </button>
+                <button class="ws-grid-card" onclick="showWorkspaceTab('fitness')" style="background:#fff1f2;border-color:#fecdd3">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+                    <span style="color:#e11d48">Fitness</span>
+                </button>
                 <button class="ws-grid-card" onclick="showWorkspaceTab('fellowship')" style="background:#0f172a;border-color:#0f172a">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
                     <span style="color:white">Match</span>
@@ -1258,6 +1262,7 @@
                     <button id="ws-tab-duty"       onclick="showWorkspaceTab('duty')"       class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Hours</button>
                     <button id="ws-tab-compl"      onclick="showWorkspaceTab('compl')"      class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Compl.</button>
                     <button id="ws-tab-wellness"   onclick="showWorkspaceTab('wellness')"   class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Well.</button>
+                    <button id="ws-tab-fitness"    onclick="showWorkspaceTab('fitness')"    class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>Fitness</button>
                     <button id="ws-tab-fellowship" onclick="showWorkspaceTab('fellowship')" class="ws-tab" style="flex:0 0 auto;width:52px;margin:0;border-radius:10px;padding:9px 2px;font-size:11px;font-weight:700;background:transparent;color:#64748b;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>Match</button>
                 </div>
             </div>
@@ -1310,8 +1315,9 @@
                     <input type="text" id="journalSearch" placeholder="Search entries…" oninput="renderJournalList()" style="flex:1;margin:0;padding:10px 14px;border-radius:12px;font-size:13px;min-width:80px">
                     <select id="journalMoodFilter" onchange="renderJournalList()" style="display:none"><option value="">All Moods</option><option value="💪">💪</option><option value="😊">😊</option><option value="😐">😐</option><option value="😤">😤</option><option value="🤔">🤔</option></select>
                     <div style="display:flex;gap:0;background:#f1f5f9;border-radius:10px;padding:2px;flex-shrink:0">
-                        <button onclick="showJournalView('list')" id="jv-list" style="padding:7px 12px;border-radius:8px;font-size:11px;font-weight:700;border:none;background:#0f172a;color:white;margin:0;box-shadow:0 1px 3px rgba(0,0,0,0.15)">List</button>
-                        <button onclick="showJournalView('insights')" id="jv-insights" style="padding:7px 12px;border-radius:8px;font-size:11px;font-weight:700;border:none;background:transparent;color:#64748b;margin:0;box-shadow:none">Insights</button>
+                        <button onclick="showJournalView('list')" id="jv-list" style="padding:7px 10px;border-radius:8px;font-size:11px;font-weight:700;border:none;background:#0f172a;color:white;margin:0;box-shadow:0 1px 3px rgba(0,0,0,0.15)">List</button>
+                        <button onclick="showJournalView('insights')" id="jv-insights" style="padding:7px 10px;border-radius:8px;font-size:11px;font-weight:700;border:none;background:transparent;color:#64748b;margin:0;box-shadow:none">Insights</button>
+                        <button onclick="showJournalView('week')" id="jv-week" style="padding:7px 10px;border-radius:8px;font-size:11px;font-weight:700;border:none;background:transparent;color:#64748b;margin:0;box-shadow:none">Week</button>
                     </div>
                     <button onclick="openJournalModal()" style="width:auto;margin:0;padding:10px 14px;font-size:13px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#2563eb);display:flex;align-items:center;gap:6px;flex-shrink:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>New</button>
                 </div>
@@ -1328,6 +1334,7 @@
                 </div>
                 <div id="journalList"></div>
                 <div id="journalInsights" style="display:none"></div>
+                <div id="journalWeekReport" style="display:none"></div>
             </div>
             <!-- Notes section -->
             <div id="ws-notes" style="display:none">
@@ -1527,6 +1534,35 @@
                 <div id="wellnessList"></div>
             </div>
 
+            <!-- Fitness Tracker -->
+            <div id="ws-fitness" style="display:none">
+                <!-- Stats bar -->
+                <div id="fitnessStats" style="display:flex;gap:10px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none"></div>
+                <!-- Toolbar -->
+                <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
+                    <div>
+                        <h3 style="margin:0 0 2px;font-size:16px;font-weight:800;color:#0f172a">Fitness</h3>
+                        <p style="margin:0;font-size:12px;color:#94a3b8">Track workouts · Stay consistent</p>
+                    </div>
+                    <button onclick="openFitnessModal()" style="width:auto;margin:0 0 0 auto;padding:9px 14px;font-size:12px;font-weight:700;border-radius:12px;background:linear-gradient(135deg,#e11d48,#f97316);color:white;border:none;display:flex;align-items:center;gap:6px;flex-shrink:0">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Log Workout
+                    </button>
+                </div>
+                <!-- Type filter chips -->
+                <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none">
+                    <button onclick="setFitnessFilter('')" id="ff-all" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #0f172a;background:#0f172a;color:white;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">All</button>
+                    <button onclick="setFitnessFilter('run')"     id="ff-run"     style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🏃 Run</button>
+                    <button onclick="setFitnessFilter('lift')"    id="ff-lift"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🏋️ Lift</button>
+                    <button onclick="setFitnessFilter('cardio')"  id="ff-cardio"  style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">❤️ Cardio</button>
+                    <button onclick="setFitnessFilter('yoga')"    id="ff-yoga"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🧘 Yoga</button>
+                    <button onclick="setFitnessFilter('cycling')" id="ff-cycling" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🚴 Cycling</button>
+                    <button onclick="setFitnessFilter('walk')"    id="ff-walk"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🚶 Walk</button>
+                    <button onclick="setFitnessFilter('hiit')"    id="ff-hiit"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">⚡ HIIT</button>
+                    <button onclick="setFitnessFilter('swim')"    id="ff-swim"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🏊 Swim</button>
+                </div>
+                <div id="fitnessList"></div>
+            </div>
+
         </div>
 
         <!-- QBank Settings Modal -->
@@ -1646,6 +1682,63 @@
                 <div style="display:flex;gap:8px">
                     <button onclick="saveWellness()" style="flex:1;margin:0;background:linear-gradient(135deg,#ec4899,#8b5cf6);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;padding:11px">Save Check-In</button>
                     <button onclick="closeWellnessModal()" style="width:auto;padding:11px 18px;margin:0;background:#f1f5f9;color:#64748b;border-radius:10px;font-size:14px;font-weight:600;box-shadow:none;border:none">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fitness Modal -->
+        <div id="fitnessModal" class="modal-sheet" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+            <div style="background:white;border-radius:20px;padding:24px 26px;width:92%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.22)">
+                <div class="sheet-handle"></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                    <h2 style="margin:0;font-size:16px;font-weight:700;color:#0f172a">Log Workout</h2>
+                    <button onclick="closeFitnessModal()" style="width:30px;height:30px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;font-size:15px;color:#94a3b8;border:none;box-shadow:none">✕</button>
+                </div>
+                <input type="hidden" id="fitnessId">
+
+                <!-- Date -->
+                <div style="margin-bottom:14px">
+                    <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block">Date</label>
+                    <input type="date" id="fitnessDate" style="margin:0;font-size:13px">
+                </div>
+
+                <!-- Type -->
+                <div style="margin-bottom:14px">
+                    <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;display:block">Type</label>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px" id="fitnessTypeBtns">
+                        <button onclick="selectFitnessType('run')"     id="ft-run"     class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #bbf7d0;background:#f0fdf4;color:#16a34a;font-size:12px;font-weight:700;margin:0;box-shadow:none">🏃 Run</button>
+                        <button onclick="selectFitnessType('lift')"    id="ft-lift"    class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:700;margin:0;box-shadow:none">🏋️ Lift</button>
+                        <button onclick="selectFitnessType('cardio')"  id="ft-cardio"  class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:700;margin:0;box-shadow:none">❤️ Cardio</button>
+                        <button onclick="selectFitnessType('yoga')"    id="ft-yoga"    class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:700;margin:0;box-shadow:none">🧘 Yoga</button>
+                        <button onclick="selectFitnessType('cycling')" id="ft-cycling" class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:700;margin:0;box-shadow:none">🚴 Cycling</button>
+                        <button onclick="selectFitnessType('walk')"    id="ft-walk"    class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:700;margin:0;box-shadow:none">🚶 Walk</button>
+                        <button onclick="selectFitnessType('hiit')"    id="ft-hiit"    class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:700;margin:0;box-shadow:none">⚡ HIIT</button>
+                        <button onclick="selectFitnessType('swim')"    id="ft-swim"    class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:700;margin:0;box-shadow:none">🏊 Swim</button>
+                        <button onclick="selectFitnessType('other')"   id="ft-other"   class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:700;margin:0;box-shadow:none">💪 Other</button>
+                    </div>
+                </div>
+
+                <!-- Duration + Details -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block">Duration (min)</label>
+                        <input type="number" id="fitnessDuration" min="1" max="600" placeholder="e.g. 45" style="margin:0;font-size:13px">
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block">Details <span style="font-weight:400;text-transform:none">(optional)</span></label>
+                        <input type="text" id="fitnessDetails" placeholder="e.g. 5km, 80kg bench" style="margin:0;font-size:13px">
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div style="margin-bottom:20px">
+                    <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block">Notes <span style="font-weight:400;text-transform:none">(optional)</span></label>
+                    <textarea id="fitnessNotes" rows="2" placeholder="How did it feel? Any PRs?" style="width:100%;margin:0;font-size:13px;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;resize:none;font-family:inherit;box-sizing:border-box"></textarea>
+                </div>
+
+                <div style="display:flex;gap:8px">
+                    <button onclick="saveFitnessEntry()" style="flex:1;margin:0;background:linear-gradient(135deg,#e11d48,#f97316);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;padding:11px">Save Workout</button>
+                    <button onclick="closeFitnessModal()" style="width:auto;padding:11px 18px;margin:0;background:#f1f5f9;color:#64748b;border-radius:10px;font-size:14px;font-weight:600;box-shadow:none;border:none">Cancel</button>
                 </div>
             </div>
         </div>
