@@ -1783,11 +1783,145 @@ function updateDashboard(cases) {
     }
 
     // ── New feature widgets
+    renderMotivationCard();
     renderGoalsWidget();
     renderReadinessScore(cases);
     renderWeeklyReviewWidget(cases);
     renderTodayWidget();
     renderActivityHeatmap();
+}
+
+// ── Motivation Card ───────────────────────────────────────────────────────────
+const MOTIVATION_QUOTES = {
+    en: [
+        "The hands remember what the mind forgets. Keep operating.",
+        "Every case you struggle through teaches you more than the ones you nail.",
+        "Residency doesn't build character. It reveals it.",
+        "Complications are just your education arriving unannounced.",
+        "The OR is the one room where ego costs the most.",
+        "Your notes will outlive your memory. Write them well.",
+        "The best surgeons still get nervous before a hard case. That's not weakness — that's respect.",
+        "Post-call you is still sharper than most on their best day.",
+        "Phaco is not a procedure. It's a conversation between you and the eye.",
+        "Every patient who trusts you with their vision is also trusting everyone who ever trained you.",
+        "There is no small procedure for the patient on the table.",
+        "The attending who made you feel most uncomfortable was investing the most in your future.",
+        "You chose the most precise organ in the most complex organism. Precision is not optional.",
+        "The day you stop second-guessing yourself is not the day you became good — it's the day you stopped growing.",
+        "Fellowship will come. But the surgeon you become during residency is the one who earns it.",
+        "Look at every fundus like it's the first one you've ever seen. It might show you something new.",
+        "Sleep deprivation is temporary. A case done well is permanent.",
+        "You are not tired. You are being forged.",
+        "The OR doesn't care how you feel. It only cares what you do.",
+        "One day a patient will see their grandchild's face because of what you learned today.",
+    ],
+    ar: [
+        { q: "العين أمانة، والجراح وصيّها.", t: "The eye is a trust, and the surgeon its guardian." },
+        { q: "اليد تحفظ ما نسيه العقل.", t: "The hand remembers what the mind forgets." },
+        { q: "ما خاب من استشار.", t: "He who seeks counsel does not fail." },
+        { q: "لكل يد ذاكرتها، فلا تتوقف عن التدريب.", t: "Every hand has its memory — never stop training." },
+        { q: "أحسن النظر حتى لا يفوتك المنظر.", t: "Look carefully so nothing escapes your sight." },
+        { q: "الليلة الصعبة تصنع الطبيب الجيد.", t: "A hard night makes a good doctor." },
+        { q: "تعلّم حتى تعلّم.", t: "Learn until you can teach." },
+        { q: "لا يصنع المبضع الجراح، والجراح يصنع المبضع.", t: "The scalpel doesn't make the surgeon; the surgeon makes the scalpel." },
+        { q: "المريض الذي أمّنك على بصره أمّنك على كل شيء.", t: "The patient who trusts you with their sight trusts you with everything." },
+        { q: "من وقف على حافة الخطأ تعلّم أكثر ممن ابتعد عنه.", t: "Those who stood at the edge of error learned more than those who avoided it." },
+        { q: "زد علمًا تزد نورًا، وزد نورًا تزد رؤية.", t: "Add knowledge, add light. Add light, add vision." },
+        { q: "طبيب بلا صبر كسيف بلا حدّة.", t: "A doctor without patience is a sword without an edge." },
+        { q: "لن تمشي مشية الأساتذة حتى تتعثر مشية التلاميذ.", t: "You won't walk like a master until you've stumbled like a student." },
+        { q: "كلما ضاقت الطريق، اتسعت الحكمة.", t: "The narrower the path, the wider the wisdom." },
+        { q: "الإرهاق لا يُطفئ نور العقل إلا عند من سمح له بذلك.", t: "Exhaustion dims the mind only for those who allow it." },
+        { q: "الحكمة تبدأ من اعتراف الطبيب بأنه لا يعلم كل شيء.", t: "Wisdom begins when the doctor admits he doesn't know everything." },
+        { q: "الصبر مفتاح الفرج.", t: "Patience is the key to relief." },
+        { q: "لا تُحسن الجراحة من لم يتعلم من جراحاته.", t: "No one masters surgery without learning from their wounds." },
+        { q: "يومًا ما سيرى مريضك وجه حفيده بسبب ما تتعلمه اليوم.", t: "One day a patient will see their grandchild's face because of what you learn today." },
+        { q: "الطبيب الحقيقي يتعلم من أخطائه أكثر مما يتعلم من نجاحاته.", t: "The true physician learns more from mistakes than from successes." },
+    ],
+    fr: [
+        "L'œil ne ment pas — apprenez à écouter ce qu'il vous dit.",
+        "La résidence forge ce que les années d'école n'ont fait qu'esquisser.",
+        "Ce n'est pas la salle d'opération qui fait le chirurgien — c'est ce qu'il y apporte.",
+        "Chaque complication est un enseignant qui n'a pas pris rendez-vous.",
+        "La main se souvient de ce que l'esprit oublie.",
+        "Opérer, c'est dialoguer avec la matière vivante. Soyez à l'écoute.",
+        "On ne devient pas ophtalmologiste pour voir moins — mais pour voir mieux.",
+        "La confiance du patient est le privilège le plus lourd à porter.",
+        "Un bon chirurgien n'est pas celui qui n'a jamais eu de complications — c'est celui qui les a traversées.",
+        "Le meilleur diagnostic commence par regarder vraiment.",
+        "La fatigue est temporaire. Un geste bien fait est permanent.",
+        "L'ego est l'instrument le plus dangereux en salle d'opération.",
+        "Celui qui cesse de s'interroger cesse d'apprendre.",
+        "Vos notes survivront à votre mémoire. Rédigez-les avec soin.",
+        "Un jour, un patient verra le visage de son petit-enfant grâce à ce que vous apprenez aujourd'hui.",
+    ],
+    es: [
+        "La mano aprende lo que el ojo enseña.",
+        "No hay cirugía pequeña para quien está en la mesa.",
+        "El residente que no duda tampoco aprende.",
+        "Cada guardia es un maestro disfrazado de insomnio.",
+        "La confianza del paciente es el instrumento más delicado del quirófano.",
+        "Ver bien no es suficiente — hay que entender lo que se ve.",
+        "El ojo no miente. Aprende a escuchar lo que te dice.",
+        "La residencia no construye el carácter — lo revela.",
+        "Cada complicación es tu educación llegando sin avisar.",
+        "Los mejores cirujanos que conozco aún se ponen nerviosos antes de un caso difícil.",
+        "El cansancio es temporal. Una cirugía bien hecha es permanente.",
+        "El ego es el instrumento más peligroso en el quirófano.",
+        "Tus notas sobrevivirán a tu memoria. Escríbelas bien.",
+        "Un día un paciente verá la cara de su nieto gracias a lo que aprendes hoy.",
+        "No eres el primero en dudar. Tampoco serás el último. Pero sí puedes ser el mejor.",
+    ],
+};
+
+const QUOTE_LANG_META = {
+    en: { label:'EN', name:'English',  dir:'ltr', accent:'#1e40af', bg:'linear-gradient(135deg,#eff6ff,#e0f2fe)', border:'#bfdbfe' },
+    ar: { label:'ع',  name:'العربية', dir:'rtl', accent:'#92400e', bg:'linear-gradient(135deg,#fffbeb,#fef3c7)', border:'#fde68a' },
+    fr: { label:'FR', name:'Français', dir:'ltr', accent:'#065f46', bg:'linear-gradient(135deg,#ecfdf5,#d1fae5)', border:'#a7f3d0' },
+    es: { label:'ES', name:'Español',  dir:'ltr', accent:'#7c2d12', bg:'linear-gradient(135deg,#fff7ed,#fed7aa)', border:'#fdba74' },
+};
+
+let quoteLang = localStorage.getItem('quoteLang') || 'en';
+
+function setQuoteLang(lang) {
+    quoteLang = lang;
+    localStorage.setItem('quoteLang', lang);
+    renderMotivationCard();
+}
+
+function getQuoteForToday(lang) {
+    const quotes = MOTIVATION_QUOTES[lang] || MOTIVATION_QUOTES.en;
+    // Advance once per calendar day — deterministic, consistent within a day
+    const daysSinceEpoch = Math.floor(Date.now() / 86400000);
+    return quotes[daysSinceEpoch % quotes.length];
+}
+
+function renderMotivationCard() {
+    let el = document.getElementById('motivationCard');
+    if (!el) return;
+
+    const meta  = QUOTE_LANG_META[quoteLang] || QUOTE_LANG_META.en;
+    const raw   = getQuoteForToday(quoteLang);
+    const isAr  = quoteLang === 'ar';
+    const quote = isAr ? raw.q : raw;
+    const trans = isAr ? raw.t : null;
+
+    const langBtns = Object.entries(QUOTE_LANG_META).map(([k, m]) =>
+        `<button onclick="setQuoteLang('${k}')" style="padding:4px 10px;border-radius:20px;border:1.5px solid ${k === quoteLang ? meta.accent : '#e2e8f0'};background:${k === quoteLang ? meta.accent : 'transparent'};color:${k === quoteLang ? 'white' : '#94a3b8'};font-size:11px;font-weight:700;margin:0;box-shadow:none;cursor:pointer;transition:all 0.15s">${m.label}</button>`
+    ).join('');
+
+    el.innerHTML = `
+    <div style="background:${meta.bg};border:1.5px solid ${meta.border};border-radius:18px;padding:20px 22px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-18px;right:-18px;width:80px;height:80px;border-radius:50%;background:${meta.accent};opacity:0.06"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:6px">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="${meta.accent}" opacity="0.7"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
+                <span style="font-size:10px;font-weight:700;color:${meta.accent};text-transform:uppercase;letter-spacing:1px;opacity:0.8">Daily Reflection</span>
+            </div>
+            <div style="display:flex;gap:4px">${langBtns}</div>
+        </div>
+        <p style="font-size:${isAr ? '17px' : '14px'};font-weight:${isAr ? '600' : '600'};color:#0f172a;line-height:1.7;margin:0 0 ${trans ? '10px' : '0'};direction:${meta.dir};text-align:${isAr ? 'right' : 'left'};font-family:${isAr ? "'Amiri','Arabic UI','Geeza Pro',serif" : 'inherit'}">${quote}</p>
+        ${trans ? `<p style="font-size:11px;color:#94a3b8;margin:0;font-style:italic;line-height:1.5">${trans}</p>` : ''}
+    </div>`;
 }
 
 // Custom procedure categories
