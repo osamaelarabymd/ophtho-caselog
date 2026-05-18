@@ -989,7 +989,7 @@ function showTab(tab, e) {
         updateNotifStatus();
     } else if (tab === 'journal') {
         document.getElementById('journalTab').style.display = 'block';
-        renderJournalList();
+        showJournalSection(_jnlSection || 'daily');
         setTimeout(()=>{ let g=document.getElementById('wsGrid'); if(g && window.innerWidth<=768) g.style.display='grid'; }, 10);
     } else if (tab === 'help') {
         document.getElementById('helpTab').style.display = 'block';
@@ -3810,7 +3810,7 @@ function showWorkspaceTab(tab) {
         }
     });
     if (tab === 'calendar')   { if (calView === 'week') renderWeekView(); else renderCalendar(); }
-    if (tab === 'journal')    renderJournalList();
+    if (tab === 'journal')    showJournalSection(_jnlSection || 'daily');
     if (tab === 'notes')      renderNotes();
     if (tab === 'study')      showStudySubTab('qbank');
     if (tab === 'reading')    renderStudyList();
@@ -4553,51 +4553,18 @@ function selectEntryType(type, applyTemplate, force) {
 
 function setJournalTypeFilter(type) {
     activeJournalTypeFilter = type;
-    const allTypes = ['', 'personal', 'case', 'postcall', 'grandrounds', 'procedure', 'rotation', 'weekly'];
-    allTypes.forEach(t => {
+    const allTypes2 = ['', 'personal', 'case', 'postcall', 'grandrounds', 'procedure', 'rotation', 'weekly'];
+    allTypes2.forEach(t => {
         let btn = document.getElementById('jtf-' + (t || 'all'));
         if (!btn) return;
-        if (t === type) {
-            if (t === '') {
-                btn.style.background = '#0f172a'; btn.style.color = 'white'; btn.style.borderColor = '#0f172a';
-            } else {
-                let et = ENTRY_TYPES[t] || ENTRY_TYPES.personal;
-                btn.style.background = et.bg; btn.style.color = et.color; btn.style.borderColor = et.border;
-            }
-        } else {
-            btn.style.background = 'white'; btn.style.color = '#64748b'; btn.style.borderColor = '#e2e8f0';
-        }
+        btn.classList.toggle('jnl-chip-active', t === type);
     });
     renderJournalList();
 }
 
 function showJournalView(view) {
-    let listEl   = document.getElementById('journalList');
-    let insEl    = document.getElementById('journalInsights');
-    let weekEl   = document.getElementById('journalWeekReport');
-    let listBtn  = document.getElementById('jv-list');
-    let insBtn   = document.getElementById('jv-insights');
-    let weekBtn  = document.getElementById('jv-week');
-    if (!listEl) return;
-
-    // Reset all panels and buttons
-    [listEl, insEl, weekEl].forEach(el => { if (el) el.style.display = 'none'; });
-    [listBtn, insBtn, weekBtn].forEach(btn => {
-        if (btn) { btn.style.background = 'transparent'; btn.style.color = '#64748b'; btn.style.boxShadow = 'none'; }
-    });
-
-    if (view === 'insights') {
-        insEl.style.display = 'block';
-        insBtn.style.background = '#0f172a'; insBtn.style.color = 'white'; insBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15)';
-        renderJournalInsights();
-    } else if (view === 'week') {
-        weekEl.style.display = 'block';
-        weekBtn.style.background = '#0f172a'; weekBtn.style.color = 'white'; weekBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15)';
-        renderWeeklyReport();
-    } else {
-        listEl.style.display = 'block';
-        listBtn.style.background = '#0f172a'; listBtn.style.color = 'white'; listBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15)';
-    }
+    const map = { list:'entries', insights:'insights', week:'week' };
+    showJournalSection(map[view] || 'entries');
 }
 
 function renderWeeklyReport() {
@@ -5075,6 +5042,186 @@ function renderJournalInsights() {
         <div style="display:flex;gap:6px;align-items:flex-end">${monthBars}</div>
         <div style="font-size:11px;color:#94a3b8;margin-top:10px">Most active: <strong style="color:#374151">${mostActiveLabel}</strong></div>
     </div>`;
+}
+
+// ── Journal Dark UI ──────────────────────────────────────────────────────────
+
+let _jnlSection   = 'daily';
+let _jnlDailyMood = '';
+let _jnlEnergy    = 0;
+const JNL_MOOD_LABELS = { great:'Great', good:'Good', neutral:'Neutral', tough:'Tough', reflective:'Reflective' };
+const JNL_MOOD_EMOJI  = { great:'💪', good:'😊', neutral:'😐', tough:'😤', reflective:'🤔' };
+
+function showJournalSection(section) {
+    _jnlSection = section;
+    const views = ['daily','entries','insights','week'];
+    views.forEach(v => {
+        let el = document.getElementById('jnl-' + v);
+        if (el) el.style.display = v === section ? 'block' : 'none';
+    });
+    // Update sidebar nav
+    views.forEach(v => {
+        let btn = document.getElementById('jnav-' + v);
+        if (btn) {
+            btn.classList.toggle('jnl-nav-active', v === section);
+        }
+    });
+    // Update mobile nav
+    ['daily','entries','insights','week'].forEach(v => {
+        let btn = document.getElementById('jmob-' + v);
+        if (btn) btn.classList.toggle('jnl-mob-active', v === section);
+    });
+
+    if (section === 'daily')    renderDailyLog();
+    if (section === 'entries')  { renderJournalList(); }
+    if (section === 'insights') renderJournalInsights();
+    if (section === 'week')     renderWeeklyReport();
+}
+
+function renderDailyLog() {
+    // Date hero
+    let today = getTodayStr();
+    let d = new Date(today + 'T12:00:00');
+    let dateDisplay = document.getElementById('jnlDateDisplay');
+    let dateSub = document.getElementById('jnlDateSub');
+    if (dateDisplay) {
+        dateDisplay.textContent = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+    }
+    if (dateSub) {
+        let dayOfYear = Math.ceil((d - new Date(d.getFullYear(), 0, 1)) / 86400000);
+        let weekNum   = Math.ceil(dayOfYear / 7);
+        dateSub.textContent = `Day ${dayOfYear} of ${d.getFullYear()} · Week ${weekNum}`;
+    }
+
+    // Load today's entry if it exists
+    let entries = getJournalEntries();
+    let todayEntry = entries.find(e => e.date === today && e.type === 'daily');
+
+    if (todayEntry) {
+        let zones = todayEntry.zones || {};
+        ['morning','clinical','strategic','evening'].forEach(z => {
+            let el = document.getElementById('jzone-' + z);
+            if (el) el.innerHTML = zones[z] || '';
+        });
+        let metrics = todayEntry.metrics || {};
+        let casesEl = document.getElementById('jm-cases');
+        let studyEl = document.getElementById('jm-study');
+        let sleepEl = document.getElementById('jm-sleep');
+        if (casesEl) casesEl.value = metrics.cases || '';
+        if (studyEl) studyEl.value = metrics.study || '';
+        if (sleepEl) sleepEl.value = metrics.sleep || '';
+        if (todayEntry.jnlMood) {
+            _jnlDailyMood = todayEntry.jnlMood;
+            jnlMoodSelect(todayEntry.jnlMood, false);
+        }
+        if (todayEntry.energy) {
+            _jnlEnergy = todayEntry.energy;
+            jnlEnergySelect(todayEntry.energy, false);
+        }
+        let hint = document.getElementById('jnlSaveHint');
+        if (hint) hint.textContent = 'Last saved · ' + new Date(todayEntry.updatedAt || todayEntry.createdAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    } else {
+        ['morning','clinical','strategic','evening'].forEach(z => {
+            let el = document.getElementById('jzone-' + z);
+            if (el) el.innerHTML = '';
+        });
+        ['jm-cases','jm-study','jm-sleep'].forEach(id => {
+            let el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        _jnlDailyMood = '';
+        _jnlEnergy = 0;
+        jnlMoodSelect('', false);
+        jnlEnergySelect(0, false);
+        let hint = document.getElementById('jnlSaveHint');
+        if (hint) hint.textContent = '';
+    }
+
+    renderJournalSnapStats();
+}
+
+function jnlMoodSelect(mood, updateState = true) {
+    if (updateState) _jnlDailyMood = mood;
+    document.querySelectorAll('.jnl-mood-dot').forEach(btn => {
+        btn.classList.toggle('jnl-mood-sel', btn.dataset.mood === mood);
+    });
+    let nameEl = document.getElementById('jnlMoodName');
+    if (nameEl) nameEl.textContent = mood ? JNL_MOOD_LABELS[mood] || mood : '';
+}
+
+function jnlEnergySelect(level, updateState = true) {
+    if (updateState) _jnlEnergy = level;
+    document.querySelectorAll('.jnl-pip').forEach(pip => {
+        pip.classList.toggle('jnl-pip-on', parseInt(pip.dataset.e) <= level);
+    });
+}
+
+function saveDailyLog() {
+    let today = getTodayStr();
+    let entries = getJournalEntries();
+    let idx = entries.findIndex(e => e.date === today && e.type === 'daily');
+
+    let zones = {};
+    ['morning','clinical','strategic','evening'].forEach(z => {
+        let el = document.getElementById('jzone-' + z);
+        zones[z] = el ? el.innerHTML : '';
+    });
+    let metrics = {
+        cases: document.getElementById('jm-cases')?.value || '',
+        study: document.getElementById('jm-study')?.value || '',
+        sleep: document.getElementById('jm-sleep')?.value || '',
+    };
+
+    let combinedBody = `<h3>Morning Intentions</h3>${zones.morning}<h3>Clinical Focus</h3>${zones.clinical}<h3>CEO Strategic</h3>${zones.strategic}<h3>Evening Reflection</h3>${zones.evening}`;
+
+    let now = new Date().toISOString();
+    if (idx >= 0) {
+        entries[idx] = { ...entries[idx], zones, metrics, body: combinedBody, jnlMood: _jnlDailyMood, energy: _jnlEnergy, updatedAt: now };
+    } else {
+        entries.unshift({
+            id: crypto.randomUUID(),
+            date: today,
+            type: 'daily',
+            title: 'Daily Log — ' + new Date(today + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}),
+            mood: JNL_MOOD_EMOJI[_jnlDailyMood] || '😊',
+            jnlMood: _jnlDailyMood,
+            energy: _jnlEnergy,
+            zones,
+            metrics,
+            body: combinedBody,
+            createdAt: now,
+            updatedAt: now,
+        });
+    }
+    saveJournalEntries(entries);
+    let hint = document.getElementById('jnlSaveHint');
+    if (hint) {
+        hint.textContent = 'Saved';
+        setTimeout(() => { if (hint) hint.textContent = 'Last saved · ' + new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}); }, 1200);
+    }
+    renderJournalSnapStats();
+}
+
+function renderJournalSnapStats() {
+    let el = document.getElementById('jnlSnapContent');
+    if (!el) return;
+    let entries = getJournalEntries();
+    let today = getTodayStr();
+    let sevenAgo = new Date(); sevenAgo.setDate(sevenAgo.getDate() - 6);
+    let weekISO = sevenAgo.toISOString().slice(0,10);
+    let thisWeek = entries.filter(e => e.date && e.date >= weekISO && e.date <= today).length;
+    let streak = 0;
+    let dateSet = new Set(entries.map(e => e.date));
+    let cur = new Date(today + 'T12:00:00');
+    while (dateSet.has(cur.toISOString().slice(0,10))) { streak++; cur.setDate(cur.getDate()-1); }
+    let todayWritten = dateSet.has(today);
+
+    el.innerHTML = `
+        <div class="jnl-snap-stat"><span>Status</span><strong style="color:${todayWritten?'#3ecfcf':'#4a4f63'}">${todayWritten?'Written':'Pending'}</strong></div>
+        <div class="jnl-snap-stat"><span>This week</span><strong>${thisWeek}</strong></div>
+        <div class="jnl-snap-stat"><span>Streak</span><strong style="color:${streak>=7?'#f5c842':streak>=3?'#7b8fff':'#f0ece2'}">${streak}d</strong></div>
+        <div class="jnl-snap-stat"><span>Total</span><strong>${entries.length}</strong></div>
+    `;
 }
 
 const JOURNAL_PROMPTS = [
@@ -5569,6 +5716,7 @@ function renderJournalList() {
     if (!el) return;
 
     renderJournalStats();
+    renderJournalSnapStats();
 
     let search     = (document.getElementById('journalSearch')?.value || '').toLowerCase();
     let moodFilter = document.getElementById('journalMoodFilter')?.value || '';
@@ -5600,7 +5748,7 @@ function renderJournalList() {
     let html = '';
     for (let month of Object.keys(grouped).sort().reverse()) {
         let label = new Date(month+'-02').toLocaleString('default',{month:'long',year:'numeric'});
-        html += `<div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px">${label}</div>`;
+        html += `<div class="jnl-month-label">${label}</div>`;
         for (let e of grouped[month]) {
             let plainBody  = (e.body||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
             let preview    = plainBody.length > 130 ? plainBody.slice(0,130)+'…' : plainBody;
@@ -5609,36 +5757,30 @@ function renderJournalList() {
             let linkedCase = e.caseId ? allCases.find(c => c.id === e.caseId) : null;
             let et = ENTRY_TYPES[e.type || 'personal'] || ENTRY_TYPES.personal;
 
-            html += `<div style="background:white;border:1.5px solid #f1f5f9;border-radius:16px;padding:16px;margin-bottom:10px;cursor:pointer;transition:box-shadow 0.15s,border-color 0.15s"
+            html += `<div class="jnl-entry-card"
                 onclick="openJournalModal('${e.id}')"
-                onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,0.08)';this.style.borderColor='${et.border}'"
-                onmouseout="this.style.boxShadow='none';this.style.borderColor='#f1f5f9'">
+                onmouseover="this.style.background='var(--jnl-elevated,#1a1e28)'"
+                onmouseout="this.style.background=''">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-                    <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
-                        <span style="font-size:20px;flex-shrink:0">${e.mood || '😊'}</span>
-                        <div style="flex:1;min-width:0">
-                            ${e.title ? `<div style="font-weight:700;font-size:14px;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.title}</div>` : ''}
-                            <div style="font-size:11px;color:#94a3b8;margin-top:1px">${dateStr} · ${wordCount} words</div>
-                        </div>
+                    <div style="flex:1;min-width:0">
+                        <div class="jnl-entry-title">${e.title || 'Entry'}</div>
+                        <div class="jnl-entry-meta">${dateStr} · ${wordCount} words · ${et.label}</div>
                     </div>
-                    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:8px">
-                        <span style="font-size:10px;font-weight:700;color:${et.color};background:${et.bg};border:1px solid ${et.border};border-radius:20px;padding:2px 8px;white-space:nowrap">${et.icon} ${et.label}</span>
-                        <button onclick="event.stopPropagation();deleteJournalEntry('${e.id}')" title="Delete"
-                            style="background:transparent;border:none;color:#d1d5db;padding:4px;margin:0;width:auto;min-width:0;cursor:pointer;line-height:0;border-radius:6px" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#d1d5db'">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-                        </button>
-                    </div>
+                    <button onclick="event.stopPropagation();deleteJournalEntry('${e.id}')" title="Delete"
+                        style="all:unset;cursor:pointer;color:var(--jnl-dim,#4a4f63);padding:4px;border-radius:5px;line-height:0;flex-shrink:0"
+                        onmouseover="this.style.color='#ff7eb3'" onmouseout="this.style.color=''">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                    </button>
                 </div>
-                <p style="font-size:13px;color:#374151;line-height:1.65;margin:0 0 ${(linkedCase||e.links?.length)?'8px':'0'}">${preview || '<span style="color:#94a3b8;font-style:italic">No content</span>'}</p>
-                ${linkedCase ? `<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#7c3aed;font-weight:600;margin-top:6px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>${linkedCase.procedure} · ${linkedCase.date}</div>` : ''}
-                ${e.links && e.links.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${e.links.map(l=>`<span onclick="event.stopPropagation();_jLinkNavigate('${l.type}','${l.id}')" style="display:inline-flex;align-items:center;gap:4px;background:${l.bg||'#f1f5f9'};color:${l.color||'#374151'};border:1px solid ${l.color||'#e2e8f0'}33;border-radius:20px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer" title="Go to ${l.type}">${l.icon||'🔗'} ${l.label.length>28?l.label.slice(0,28)+'…':l.label}</span>`).join('')}</div>` : ''}
+                <div class="jnl-entry-preview">${preview || '<em style="color:var(--jnl-dim,#4a4f63)">No content</em>'}</div>
+                ${e.links?.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">${e.links.map(l=>`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.06);color:var(--jnl-muted,#8a8fa8);border:1px solid var(--jnl-border,#252a36);border-radius:5px;padding:2px 8px;font-size:11px;font-weight:600">${l.label.length>28?l.label.slice(0,28)+'…':l.label}</span>`).join('')}</div>` : ''}
             </div>`;
         }
     }
 
     let total = getJournalEntries().length;
     let words = getJournalEntries().reduce((s,e)=>s+(e.body||'').replace(/<[^>]*>/g,' ').split(/\s+/).filter(Boolean).length,0);
-    html += `<div style="text-align:center;padding:16px;color:#94a3b8;font-size:12px;margin-top:4px">
+    html += `<div style="text-align:center;padding:16px;color:var(--jnl-dim,#4a4f63);font-size:12px;margin-top:4px;font-family:'JetBrains Mono',monospace">
         ${total} entr${total===1?'y':'ies'} · ${words.toLocaleString()} words written
     </div>`;
 

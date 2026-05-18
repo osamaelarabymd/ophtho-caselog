@@ -10,6 +10,9 @@
     <meta name="apple-mobile-web-app-title" content="EyeLog">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -76,6 +79,345 @@
         .cp-sub { font-size:11px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px; }
         .cp-section { font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;padding:10px 18px 4px; }
         .cp-divider { height:1px;background:#f1f5f9;margin:4px 0; }
+    </style>
+    <style>
+/* ── Journal Dark Luxury ─────────────────────────────────── */
+.jnl-shell {
+    --jnl-bg:       #0d0f14;
+    --jnl-surface:  #13161e;
+    --jnl-elevated: #1a1e28;
+    --jnl-border:   #252a36;
+    --jnl-gold:     #f5c842;
+    --jnl-teal:     #3ecfcf;
+    --jnl-indigo:   #7b8fff;
+    --jnl-rose:     #ff7eb3;
+    --jnl-text:     #f0ece2;
+    --jnl-muted:    #8a8fa8;
+    --jnl-dim:      #4a4f63;
+    display: flex;
+    min-height: 560px;
+    background: var(--jnl-bg);
+    border-radius: 14px;
+    overflow: hidden;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    color: var(--jnl-text);
+    position: relative;
+}
+.jnl-sidebar {
+    width: 196px;
+    flex-shrink: 0;
+    background: var(--jnl-surface);
+    border-right: 1px solid var(--jnl-border);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0 16px;
+}
+.jnl-snap {
+    padding: 0 16px 14px;
+    border-bottom: 1px solid var(--jnl-border);
+    margin-bottom: 10px;
+}
+.jnl-snap-label {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.8px;
+    color: var(--jnl-dim);
+    margin-bottom: 10px;
+}
+.jnl-snap-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 11px;
+    color: var(--jnl-muted);
+    padding: 3px 0;
+}
+.jnl-snap-stat strong { font-size: 14px; font-weight: 700; color: var(--jnl-text); }
+.jnl-nav { flex: 1; display: flex; flex-direction: column; padding: 0 10px; gap: 1px; }
+.jnl-nav-item {
+    all: unset;
+    display: block;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--jnl-muted);
+    cursor: pointer;
+    border-radius: 7px;
+    border-left: 3px solid transparent;
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+    width: 100%;
+    box-sizing: border-box;
+    line-height: 1.2;
+}
+.jnl-nav-item:hover { color: var(--jnl-text); background: rgba(255,255,255,0.04); }
+.jnl-nav-active {
+    color: var(--jnl-text) !important;
+    font-weight: 700 !important;
+    border-left-color: var(--jnl-gold) !important;
+    background: rgba(245,200,66,0.07) !important;
+}
+.jnl-new-btn {
+    all: unset;
+    display: block;
+    margin: 14px 10px 0;
+    padding: 10px 16px;
+    background: var(--jnl-gold);
+    color: #0a0b0f;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 9px;
+    cursor: pointer;
+    text-align: center;
+    letter-spacing: 0.2px;
+    animation: jnlPulse 3.5s ease-in-out infinite;
+    transition: opacity 0.15s, transform 0.1s;
+}
+.jnl-new-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+@keyframes jnlPulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(245,200,66,0.3); }
+    50%      { box-shadow: 0 0 0 7px rgba(245,200,66,0); }
+}
+.jnl-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 30px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--jnl-border) transparent;
+}
+.jnl-date-hero { margin-bottom: 20px; }
+.jnl-date-display {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 34px;
+    font-weight: 400;
+    color: var(--jnl-text);
+    line-height: 1.15;
+    letter-spacing: -0.3px;
+}
+.jnl-date-sub {
+    font-size: 11px;
+    color: var(--jnl-muted);
+    margin-top: 5px;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    letter-spacing: 0.5px;
+}
+.jnl-meta-row { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.jnl-mood-row, .jnl-energy-row { display: flex; align-items: center; gap: 12px; }
+.jnl-row-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--jnl-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    min-width: 50px;
+}
+.jnl-mood-ring { display: flex; gap: 9px; align-items: center; }
+.jnl-mood-dot {
+    all: unset;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    border: 2px solid transparent;
+    flex-shrink: 0;
+}
+.jnl-mood-dot[data-mood="great"]      { background: #f5c842; }
+.jnl-mood-dot[data-mood="good"]       { background: #3ecfcf; }
+.jnl-mood-dot[data-mood="neutral"]    { background: #8a8fa8; }
+.jnl-mood-dot[data-mood="tough"]      { background: #ff7eb3; }
+.jnl-mood-dot[data-mood="reflective"] { background: #7b8fff; }
+.jnl-mood-dot:hover { transform: scale(1.3); }
+.jnl-mood-dot.jnl-mood-sel { transform: scale(1.35); box-shadow: 0 0 0 3px rgba(255,255,255,0.12); }
+.jnl-mood-name { font-size: 12px; color: var(--jnl-muted); font-style: italic; min-width: 70px; }
+.jnl-pips { display: flex; gap: 5px; }
+.jnl-pip {
+    all: unset;
+    width: 30px;
+    height: 7px;
+    border-radius: 4px;
+    background: var(--jnl-border);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.jnl-pip.jnl-pip-on { background: var(--jnl-gold); }
+.jnl-pip:hover { background: rgba(245,200,66,0.35); }
+.jnl-zones { margin-top: 4px; }
+.jnl-zone {
+    background: var(--jnl-surface);
+    border: 1px solid var(--jnl-border);
+    border-radius: 12px;
+    padding: 15px 18px;
+    margin-bottom: 10px;
+    transition: border-color 0.15s;
+}
+.jnl-zone:focus-within { border-color: var(--jnl-dim); }
+.jnl-zone-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    margin-bottom: 10px;
+}
+.jnl-zone-editor {
+    min-height: 72px;
+    font-size: 14px;
+    color: var(--jnl-text);
+    line-height: 1.7;
+    outline: none;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    background: transparent;
+    caret-color: var(--jnl-gold);
+}
+.jnl-zone-editor:empty:before {
+    content: attr(data-placeholder);
+    color: var(--jnl-dim);
+    pointer-events: none;
+    display: block;
+    font-style: italic;
+}
+.jnl-zone-metrics { border-style: dashed; }
+.jnl-metrics-row { display: flex; gap: 20px; flex-wrap: wrap; }
+.jnl-metric-item { display: flex; align-items: center; gap: 8px; }
+.jnl-metric-label { font-size: 11px; color: var(--jnl-muted); white-space: nowrap; }
+.jnl-metric-input {
+    width: 60px;
+    background: var(--jnl-elevated);
+    border: 1px solid var(--jnl-border);
+    border-radius: 6px;
+    color: var(--jnl-text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 5px 8px;
+    outline: none;
+    text-align: center;
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+}
+.jnl-metric-input:focus { border-color: var(--jnl-gold); }
+.jnl-metric-input::placeholder { color: var(--jnl-dim); }
+.jnl-metric-input::-webkit-inner-spin-button,
+.jnl-metric-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.jnl-save-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--jnl-border);
+}
+.jnl-save-btn {
+    all: unset;
+    padding: 11px 22px;
+    background: var(--jnl-elevated);
+    border: 1px solid var(--jnl-border);
+    color: var(--jnl-text);
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+.jnl-save-btn:hover { background: rgba(245,200,66,0.1); border-color: var(--jnl-gold); }
+.jnl-save-hint { font-size: 11px; color: var(--jnl-dim); font-style: italic; }
+.jnl-entries-toolbar { display: flex; gap: 10px; margin-bottom: 12px; }
+.jnl-search {
+    flex: 1;
+    background: var(--jnl-surface);
+    border: 1px solid var(--jnl-border);
+    border-radius: 9px;
+    color: var(--jnl-text);
+    font-size: 13px;
+    padding: 9px 14px;
+    outline: none;
+    font-family: 'IBM Plex Sans', sans-serif;
+    transition: border-color 0.15s;
+    margin: 0;
+}
+.jnl-search:focus { border-color: var(--jnl-gold); }
+.jnl-search::placeholder { color: var(--jnl-dim); }
+.jnl-type-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.jnl-chip {
+    all: unset;
+    padding: 5px 12px;
+    border: 1px solid var(--jnl-border);
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--jnl-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+.jnl-chip:hover { color: var(--jnl-text); border-color: var(--jnl-dim); }
+.jnl-chip-active { color: var(--jnl-gold) !important; border-color: rgba(245,200,66,0.5) !important; background: rgba(245,200,66,0.08) !important; }
+/* Entry cards in dark theme */
+#journalList .jnl-entry-card {
+    background: var(--jnl-surface);
+    border: 1px solid var(--jnl-border);
+    border-radius: 12px;
+    padding: 15px 18px;
+    margin-bottom: 9px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+#journalList .jnl-entry-card:hover { border-color: var(--jnl-dim); background: var(--jnl-elevated); }
+#journalList .jnl-entry-card .jnl-entry-title { font-size: 14px; font-weight: 600; color: var(--jnl-text); margin-bottom: 3px; }
+#journalList .jnl-entry-card .jnl-entry-meta { font-size: 11px; color: var(--jnl-muted); margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; }
+#journalList .jnl-entry-card .jnl-entry-preview { font-size: 13px; color: var(--jnl-muted); line-height: 1.6; }
+#journalList .jnl-month-label { font-size: 10px; font-weight: 700; color: var(--jnl-dim); text-transform: uppercase; letter-spacing: 1.5px; margin: 16px 0 8px; font-family: 'JetBrains Mono', monospace; }
+/* Insights dark override */
+#journalInsights, #journalWeekReport { color: var(--jnl-text); }
+/* Modal dark */
+.jnl-modal-inner {
+    background: #13161e !important;
+    color: #f0ece2 !important;
+    border: 1px solid #252a36;
+}
+.jnl-modal-inner input,
+.jnl-modal-inner textarea,
+.jnl-modal-inner select {
+    background: #1a1e28 !important;
+    border-color: #252a36 !important;
+    color: #f0ece2 !important;
+}
+.jnl-modal-inner h2 { color: #f0ece2 !important; }
+.jnl-modal-inner label { color: #8a8fa8 !important; }
+/* Mobile nav */
+.jnl-mobile-nav { display: none; }
+@media (max-width: 680px) {
+    .jnl-shell { flex-direction: column; min-height: auto; border-radius: 10px; }
+    .jnl-sidebar { display: none; }
+    .jnl-main { padding: 18px 16px 72px; }
+    .jnl-mobile-nav {
+        display: flex;
+        background: var(--jnl-surface);
+        border-top: 1px solid var(--jnl-border);
+        padding: 6px 8px;
+        gap: 2px;
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+    }
+    .jnl-mob-btn {
+        all: unset;
+        flex: 1;
+        text-align: center;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--jnl-muted);
+        padding: 8px 2px;
+        cursor: pointer;
+        border-radius: 7px;
+        font-family: 'IBM Plex Sans', sans-serif;
+        transition: all 0.15s;
+    }
+    .jnl-mob-active { color: var(--jnl-text) !important; background: var(--jnl-elevated); }
+    .jnl-date-display { font-size: 26px; }
+}
     </style>
 
     <!-- Stats Card Modal -->
@@ -1308,40 +1650,125 @@
                 </div>
             </div>
             <!-- Journal section -->
-            <div id="ws-journal">
-                <!-- Stats bar -->
-                <div id="journalStats" style="display:flex;gap:10px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none"></div>
-                <!-- Daily prompt banner -->
-                <div id="journalPromptBanner" style="display:none;background:linear-gradient(135deg,rgba(124,58,237,0.07),rgba(37,99,235,0.05));border:1.5px solid rgba(124,58,237,0.18);border-radius:14px;padding:14px 16px;margin-bottom:14px">
-                    <div style="font-size:10px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">✨ Today's Prompt</div>
-                    <div id="journalPromptText" style="font-size:13px;font-weight:600;color:#1e293b;margin-bottom:10px;line-height:1.5"></div>
-                    <button onclick="openJournalWithPrompt()" style="width:auto;margin:0;padding:7px 16px;background:#7c3aed;color:white;border-radius:9px;font-size:12px;font-weight:700;border:none;box-shadow:none">Write about it →</button>
-                </div>
-                <!-- Search + view toggle + New -->
-                <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
-                    <input type="text" id="journalSearch" placeholder="Search entries…" oninput="renderJournalList()" style="flex:1;margin:0;padding:10px 14px;border-radius:12px;font-size:13px;min-width:80px">
-                    <select id="journalMoodFilter" onchange="renderJournalList()" style="display:none"><option value="">All Moods</option><option value="💪">💪</option><option value="😊">😊</option><option value="😐">😐</option><option value="😤">😤</option><option value="🤔">🤔</option></select>
-                    <div style="display:flex;gap:0;background:#f1f5f9;border-radius:10px;padding:2px;flex-shrink:0">
-                        <button onclick="showJournalView('list')" id="jv-list" style="padding:7px 10px;border-radius:8px;font-size:11px;font-weight:700;border:none;background:#0f172a;color:white;margin:0;box-shadow:0 1px 3px rgba(0,0,0,0.15)">List</button>
-                        <button onclick="showJournalView('insights')" id="jv-insights" style="padding:7px 10px;border-radius:8px;font-size:11px;font-weight:700;border:none;background:transparent;color:#64748b;margin:0;box-shadow:none">Insights</button>
-                        <button onclick="showJournalView('week')" id="jv-week" style="padding:7px 10px;border-radius:8px;font-size:11px;font-weight:700;border:none;background:transparent;color:#64748b;margin:0;box-shadow:none">Week</button>
+            <div id="ws-journal" class="jnl-shell">
+                <!-- Left Sidebar -->
+                <aside class="jnl-sidebar">
+                    <div class="jnl-snap">
+                        <div class="jnl-snap-label">Today</div>
+                        <div id="jnlSnapContent"></div>
                     </div>
-                    <button onclick="openJournalModal()" style="width:auto;margin:0;padding:10px 14px;font-size:13px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#2563eb);display:flex;align-items:center;gap:6px;flex-shrink:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>New</button>
+                    <nav class="jnl-nav">
+                        <button class="jnl-nav-item jnl-nav-active" id="jnav-daily"   onclick="showJournalSection('daily')">Daily Log</button>
+                        <button class="jnl-nav-item" id="jnav-entries"  onclick="showJournalSection('entries')">All Entries</button>
+                        <button class="jnl-nav-item" id="jnav-insights" onclick="showJournalSection('insights')">Insights</button>
+                        <button class="jnl-nav-item" id="jnav-week"     onclick="showJournalSection('week')">Week Report</button>
+                    </nav>
+                    <button class="jnl-new-btn" onclick="openJournalModal()">+ New Entry</button>
+                </aside>
+
+                <!-- Main content -->
+                <main class="jnl-main">
+                    <!-- Daily Log View -->
+                    <div id="jnl-daily" class="jnl-view">
+                        <div class="jnl-date-hero">
+                            <div class="jnl-date-display" id="jnlDateDisplay"></div>
+                            <div class="jnl-date-sub" id="jnlDateSub"></div>
+                        </div>
+                        <div class="jnl-meta-row">
+                            <div class="jnl-mood-row">
+                                <span class="jnl-row-label">Mood</span>
+                                <div class="jnl-mood-ring">
+                                    <button class="jnl-mood-dot" data-mood="great"      data-color="#f5c842" onclick="jnlMoodSelect('great')"      title="Great"></button>
+                                    <button class="jnl-mood-dot" data-mood="good"       data-color="#3ecfcf" onclick="jnlMoodSelect('good')"       title="Good"></button>
+                                    <button class="jnl-mood-dot" data-mood="neutral"    data-color="#8a8fa8" onclick="jnlMoodSelect('neutral')"    title="Neutral"></button>
+                                    <button class="jnl-mood-dot" data-mood="tough"      data-color="#ff7eb3" onclick="jnlMoodSelect('tough')"      title="Tough"></button>
+                                    <button class="jnl-mood-dot" data-mood="reflective" data-color="#7b8fff" onclick="jnlMoodSelect('reflective')" title="Reflective"></button>
+                                </div>
+                                <span class="jnl-mood-name" id="jnlMoodName"></span>
+                            </div>
+                            <div class="jnl-energy-row">
+                                <span class="jnl-row-label">Energy</span>
+                                <div class="jnl-pips" id="jnlPips">
+                                    <button class="jnl-pip" onclick="jnlEnergySelect(1)" data-e="1"></button>
+                                    <button class="jnl-pip" onclick="jnlEnergySelect(2)" data-e="2"></button>
+                                    <button class="jnl-pip" onclick="jnlEnergySelect(3)" data-e="3"></button>
+                                    <button class="jnl-pip" onclick="jnlEnergySelect(4)" data-e="4"></button>
+                                    <button class="jnl-pip" onclick="jnlEnergySelect(5)" data-e="5"></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="jnl-zones">
+                            <div class="jnl-zone">
+                                <div class="jnl-zone-label" style="color:var(--jnl-gold)">Morning Intentions</div>
+                                <div class="jnl-zone-editor" id="jzone-morning" contenteditable="true" data-placeholder="What do you intend to accomplish today?"></div>
+                            </div>
+                            <div class="jnl-zone">
+                                <div class="jnl-zone-label" style="color:var(--jnl-teal)">Clinical Focus</div>
+                                <div class="jnl-zone-editor" id="jzone-clinical" contenteditable="true" data-placeholder="Key cases, procedures, diagnoses to remember…"></div>
+                            </div>
+                            <div class="jnl-zone">
+                                <div class="jnl-zone-label" style="color:var(--jnl-indigo)">CEO Strategic</div>
+                                <div class="jnl-zone-editor" id="jzone-strategic" contenteditable="true" data-placeholder="Leadership, career, research, big-picture thinking…"></div>
+                            </div>
+                            <div class="jnl-zone">
+                                <div class="jnl-zone-label" style="color:var(--jnl-rose)">Evening Reflection</div>
+                                <div class="jnl-zone-editor" id="jzone-evening" contenteditable="true" data-placeholder="What happened? What did you feel? What will you carry forward?"></div>
+                            </div>
+                            <div class="jnl-zone jnl-zone-metrics">
+                                <div class="jnl-zone-label" style="color:var(--jnl-muted)">Metrics</div>
+                                <div class="jnl-metrics-row">
+                                    <div class="jnl-metric-item"><span class="jnl-metric-label">Cases</span><input class="jnl-metric-input" id="jm-cases" type="number" min="0" placeholder="0"></div>
+                                    <div class="jnl-metric-item"><span class="jnl-metric-label">Study hrs</span><input class="jnl-metric-input" id="jm-study" type="number" min="0" step="0.5" placeholder="0"></div>
+                                    <div class="jnl-metric-item"><span class="jnl-metric-label">Sleep hrs</span><input class="jnl-metric-input" id="jm-sleep" type="number" min="0" step="0.5" placeholder="0"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="jnl-save-row">
+                            <button class="jnl-save-btn" onclick="saveDailyLog()">Save Daily Log</button>
+                            <span class="jnl-save-hint" id="jnlSaveHint"></span>
+                        </div>
+                    </div>
+
+                    <!-- All Entries View -->
+                    <div id="jnl-entries" class="jnl-view" style="display:none">
+                        <div class="jnl-entries-toolbar">
+                            <input type="text" id="journalSearch" class="jnl-search" placeholder="Search entries…" oninput="renderJournalList()">
+                        </div>
+                        <div class="jnl-type-chips">
+                            <button onclick="setJournalTypeFilter('')"            id="jtf-all"         class="jnl-chip jnl-chip-active">All</button>
+                            <button onclick="setJournalTypeFilter('personal')"    id="jtf-personal"    class="jnl-chip">Personal</button>
+                            <button onclick="setJournalTypeFilter('case')"        id="jtf-case"        class="jnl-chip">Case</button>
+                            <button onclick="setJournalTypeFilter('postcall')"    id="jtf-postcall"    class="jnl-chip">Post-Call</button>
+                            <button onclick="setJournalTypeFilter('grandrounds')" id="jtf-grandrounds" class="jnl-chip">Grand Rounds</button>
+                            <button onclick="setJournalTypeFilter('procedure')"   id="jtf-procedure"   class="jnl-chip">Procedure</button>
+                            <button onclick="setJournalTypeFilter('rotation')"    id="jtf-rotation"    class="jnl-chip">Rotation</button>
+                            <button onclick="setJournalTypeFilter('weekly')"      id="jtf-weekly"      class="jnl-chip">Weekly</button>
+                        </div>
+                        <div id="journalStats" style="display:none"></div>
+                        <div id="journalPromptBanner" style="display:none"></div>
+                        <div id="journalMoodFilter" style="display:none"></div>
+                        <div id="journalList"></div>
+                    </div>
+
+                    <!-- Insights View -->
+                    <div id="jnl-insights" class="jnl-view" style="display:none">
+                        <div id="journalInsights"></div>
+                    </div>
+
+                    <!-- Week Report View -->
+                    <div id="jnl-week" class="jnl-view" style="display:none">
+                        <div id="journalWeekReport"></div>
+                    </div>
+                </main>
+
+                <!-- Mobile bottom nav -->
+                <div class="jnl-mobile-nav">
+                    <button class="jnl-mob-btn jnl-mob-active" id="jmob-daily"   onclick="showJournalSection('daily')">Log</button>
+                    <button class="jnl-mob-btn" id="jmob-entries"  onclick="showJournalSection('entries')">Entries</button>
+                    <button class="jnl-mob-btn" id="jmob-insights" onclick="showJournalSection('insights')">Insights</button>
+                    <button class="jnl-mob-btn" id="jmob-week"     onclick="showJournalSection('week')">Week</button>
+                    <button class="jnl-mob-btn" style="color:var(--jnl-gold);font-weight:700" onclick="openJournalModal()">+ New</button>
                 </div>
-                <!-- Type filter chips -->
-                <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none">
-                    <button onclick="setJournalTypeFilter('')" id="jtf-all" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #0f172a;background:#0f172a;color:white;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">All</button>
-                    <button onclick="setJournalTypeFilter('personal')" id="jtf-personal" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">✍️ Personal</button>
-                    <button onclick="setJournalTypeFilter('case')" id="jtf-case" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🔬 Case</button>
-                    <button onclick="setJournalTypeFilter('postcall')" id="jtf-postcall" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🌙 Post-Call</button>
-                    <button onclick="setJournalTypeFilter('grandrounds')" id="jtf-grandrounds" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🎤 Grand Rounds</button>
-                    <button onclick="setJournalTypeFilter('procedure')" id="jtf-procedure" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">👁️ Procedure</button>
-                    <button onclick="setJournalTypeFilter('rotation')" id="jtf-rotation" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🔄 Rotation</button>
-                    <button onclick="setJournalTypeFilter('weekly')" id="jtf-weekly" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">📋 Weekly</button>
-                </div>
-                <div id="journalList"></div>
-                <div id="journalInsights" style="display:none"></div>
-                <div id="journalWeekReport" style="display:none"></div>
             </div>
             <!-- Notes section -->
             <div id="ws-notes" style="display:none">
@@ -2082,7 +2509,7 @@
 
         <!-- Journal Entry Modal -->
         <div id="journalModal" class="modal-sheet" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(6px)">
-            <div style="background:white;border-radius:20px;padding:24px 26px;width:92%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,0.22)">
+            <div class="jnl-modal-inner" style="background:white;border-radius:20px;padding:24px 26px;width:92%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,0.22)">
                 <div class="sheet-handle"></div>
                 <!-- Header -->
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
