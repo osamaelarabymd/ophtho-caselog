@@ -3811,8 +3811,8 @@ function showWorkspaceTab(tab) {
     });
     if (tab === 'calendar')   { if (calView === 'week') renderWeekView(); else renderCalendar(); }
     if (tab === 'journal')    showJournalSection(_jnlSection || 'daily');
-    if (tab === 'notes')      renderNotes();
-    if (tab === 'study')      showStudySubTab('qbank');
+    if (tab === 'notes')      { showWorkspaceTab('journal'); setTimeout(()=>showJournalSection('notes'),80); return; }
+    if (tab === 'study')      showStudySubTab('okap');
     if (tab === 'reading')    renderStudyList();
     if (tab === 'fellowship') { showFpTab('pipeline'); }
     if (tab === 'duty')       renderDutyHours();
@@ -3822,8 +3822,8 @@ function showWorkspaceTab(tab) {
 }
 
 function showStudySubTab(sub) {
-    const tabColors = { qbank:'#7c3aed', okap:'#2563eb', didactics:'#059669', clinician:'#0891b2' };
-    ['qbank','okap','didactics','clinician'].forEach(s => {
+    const tabColors = { okap:'#2563eb', clinician:'#0891b2', uveitis:'#ea580c', retina:'#dc2626', cornea:'#2563eb' };
+    ['okap','clinician','uveitis','retina','cornea'].forEach(s => {
         let el = document.getElementById('st-'+s);
         if (el) el.style.display = s === sub ? 'block' : 'none';
         let btn = document.getElementById('st-tab-'+s);
@@ -3839,10 +3839,11 @@ function showStudySubTab(sub) {
             }
         }
     });
-    if (sub === 'qbank')     renderQbankHome();
     if (sub === 'okap')      renderIteScores();
-    if (sub === 'didactics') renderDidactics();
     if (sub === 'clinician') renderClinicianNotes();
+    if (sub === 'uveitis')   renderClinicianNotesForCat('uveitis',  'clinicianNotesList-uveitis');
+    if (sub === 'retina')    renderClinicianNotesForCat('retina',   'clinicianNotesList-retina');
+    if (sub === 'cornea')    renderClinicianNotesForCat('cornea',   'clinicianNotesList-cornea');
 }
 
 function backToWsGrid() {
@@ -5054,28 +5055,44 @@ const JNL_MOOD_EMOJI  = { great:'💪', good:'😊', neutral:'😐', tough:'😤
 
 function showJournalSection(section) {
     _jnlSection = section;
-    const views = ['daily','entries','insights','week'];
+    const views = ['daily','entries','notes','insights','week'];
     views.forEach(v => {
         let el = document.getElementById('jnl-' + v);
         if (el) el.style.display = v === section ? 'block' : 'none';
-    });
-    // Update sidebar nav
-    views.forEach(v => {
         let btn = document.getElementById('jnav-' + v);
-        if (btn) {
-            btn.classList.toggle('jnl-nav-active', v === section);
-        }
-    });
-    // Update mobile nav
-    ['daily','entries','insights','week'].forEach(v => {
-        let btn = document.getElementById('jmob-' + v);
-        if (btn) btn.classList.toggle('jnl-mob-active', v === section);
+        if (btn) btn.classList.toggle('jnl-nav-active', v === section);
+        let mob = document.getElementById('jmob-' + v);
+        if (mob) mob.classList.toggle('jnl-mob-active', v === section);
     });
 
     if (section === 'daily')    renderDailyLog();
-    if (section === 'entries')  { renderJournalList(); }
+    if (section === 'entries')  renderJournalList();
+    if (section === 'notes')    renderJournalNotes();
     if (section === 'insights') renderJournalInsights();
     if (section === 'week')     renderWeeklyReport();
+}
+
+function renderJournalNotes() {
+    let el = document.getElementById('jnlNotesList');
+    if (!el) return;
+    let notes = JSON.parse(localStorage.getItem('eyeNotes') || '[]');
+    let q = (document.getElementById('jnlNotesSearch')?.value || '').toLowerCase();
+    if (q) notes = notes.filter(n => ((n.title||'')+(n.body||'')).toLowerCase().includes(q));
+    notes.sort((a,b) => ((b.updatedAt||b.createdAt||'') > (a.updatedAt||a.createdAt||'') ? 1 : -1));
+    if (!notes.length) {
+        el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--jnl-dim,#4a4f63)"><p style="font-size:14px;font-weight:600;color:var(--jnl-muted,#8a8fa8);margin-bottom:6px">No notes yet</p><p style="font-size:13px">Tap + Note to create one</p></div>`;
+        return;
+    }
+    el.innerHTML = notes.map(n => {
+        let plain = (n.body||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+        let preview = plain.length > 120 ? plain.slice(0,120)+'…' : plain;
+        let dateStr = n.updatedAt ? new Date(n.updatedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+        return `<div class="jnl-entry-card" onclick="openNoteModal('${n.id}')">
+            <div class="jnl-entry-title">${n.title || 'Untitled'}</div>
+            <div class="jnl-entry-meta">${dateStr}</div>
+            ${preview ? `<div class="jnl-entry-preview">${preview}</div>` : ''}
+        </div>`;
+    }).join('');
 }
 
 function renderDailyLog() {
@@ -6866,14 +6883,14 @@ function filterClinicianNotes(cat) {
     renderClinicianNotes();
 }
 
-function openClinicianNoteModal(id) {
+function openClinicianNoteModal(id, defaultCat) {
     let note = id ? getClinicianNotes().find(n => n.id === id) : null;
     document.getElementById('clinNoteId').value      = note ? note.id : '';
     document.getElementById('clinNoteTitle').value   = note ? note.title : '';
     document.getElementById('clinNoteContent').value = note ? note.content : '';
     let delBtn = document.getElementById('clinNoteDeleteBtn');
     if (delBtn) delBtn.style.display = note ? 'block' : 'none';
-    selectNoteCategory(note ? (note.category || 'general') : 'general');
+    selectNoteCategory(note ? (note.category || 'general') : (defaultCat || 'general'));
     document.getElementById('clinicianNoteModal').style.display = 'flex';
     setTimeout(() => document.getElementById('clinNoteTitle').focus(), 100);
 }
@@ -6902,7 +6919,10 @@ function saveClinicianNote() {
     saveClinicianNotes(notes);
     closeClinicianNoteModal();
     renderClinicianNotes();
-    showToast('📋 Note saved');
+    renderClinicianNotesForCat('uveitis', 'clinicianNotesList-uveitis');
+    renderClinicianNotesForCat('retina',  'clinicianNotesList-retina');
+    renderClinicianNotesForCat('cornea',  'clinicianNotesList-cornea');
+    showToast('Note saved');
 }
 
 function deleteClinicianNote() {
@@ -6911,7 +6931,10 @@ function deleteClinicianNote() {
     saveClinicianNotes(getClinicianNotes().filter(n => n.id !== id));
     closeClinicianNoteModal();
     renderClinicianNotes();
-    showToast('🗑️ Note deleted', 'warning');
+    renderClinicianNotesForCat('uveitis', 'clinicianNotesList-uveitis');
+    renderClinicianNotesForCat('retina',  'clinicianNotesList-retina');
+    renderClinicianNotesForCat('cornea',  'clinicianNotesList-cornea');
+    showToast('Note deleted', 'warning');
 }
 
 function renderClinicianNotes() {
@@ -6963,6 +6986,35 @@ function renderClinicianNotes() {
         html += '</div>';
     }
     el.innerHTML = html;
+}
+
+function renderClinicianNotesForCat(cat, listId) {
+    let el = document.getElementById(listId);
+    if (!el) return;
+    let notes = getClinicianNotes().filter(n => n.category === cat);
+    if (!notes.length) {
+        let m = CLNOTE_CAT[cat] || {};
+        el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:#94a3b8">
+            <p style="font-size:14px;font-weight:600;color:#64748b;margin-bottom:6px">No ${m.label || cat} notes yet</p>
+            <p style="font-size:13px">Tap <strong>New Note</strong> to add one</p>
+        </div>`;
+        return;
+    }
+    let m = CLNOTE_CAT[cat] || { color:'#0891b2', border:'#bae6fd' };
+    el.innerHTML = notes.map(n => {
+        let preview = n.content.replace(/\n/g,' ').slice(0, 120);
+        let ago = (() => { let d = new Date(n.updatedAt); let diff = Math.floor((Date.now()-d)/86400000); return diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : diff + 'd ago'; })();
+        return `<div onclick="openClinicianNoteModal('${n.id}')"
+            style="background:white;border:1.5px solid ${m.border};border-left:4px solid ${m.color};border-radius:14px;padding:14px;margin-bottom:8px;cursor:pointer;transition:box-shadow 0.15s"
+            onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'"
+            onmouseout="this.style.boxShadow='none'">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:5px">
+                <p style="font-weight:700;font-size:14px;color:#0f172a;margin:0;flex:1">${n.title}</p>
+                <span style="font-size:10px;color:#94a3b8;flex-shrink:0;margin-top:2px">${ago}</span>
+            </div>
+            <p style="font-size:12px;color:#64748b;margin:0;line-height:1.5">${preview}${n.content.length > 120 ? '…' : ''}</p>
+        </div>`;
+    }).join('');
 }
 
 // ── Duty Hours ────────────────────────────────────────────────────────────────
