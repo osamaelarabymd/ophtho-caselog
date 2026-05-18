@@ -5235,7 +5235,7 @@ function saveDailyLog() {
         sleep: document.getElementById('jm-sleep')?.value || '',
     };
 
-    let combinedBody = `<h3>Morning Intentions</h3>${zones.morning}<h3>Clinical Focus</h3>${zones.clinical}<h3>CEO Strategic</h3>${zones.strategic}<h3>Evening Reflection</h3>${zones.evening}`;
+    let combinedBody = `<h3>Morning Intentions</h3>${zones.morning}<h3>Clinical Focus</h3>${zones.clinical}<h3>Academic & Growth</h3>${zones.strategic}<h3>Evening Reflection</h3>${zones.evening}`;
 
     let now = new Date().toISOString();
     if (idx >= 0) {
