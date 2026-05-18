@@ -3818,7 +3818,7 @@ function showWorkspaceTab(tab) {
     if (tab === 'duty')       renderDutyHours();
     if (tab === 'compl')      renderCompls();
     if (tab === 'wellness')   renderWellness();
-    if (tab === 'fitness')    renderFitness();
+    if (tab === 'fitness')    { if (typeof showFitnessView === 'function') showFitnessView(activeFitnessView || 'programs'); else renderFitness(); }
 }
 
 function showStudySubTab(sub) {
@@ -3831,9 +3831,9 @@ function showStudySubTab(sub) {
             if (s === sub) {
                 btn.style.background = tabColors[s] || '#0f172a';
                 btn.style.color = 'white';
-                btn.style.boxShadow = '0 1px 4px rgba(0,0,0,0.12)';
+                btn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
             } else {
-                btn.style.background = 'transparent';
+                btn.style.background = '#f1f5f9';
                 btn.style.color = '#64748b';
                 btn.style.boxShadow = 'none';
             }
@@ -5784,9 +5784,10 @@ function renderFitnessStats() {
 }
 
 function renderFitness() {
+    renderFitnessStats();
+    if (activeFitnessView === 'programs') { renderProgramCards(); return; }
     let el = document.getElementById('fitnessList');
     if (!el) return;
-    renderFitnessStats();
 
     let entries = getFitness();
     if (activeFitnessFilter) entries = entries.filter(e => e.type === activeFitnessFilter);
@@ -5840,7 +5841,7 @@ function renderFitness() {
 
 // ── Workout Programs ──────────────────────────────────────────────────────────
 const POSE_SVGS = {
-  squat: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="8" r="5.5" fill="#0f172a"/><line x1="15" y1="20" x2="65" y2="20" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="40" cy="14" x2="38" y2="42" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="38" y1="22" x2="18" y2="30" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="38" y1="22" x2="58" y2="30" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="38" y1="42" x2="24" y2="64" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="38" y1="42" x2="52" y2="64" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="24" y1="64" x2="20" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="52" y1="64" x2="56" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="10" y1="83" x2="28" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="48" y1="83" x2="66" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+  squat: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="8" r="5.5" fill="#0f172a"/><line x1="15" y1="20" x2="65" y2="20" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="40" y1="14" x2="38" y2="42" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="38" y1="22" x2="18" y2="30" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="38" y1="22" x2="58" y2="30" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="38" y1="42" x2="24" y2="64" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="38" y1="42" x2="52" y2="64" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="24" y1="64" x2="20" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="52" y1="64" x2="56" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="10" y1="83" x2="28" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="48" y1="83" x2="66" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
   rdl: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="56" cy="18" r="5.5" fill="#0f172a"/><line x1="51" y1="23" x2="26" y2="50" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="60" x2="52" y2="46" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="42" y1="38" x2="16" y2="60" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="42" y1="38" x2="50" y2="46" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="26" y1="50" x2="24" y2="83" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="26" y1="50" x2="36" y2="83" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="12" y1="83" x2="28" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="34" y1="83" x2="50" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
   bench: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="67" width="64" height="7" rx="3.5" fill="#e2e8f0"/><circle cx="13" cy="52" r="5.5" fill="#0f172a"/><line x1="19" y1="52" x2="62" y2="52" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="14" y1="28" x2="66" y2="28" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="28" y1="52" x2="28" y2="28" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="52" y1="52" x2="52" y2="28" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="62" y1="52" x2="68" y2="67" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/></svg>`,
   ohp: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="10" r="5.5" fill="#0f172a"/><line x1="40" y1="16" x2="40" y2="52" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="24" x2="68" y2="24" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="40" y1="28" x2="16" y2="24" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="40" y1="28" x2="64" y2="24" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="40" y1="52" x2="32" y2="75" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="52" x2="48" y2="75" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="20" y1="83" x2="36" y2="75" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="48" y1="75" x2="62" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
