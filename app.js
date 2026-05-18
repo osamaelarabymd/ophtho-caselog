@@ -123,8 +123,6 @@ const _CP_COMMANDS = [
     { section:'Navigate', label:'Study',        sub:'QBank · OKAP scores · Didactics',icon:'#faf5ff', iconColor:'#7c3aed', iconPath:'<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>', action:"showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch()" },
     { section:'Navigate', label:'Reading List', sub:'Papers & resources tracker',icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>', action:"showTab('journal',null);showWorkspaceTab('reading');closeGlobalSearch()" },
     { section:'Navigate', label:'Duty Hours',   sub:'ACGME 80-hour compliance',icon:'#fef9c3', iconColor:'#d97706', iconPath:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>', action:"showTab('journal',null);showWorkspaceTab('duty');closeGlobalSearch()" },
-    { section:'Navigate', label:'Complications',sub:'Private intraop log',     icon:'#fef2f2', iconColor:'#dc2626', iconPath:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>', action:"showTab('journal',null);showWorkspaceTab('compl');closeGlobalSearch()" },
-    { section:'Navigate', label:'Wellness',     sub:'Wellbeing check-in tracker',icon:'#fdf4ff', iconColor:'#ec4899', iconPath:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>', action:"showTab('journal',null);showWorkspaceTab('wellness');closeGlobalSearch()" },
     { section:'Navigate', label:'Match',        sub:'Fellowship pipeline & rank list',icon:'#f0fdf4', iconColor:'#059669', iconPath:'<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>', action:"showTab('journal',null);showWorkspaceTab('fellowship');closeGlobalSearch()" },
     { section:'Navigate', label:'Settings',     sub:'App settings',           icon:'#f1f5f9', iconColor:'#64748b', iconPath:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', action:"showTab('settings',null);closeGlobalSearch()" },
     // Create
@@ -132,7 +130,6 @@ const _CP_COMMANDS = [
     { section:'Create', label:'Weekly Review',       sub:'Structured weekly reflection',    icon:'#fffbeb', iconColor:'#f59e0b', iconPath:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', action:"showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch();setTimeout(()=>{openJournalModal();setTimeout(()=>applyJournalTemplate('weekly'),80)},100)" },
     { section:'Create', label:'Add Mission',         sub:'Add to calendar / mission list',  icon:'#fef9c3', iconColor:'#ca8a04', iconPath:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', action:"showTab('journal',null);showWorkspaceTab('calendar');closeGlobalSearch();setTimeout(()=>openEventModal(),100)" },
     { section:'Create', label:'Add to Reading List', sub:'Add paper or resource',           icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>', action:"showTab('journal',null);showWorkspaceTab('reading');closeGlobalSearch();setTimeout(()=>openStudyModal(),100)" },
-    { section:'Create', label:'Wellness Check-in',   sub:'Log how you\'re feeling today',   icon:'#fdf4ff', iconColor:'#ec4899', iconPath:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>', action:"showTab('journal',null);showWorkspaceTab('wellness');closeGlobalSearch();setTimeout(()=>openWellnessModal(),100)" },
 ];
 
 function openGlobalSearch() {
@@ -3823,9 +3820,9 @@ function showWorkspaceTab(tab) {
     let wsSectionLabel  = document.getElementById('wsSectionLabel');
     if (wsGrid) wsGrid.style.display = 'none';
     if (wsSectionHeader) { wsSectionHeader.style.display = 'flex'; wsSectionHeader.classList.add('active'); }
-    const WS_LABELS = { calendar:'📅 Missions', journal:'📓 Journal', study:'📝 Study', reading:'📚 Reading', fellowship:'🎓 Match', duty:'⏰ Duty Hours', compl:'⚠️ Complications', wellness:'💆 Wellness', fitness:'💪 Fitness' };
+    const WS_LABELS = { calendar:'📅 Missions', journal:'📓 Journal', study:'📝 Study', reading:'📚 Reading', fellowship:'🎓 Match', duty:'⏰ Duty Hours', fitness:'💪 Fitness' };
     if (wsSectionLabel) wsSectionLabel.textContent = WS_LABELS[tab] || tab;
-    ['calendar','journal','study','reading','fellowship','duty','compl','wellness','fitness'].forEach(t => {
+    ['calendar','journal','study','reading','fellowship','duty','fitness'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = t === tab ? 'block' : 'none';
         let btn = document.getElementById('ws-tab-'+t);
@@ -3847,8 +3844,6 @@ function showWorkspaceTab(tab) {
     if (tab === 'reading')    renderStudyList();
     if (tab === 'fellowship') { showFpTab('pipeline'); }
     if (tab === 'duty')       renderDutyHours();
-    if (tab === 'compl')      renderCompls();
-    if (tab === 'wellness')   renderWellness();
     if (tab === 'fitness')    { if (typeof showFitnessView === 'function') showFitnessView(activeFitnessView || 'programs'); else renderFitness(); }
 }
 
@@ -3865,8 +3860,47 @@ function showStudySubTab(sub) {
         if (s === sub) { btn.classList.add('st-tab-active'); }
         else           { btn.classList.remove('st-tab-active'); }
     });
-    if (sub === 'okap')      renderIteScores();
+    if (sub === 'okap') {
+        renderIteScores();
+        showOkapSubTab('scores'); // default to scores view
+    }
     if (sub === 'clinician') renderClinicianNotes();
+}
+
+function showOkapSubTab(view) {
+    // Toggle scores vs notes sub-views inside the OKAP panel
+    let scoresBtn = document.getElementById('okap-sub-scores');
+    let notesBtn  = document.getElementById('okap-sub-notes');
+    let scoresView = document.getElementById('okap-view-scores');
+    let notesView  = document.getElementById('okap-view-notes');
+    if (!scoresView || !notesView) return;
+    scoresView.style.display = view === 'scores' ? 'block' : 'none';
+    notesView.style.display  = view === 'notes'  ? 'block' : 'none';
+    if (scoresBtn) {
+        scoresBtn.style.background = view === 'scores' ? '#0f172a' : 'transparent';
+        scoresBtn.style.color      = view === 'scores' ? 'white' : '#64748b';
+    }
+    if (notesBtn) {
+        notesBtn.style.background = view === 'notes' ? '#0f172a' : 'transparent';
+        notesBtn.style.color      = view === 'notes' ? 'white' : '#64748b';
+    }
+    if (view === 'notes') {
+        let ta = document.getElementById('okapStudyNotes');
+        if (ta) ta.value = localStorage.getItem('eyeOkapNotes') || '';
+    }
+}
+
+let _okapSaveTimer = null;
+function saveOkapNotes() {
+    let ta = document.getElementById('okapStudyNotes');
+    if (!ta) return;
+    localStorage.setItem('eyeOkapNotes', ta.value);
+    clearTimeout(_okapSaveTimer);
+    let savedEl = document.getElementById('okapNotesSaved');
+    if (savedEl) {
+        savedEl.style.opacity = '1';
+        _okapSaveTimer = setTimeout(() => { savedEl.style.opacity = '0'; }, 1800);
+    }
 }
 
 function backToWsGrid() {
@@ -3874,7 +3908,7 @@ function backToWsGrid() {
     let wsSectionHeader = document.getElementById('wsSectionHeader');
     if (wsGrid) wsGrid.style.display = 'grid';
     if (wsSectionHeader) { wsSectionHeader.style.display = 'none'; wsSectionHeader.classList.remove('active'); }
-    ['calendar','journal','study','reading','fellowship','duty','compl','wellness','fitness'].forEach(t => {
+    ['calendar','journal','study','reading','fellowship','duty','fitness'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = 'none';
         let btn = document.getElementById('ws-tab-'+t);
@@ -6013,20 +6047,24 @@ function renderFitness() {
 }
 
 // ── Workout Programs ──────────────────────────────────────────────────────────
-const POSE_SVGS = {
-  squat: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="8" r="5.5" fill="#0f172a"/><line x1="15" y1="20" x2="65" y2="20" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="40" y1="14" x2="38" y2="42" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="38" y1="22" x2="18" y2="30" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="38" y1="22" x2="58" y2="30" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="38" y1="42" x2="24" y2="64" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="38" y1="42" x2="52" y2="64" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="24" y1="64" x2="20" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="52" y1="64" x2="56" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="10" y1="83" x2="28" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="48" y1="83" x2="66" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
-  rdl: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="56" cy="18" r="5.5" fill="#0f172a"/><line x1="51" y1="23" x2="26" y2="50" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="60" x2="52" y2="46" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="42" y1="38" x2="16" y2="60" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="42" y1="38" x2="50" y2="46" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="26" y1="50" x2="24" y2="83" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="26" y1="50" x2="36" y2="83" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="12" y1="83" x2="28" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="34" y1="83" x2="50" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
-  bench: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="67" width="64" height="7" rx="3.5" fill="#e2e8f0"/><circle cx="13" cy="52" r="5.5" fill="#0f172a"/><line x1="19" y1="52" x2="62" y2="52" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="14" y1="28" x2="66" y2="28" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="28" y1="52" x2="28" y2="28" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="52" y1="52" x2="52" y2="28" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="62" y1="52" x2="68" y2="67" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/></svg>`,
-  ohp: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="10" r="5.5" fill="#0f172a"/><line x1="40" y1="16" x2="40" y2="52" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="24" x2="68" y2="24" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="40" y1="28" x2="16" y2="24" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="40" y1="28" x2="64" y2="24" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="40" y1="52" x2="32" y2="75" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="52" x2="48" y2="75" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="20" y1="83" x2="36" y2="75" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="48" y1="75" x2="62" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
-  row: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="56" cy="24" r="5.5" fill="#0f172a"/><line x1="52" y1="29" x2="26" y2="54" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="10" y1="54" x2="52" y2="40" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="40" y1="40" x2="14" y2="54" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="40" y1="40" x2="50" y2="40" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="26" y1="54" x2="22" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="26" y1="54" x2="34" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="10" y1="83" x2="26" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="32" y1="83" x2="48" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
-  pullup: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="10" x2="72" y2="10" stroke="#94a3b8" stroke-width="5" stroke-linecap="round"/><line x1="40" y1="20" x2="28" y2="10" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="40" y1="20" x2="52" y2="10" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><circle cx="40" cy="28" r="5.5" fill="#0f172a"/><line x1="40" y1="34" x2="40" y2="62" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="62" x2="34" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="62" x2="46" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/></svg>`,
-  lunge: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="42" cy="8" r="5.5" fill="#0f172a"/><line x1="42" y1="14" x2="42" y2="44" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="42" y1="28" x2="30" y2="40" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="42" y1="28" x2="54" y2="38" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="42" y1="44" x2="54" y2="66" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="54" y1="66" x2="60" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="42" y1="44" x2="28" y2="62" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="28" y1="62" x2="18" y2="76" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="52" y1="83" x2="68" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
-  plank: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="48" r="5" fill="#0f172a"/><line x1="18" y1="50" x2="68" y2="50" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="28" y1="50" x2="26" y2="65" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/><line x1="46" y1="50" x2="44" y2="65" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/><line x1="20" y1="65" x2="52" y2="65" stroke="#e2e8f0" stroke-width="2.5" stroke-linecap="round"/><line x1="34" y1="50" x2="60" y2="50" stroke="#e11d48" stroke-width="5" stroke-linecap="round" opacity="0.55"/><line x1="68" y1="50" x2="72" y2="65" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="64" y1="65" x2="78" y2="65" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
-  run: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="36" cy="8" r="5.5" fill="#0f172a"/><line x1="34" y1="14" x2="32" y2="44" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="34" y1="26" x2="18" y2="18" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="34" y1="26" x2="52" y2="36" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="32" y1="44" x2="48" y2="64" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="48" y1="64" x2="60" y2="76" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="32" y1="44" x2="20" y2="60" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="20" y1="60" x2="28" y2="74" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="52" y1="76" x2="70" y2="80" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
-  curl: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="8" r="5.5" fill="#0f172a"/><line x1="40" y1="14" x2="40" y2="52" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="38" y1="24" x2="30" y2="52" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="42" y1="24" x2="54" y2="36" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="54" y1="36" x2="46" y2="24" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><circle cx="46" cy="22" r="4" fill="none" stroke="#94a3b8" stroke-width="2.5"/><line x1="40" y1="52" x2="33" y2="75" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="52" x2="47" y2="75" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="22" y1="83" x2="37" y2="75" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="47" y1="75" x2="60" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
-  lateral: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="8" r="5.5" fill="#0f172a"/><line x1="40" y1="14" x2="40" y2="52" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="26" x2="12" y2="40" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="40" y1="26" x2="68" y2="40" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><circle cx="10" cy="40" r="4" fill="none" stroke="#94a3b8" stroke-width="2.5"/><circle cx="70" cy="40" r="4" fill="none" stroke="#94a3b8" stroke-width="2.5"/><line x1="40" y1="52" x2="33" y2="75" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="52" x2="47" y2="75" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="22" y1="83" x2="37" y2="75" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="47" y1="75" x2="60" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
-  leg_press: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="44" r="5.5" fill="#0f172a"/><line x1="18" y1="46" x2="42" y2="62" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="42" y1="62" x2="66" y2="44" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="66" y1="44" x2="74" y2="26" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="66" y1="20" x2="78" y2="20" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="26" y1="50" x2="22" y2="62" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><rect x="36" y="65" width="14" height="5" rx="2.5" fill="#e2e8f0"/></svg>`,
+// Pose photos: Unsplash athlete images mapped by exercise type
+// Format: photo URL cropped to 80×100 via Unsplash source API
+const POSE_PHOTOS = {
+  squat:     'https://images.unsplash.com/photo-1566241142559-40e1dab266c6?w=160&h=200&fit=crop&crop=faces,center&q=80',
+  rdl:       'https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=160&h=200&fit=crop&crop=faces,center&q=80',
+  bench:     'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=160&h=200&fit=crop&crop=faces,center&q=80',
+  ohp:       'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=160&h=200&fit=crop&crop=faces,center&q=80',
+  row:       'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=160&h=200&fit=crop&crop=faces,center&q=80',
+  pullup:    'https://images.unsplash.com/photo-1520334363930-fcfe8c9bbc51?w=160&h=200&fit=crop&crop=faces,center&q=80',
+  lunge:     'https://images.unsplash.com/photo-1434682881908-b43d0467b798?w=160&h=200&fit=crop&crop=faces,center&q=80',
+  plank:     'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=160&h=200&fit=crop&crop=faces,center&q=80',
+  run:       'https://images.unsplash.com/photo-1461897104016-0b3b00cc81ee?w=160&h=200&fit=crop&crop=faces,center&q=80',
+  curl:      'https://images.unsplash.com/photo-1581009137042-c552e485697a?w=160&h=200&fit=crop&crop=faces,center&q=80',
+  lateral:   'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=160&h=200&fit=crop&crop=faces,center&q=80',
+  leg_press: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=160&h=200&fit=crop&crop=faces,center&q=80',
 };
+// Alias for backwards compatibility
+const POSE_SVGS = POSE_PHOTOS;
 
 const WORKOUT_PROGRAMS = {
   push: {
@@ -6212,18 +6250,20 @@ function renderProgramDetail(key) {
     let exercises = order.map(id => prog.exercises.find(e => e.id === id)).filter(Boolean);
 
     let exHtml = exercises.map((ex, idx) => {
-        let pose = POSE_SVGS[ex.pose] || POSE_SVGS.squat;
+        let poseUrl = POSE_PHOTOS[ex.pose] || POSE_PHOTOS.squat;
         let muscleChips = ex.muscles.map(m => `<span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:${prog.color}18;color:${prog.color};margin:2px 3px 2px 0">${m}</span>`).join('');
         return `<div class="prog-ex-item" data-idx="${idx}" data-id="${ex.id}" draggable="true"
             style="background:white;border:1.5px solid #f1f5f9;border-radius:16px;margin-bottom:10px;overflow:hidden;transition:border-color 0.15s,box-shadow 0.15s;cursor:grab"
             onmouseover="this.style.borderColor='${prog.border}';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.06)'"
             onmouseout="this.style.borderColor='#f1f5f9';this.style.boxShadow='none'">
             <div style="display:flex;align-items:stretch">
-                <!-- Drag handle + pose -->
-                <div style="width:90px;flex-shrink:0;background:${prog.bg};display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 6px;border-right:1.5px solid ${prog.border}20;gap:6px">
-                    <div style="font-size:8px;font-weight:700;color:${prog.color};letter-spacing:0.5px;opacity:0.6">⠿ DRAG</div>
-                    ${pose}
-                    ${ex.optional ? `<span style="font-size:9px;font-weight:700;color:${prog.color};opacity:0.7;background:${prog.color}15;padding:1px 6px;border-radius:10px">optional</span>` : ''}
+                <!-- Drag handle + athlete photo -->
+                <div style="width:90px;flex-shrink:0;position:relative;overflow:hidden;border-right:1.5px solid ${prog.border}20">
+                    <img src="${poseUrl}" alt="${ex.pose}" loading="lazy"
+                        style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;min-height:120px"
+                        onerror="this.style.display='none';this.parentElement.style.background='${prog.bg}'">
+                    <div style="position:absolute;top:6px;left:0;right:0;text-align:center;font-size:8px;font-weight:700;color:white;letter-spacing:0.5px;text-shadow:0 1px 3px rgba(0,0,0,0.6)">⠿ DRAG</div>
+                    ${ex.optional ? `<div style="position:absolute;bottom:6px;left:0;right:0;text-align:center"><span style="font-size:9px;font-weight:700;color:white;background:rgba(0,0,0,0.5);padding:1px 6px;border-radius:10px">opt.</span></div>` : ''}
                 </div>
                 <!-- Exercise info -->
                 <div style="flex:1;padding:12px 14px">
@@ -7361,191 +7401,6 @@ function renderDidactics() {
     listEl.innerHTML = html;
 }
 
-// ── Intraoperative Complications (Private — localStorage only, never synced) ──
-function getCompls()     { return JSON.parse(localStorage.getItem('eyeCompls')||'[]'); }
-function saveCompls(arr) { localStorage.setItem('eyeCompls', JSON.stringify(arr)); }
-
-let selectedComplType     = '';
-let selectedComplSeverity = 'Minor';
-let selectedComplOutcome  = 'Good';
-
-function selectCompl(type) {
-    selectedComplType = type;
-    document.querySelectorAll('.compl-type-btn').forEach(b => {
-        b.style.background  = '#f8fafc';
-        b.style.color       = '#64748b';
-        b.style.borderColor = '#e2e8f0';
-    });
-    let active = document.getElementById('ctype-' + type);
-    if (active) { active.style.background='#fef2f2'; active.style.color='#dc2626'; active.style.borderColor='#fca5a5'; }
-    let customEl = document.getElementById('complTypeCustom');
-    if (customEl) customEl.style.display = type === 'Other' ? 'block' : 'none';
-}
-
-function selectComplSeverity(sev) {
-    selectedComplSeverity = sev;
-    let cols = { Minor:['#f0fdf4','#16a34a','#86efac'], Moderate:['#fffbeb','#d97706','#fde68a'], Major:['#fef2f2','#dc2626','#fca5a5'] };
-    ['Minor','Moderate','Major'].forEach(s => {
-        let btn = document.getElementById('csev-'+s);
-        if (!btn) return;
-        let [bg,txt,bd] = s===sev ? cols[s] : ['#f8fafc','#64748b','#e2e8f0'];
-        btn.style.background=bg; btn.style.color=txt; btn.style.borderColor=bd;
-    });
-}
-
-function selectComplOutcome(out) {
-    selectedComplOutcome = out;
-    let cols = { Good:['#f0fdf4','#16a34a','#86efac'], Fair:['#fffbeb','#d97706','#fde68a'], Poor:['#fef2f2','#dc2626','#fca5a5'] };
-    ['Good','Fair','Poor'].forEach(o => {
-        let btn = document.getElementById('cout-'+o);
-        if (!btn) return;
-        let [bg,txt,bd] = o===out ? cols[o] : ['#f8fafc','#64748b','#e2e8f0'];
-        btn.style.background=bg; btn.style.color=txt; btn.style.borderColor=bd;
-    });
-}
-
-function openComplModal(id) {
-    let compls = getCompls();
-    let c = id ? compls.find(x => x.id === id) : null;
-    document.getElementById('complId').value          = c ? c.id : '';
-    document.getElementById('complDate').value        = c ? c.date : getTodayStr();
-    document.getElementById('complProcedure').value   = c ? c.procedure : 'Cataract / Phaco';
-    document.getElementById('complManagement').value  = c ? (c.management||'') : '';
-    document.getElementById('complNotes').value       = c ? (c.notes||'') : '';
-    document.getElementById('complTypeCustom').value  = '';
-    selectCompl(c ? c.complication : 'PCR');
-    selectComplSeverity(c ? c.severity : 'Minor');
-    selectComplOutcome(c ? c.outcome : 'Good');
-    if (c && !document.getElementById('ctype-'+c.complication)) {
-        selectCompl('Other');
-        document.getElementById('complTypeCustom').value = c.complication;
-    }
-    document.getElementById('complModal').style.display = 'flex';
-}
-
-function closeComplModal() {
-    document.getElementById('complModal').style.display = 'none';
-}
-
-function saveCompl() {
-    let date = document.getElementById('complDate').value;
-    if (!date) { showToast('Enter date', 'warning'); return; }
-    let type = selectedComplType === 'Other'
-        ? (document.getElementById('complTypeCustom').value.trim() || 'Other')
-        : selectedComplType;
-    if (!type) { showToast('Select a complication type', 'warning'); return; }
-
-    let compls = getCompls();
-    let id     = document.getElementById('complId').value;
-    let entry  = {
-        id:         id || crypto.randomUUID(),
-        date,
-        procedure:  document.getElementById('complProcedure').value,
-        complication: type,
-        severity:   selectedComplSeverity,
-        management: document.getElementById('complManagement').value.trim(),
-        outcome:    selectedComplOutcome,
-        notes:      document.getElementById('complNotes').value.trim(),
-        createdAt:  new Date().toISOString()
-    };
-    if (id) {
-        let idx = compls.findIndex(c => c.id === id);
-        if (idx !== -1) compls[idx] = entry; else compls.unshift(entry);
-    } else {
-        compls.unshift(entry);
-    }
-    saveCompls(compls);
-    closeComplModal();
-    renderCompls();
-    showToast('🔒 Saved privately');
-}
-
-function deleteCompl(id) {
-    if (!confirm('Delete this complication entry?')) return;
-    saveCompls(getCompls().filter(c => c.id !== id));
-    renderCompls();
-}
-
-function renderCompls() {
-    let compls = getCompls();
-    let statsEl = document.getElementById('complStats');
-    let histEl  = document.getElementById('complHistory');
-
-    // ── Stats cards: total, PCR rate, severity breakdown ──
-    if (statsEl) {
-        if (compls.length === 0) { statsEl.innerHTML = ''; }
-        else {
-            let total    = compls.length;
-            let pcrCount = compls.filter(c => c.complication === 'PCR' || c.complication === 'Posterior Capsule Rupture').length;
-            let vlCount  = compls.filter(c => c.complication === 'Vitreous Loss').length;
-            let majCount = compls.filter(c => c.severity === 'Major').length;
-            let goodOut  = compls.filter(c => c.outcome === 'Good').length;
-
-            // PCR rate vs all cataract cases
-            let cataractCases = allCases.filter(c => c.procedure && c.procedure.toLowerCase().includes('cataract') || c.procedure && c.procedure.toLowerCase().includes('phaco')).length;
-            let pcrRate = cataractCases > 0 ? ((pcrCount / cataractCases) * 100).toFixed(1) : null;
-
-            statsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
-                <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:12px;padding:10px;text-align:center">
-                    <div style="font-size:20px;font-weight:800;color:#dc2626">${total}</div>
-                    <div style="font-size:9px;color:#dc2626;font-weight:700;text-transform:uppercase;margin-top:2px">Total</div>
-                </div>
-                <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:10px;text-align:center">
-                    <div style="font-size:20px;font-weight:800;color:#ea580c">${pcrCount}</div>
-                    <div style="font-size:9px;color:#ea580c;font-weight:700;text-transform:uppercase;margin-top:2px">PCR${pcrRate?'<br><span style=\'font-size:8px;font-weight:400\'>('+pcrRate+'%)</span>':''}</div>
-                </div>
-                <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:12px;padding:10px;text-align:center">
-                    <div style="font-size:20px;font-weight:800;color:#dc2626">${majCount}</div>
-                    <div style="font-size:9px;color:#dc2626;font-weight:700;text-transform:uppercase;margin-top:2px">Major</div>
-                </div>
-                <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:10px;text-align:center">
-                    <div style="font-size:20px;font-weight:800;color:#16a34a">${goodOut}</div>
-                    <div style="font-size:9px;color:#16a34a;font-weight:700;text-transform:uppercase;margin-top:2px">Good Outcome</div>
-                </div>
-            </div>`;
-        }
-    }
-
-    // ── History list ──
-    if (!histEl) return;
-    if (compls.length === 0) {
-        histEl.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#9ca3af">
-            <div style="font-size:32px;margin-bottom:12px">✅</div>
-            <div style="font-size:14px;font-weight:600">No complications logged</div>
-            <div style="font-size:12px;margin-top:4px">This log is private — only visible on this device</div>
-        </div>`;
-        return;
-    }
-
-    let sevColor = { Minor:'#16a34a', Moderate:'#d97706', Major:'#dc2626' };
-    let sevBg    = { Minor:'#f0fdf4', Moderate:'#fffbeb', Major:'#fef2f2' };
-    let outEmoji = { Good:'✅', Fair:'🟡', Poor:'⚠️' };
-
-    histEl.innerHTML = compls.map(c => {
-        let d     = new Date(c.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
-        let scol  = sevColor[c.severity]||'#64748b';
-        let sbg   = sevBg[c.severity]||'#f8fafc';
-        return `<div class="dash-card" style="margin-bottom:10px;border-left:3px solid ${scol}">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
-                <div style="flex:1;min-width:0">
-                    <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:3px">
-                        <span style="font-size:13px;font-weight:800;color:#0f172a">${c.complication}</span>
-                        <span style="background:${sbg};color:${scol};border-radius:6px;font-size:10px;font-weight:700;padding:2px 8px">${c.severity}</span>
-                        <span style="font-size:11px">${outEmoji[c.outcome]||''} ${c.outcome}</span>
-                    </div>
-                    <div style="font-size:11px;color:#94a3b8">${c.procedure} · ${d}</div>
-                </div>
-                <div style="display:flex;gap:5px;flex-shrink:0;margin-left:8px">
-                    <button onclick="openComplModal('${c.id}')" style="width:26px;height:26px;padding:0;margin:0;background:#f1f5f9;border-radius:6px;font-size:11px;color:#64748b;border:none;box-shadow:none">✏️</button>
-                    <button onclick="deleteCompl('${c.id}')" style="width:26px;height:26px;padding:0;margin:0;background:#fef2f2;border-radius:6px;font-size:13px;color:#dc2626;border:1px solid #fecaca;box-shadow:none">×</button>
-                </div>
-            </div>
-            ${c.management ? `<div style="font-size:12px;color:#374151;margin-top:6px;padding:8px 10px;background:#f8fafc;border-radius:8px"><strong>Management:</strong> ${c.management}</div>` : ''}
-            ${c.notes ? `<div style="font-size:12px;color:#64748b;margin-top:6px;font-style:italic;padding:6px 10px;background:#fef2f2;border-radius:8px;border-left:2px solid #fca5a5">🔒 ${c.notes}</div>` : ''}
-        </div>`;
-    }).join('');
-}
-
 // ── ITE / OKAP Score Tracker ──────────────────────────────────────────────────
 function getIteScores()     { return JSON.parse(localStorage.getItem('eyeIteScores')||'[]'); }
 function saveIteScores(arr) { localStorage.setItem('eyeIteScores', JSON.stringify(arr)); }
@@ -8326,307 +8181,6 @@ function exportStatsLetterPDF() {
     doc.text(`GRAND TOTAL: ${meta.grandTotal} cases (${meta.grandTotalPrimary} as Primary Surgeon)`, 14, y);
     doc.save(`fellowship-stats-${(meta.name||'resident').replace(/\s+/g,'-').toLowerCase()}.pdf`);
     showToast('PDF exported!');
-}
-
-// ── Wellness Check-in ─────────────────────────────────────────────────────────
-function getWellness()      { return JSON.parse(localStorage.getItem('eyeWellness')||'[]'); }
-function saveWellness_(arr) { localStorage.setItem('eyeWellness', JSON.stringify(arr)); }
-
-let selectedWellbeing  = 0;
-let selectedStressors  = [];
-let wellnessChartInst  = null;
-
-const WELLBEING_LABELS = {
-    1:'Terrible 😞', 2:'Very low 😔', 3:'Struggling 😟', 4:'Below average 😕',
-    5:'Okay 😐', 6:'Decent 🙂', 7:'Good 😊', 8:'Really good 😄', 9:'Great 🌟', 10:'Amazing 🚀'
-};
-
-function setWellbeing(n) {
-    selectedWellbeing = n;
-    for (let i = 1; i <= 10; i++) {
-        let btn = document.getElementById('wb-'+i);
-        if (!btn) continue;
-        let active = i === n;
-        let col = i <= 3 ? '#dc2626' : i <= 5 ? '#f59e0b' : i <= 7 ? '#2563eb' : '#16a34a';
-        btn.style.background  = active ? col : '#f1f5f9';
-        btn.style.color       = active ? 'white' : '#64748b';
-        btn.style.borderColor = active ? col : '#e2e8f0';
-        btn.style.fontWeight  = active ? '800' : '600';
-    }
-    let lbl = document.getElementById('wellbeingLabel');
-    if (lbl) lbl.textContent = WELLBEING_LABELS[n] || '';
-}
-
-function toggleStressor(btn, label) {
-    let idx = selectedStressors.indexOf(label);
-    if (idx >= 0) {
-        selectedStressors.splice(idx, 1);
-        btn.style.background  = '#f1f5f9';
-        btn.style.color       = '#64748b';
-        btn.style.borderColor = '#e2e8f0';
-    } else {
-        selectedStressors.push(label);
-        btn.style.background  = '#fef2f2';
-        btn.style.color       = '#dc2626';
-        btn.style.borderColor = '#fca5a5';
-    }
-}
-
-function openWellnessModal(id) {
-    let entries = getWellness();
-    let w = id ? entries.find(x => x.id === id) : null;
-    document.getElementById('wellnessId').value   = w ? w.id : '';
-    document.getElementById('wellnessDate').value = w ? w.date : getTodayStr();
-    document.getElementById('wellnessSleep').value = w ? (w.sleep || '') : '';
-    document.getElementById('wellnessPostCall').checked = w ? !!w.postCall : false;
-    document.getElementById('wellnessWin').value   = w ? (w.win || '') : '';
-    document.getElementById('wellnessNotes').value = w ? (w.notes || '') : '';
-
-    // Reset wellbeing buttons
-    selectedWellbeing = w ? (w.wellbeing || 0) : 0;
-    for (let i = 1; i <= 10; i++) {
-        let btn = document.getElementById('wb-'+i);
-        if (!btn) continue;
-        btn.style.background  = '#f1f5f9';
-        btn.style.color       = '#64748b';
-        btn.style.borderColor = '#e2e8f0';
-        btn.style.fontWeight  = '600';
-    }
-    let lbl = document.getElementById('wellbeingLabel');
-    if (lbl) lbl.textContent = '';
-    if (selectedWellbeing) setWellbeing(selectedWellbeing);
-
-    // Reset stressors
-    selectedStressors = w ? (w.stressors ? [...w.stressors] : []) : [];
-    document.querySelectorAll('.stressor-btn').forEach(btn => {
-        let label = btn.dataset.stressor;
-        let active = selectedStressors.includes(label);
-        btn.style.background  = active ? '#fef2f2' : '#f1f5f9';
-        btn.style.color       = active ? '#dc2626' : '#64748b';
-        btn.style.borderColor = active ? '#fca5a5' : '#e2e8f0';
-    });
-
-    document.getElementById('wellnessModal').style.display = 'flex';
-}
-
-function closeWellnessModal() {
-    document.getElementById('wellnessModal').style.display = 'none';
-    selectedWellbeing = 0;
-    selectedStressors = [];
-}
-
-function saveWellness() {
-    let date = document.getElementById('wellnessDate').value;
-    if (!date) { alert('Please select a date.'); return; }
-    if (!selectedWellbeing) { alert('Please rate your wellbeing.'); return; }
-
-    let entries = getWellness();
-    let id  = document.getElementById('wellnessId').value;
-    let obj = {
-        id:       id || crypto.randomUUID(),
-        date,
-        wellbeing: selectedWellbeing,
-        sleep:     parseFloat(document.getElementById('wellnessSleep').value) || null,
-        postCall:  document.getElementById('wellnessPostCall').checked,
-        stressors: [...selectedStressors],
-        win:       document.getElementById('wellnessWin').value.trim(),
-        notes:     document.getElementById('wellnessNotes').value.trim(),
-        createdAt: id ? (entries.find(x=>x.id===id)||{}).createdAt : new Date().toISOString()
-    };
-
-    if (id) {
-        let i = entries.findIndex(x => x.id === id);
-        if (i >= 0) entries[i] = obj; else entries.push(obj);
-    } else {
-        entries.push(obj);
-    }
-    entries.sort((a,b) => b.date.localeCompare(a.date));
-    saveWellness_(entries);
-    closeWellnessModal();
-    renderWellness();
-}
-
-function deleteWellness(id) {
-    if (!confirm('Delete this check-in?')) return;
-    saveWellness_(getWellness().filter(x => x.id !== id));
-    renderWellness();
-}
-
-function _wellnessStreak(entries) {
-    if (!entries.length) return 0;
-    let today = getTodayStr();
-    let streak = 0;
-    let cur = new Date(today);
-    let dates = new Set(entries.map(e => e.date));
-    while (true) {
-        let ds = cur.toLocaleDateString('en-CA', { timeZone: getUserTz() });
-        if (dates.has(ds)) { streak++; cur.setDate(cur.getDate()-1); }
-        else break;
-    }
-    return streak;
-}
-
-function renderWellness() {
-    let el = document.getElementById('ws-wellness');
-    if (!el) return;
-    let entries = getWellness();
-    let today   = getTodayStr();
-    let thisWeekStart = _dutyWeekBounds(0).monday; // reuse week bounds helper
-
-    // Stats
-    let avgWellbeing = entries.length ? (entries.reduce((s,e)=>s+e.wellbeing,0)/entries.length).toFixed(1) : '—';
-    let sleepEntries = entries.filter(e=>e.sleep!=null);
-    let avgSleep     = sleepEntries.length ? (sleepEntries.reduce((s,e)=>s+e.sleep,0)/sleepEntries.length).toFixed(1) : '—';
-    let streak       = _wellnessStreak(entries);
-    let weekEntries  = entries.filter(e => e.date >= thisWeekStart && e.date <= today);
-
-    // Wins gallery — last 5 wins
-    let wins = entries.filter(e=>e.win).slice(0,5);
-
-    // Wellbeing color helper
-    let wbColor = v => v >= 8 ? '#16a34a' : v >= 6 ? '#2563eb' : v >= 4 ? '#f59e0b' : '#dc2626';
-
-    // Stressor frequency
-    let stressorMap = {};
-    entries.forEach(e => (e.stressors||[]).forEach(s => { stressorMap[s] = (stressorMap[s]||0)+1; }));
-    let topStressors = Object.entries(stressorMap).sort((a,b)=>b[1]-a[1]).slice(0,3);
-
-    let statsHtml = `
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
-        ${[
-            { label:'Avg Wellbeing', val: avgWellbeing !== '—' ? avgWellbeing+'/10' : '—', col: avgWellbeing !== '—' ? wbColor(parseFloat(avgWellbeing)) : '#94a3b8' },
-            { label:'Avg Sleep',     val: avgSleep !== '—' ? avgSleep+'h' : '—',           col: avgSleep!=='—' && parseFloat(avgSleep)>=7 ? '#16a34a' : avgSleep!=='—' ? '#f59e0b' : '#94a3b8' },
-            { label:'Check-in Streak', val: streak ? streak+'d 🔥' : '0d',                col: streak >= 7 ? '#16a34a' : streak >= 3 ? '#f59e0b' : '#94a3b8' },
-            { label:'This Week',     val: weekEntries.length+'/7',                         col: '#7c3aed' }
-        ].map(s=>`<div style="background:white;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;text-align:center">
-            <div style="font-size:20px;font-weight:800;color:${s.col}">${s.val}</div>
-            <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px">${s.label}</div>
-        </div>`).join('')}
-    </div>`;
-
-    // Trend chart
-    let chartHtml = '';
-    if (entries.length >= 3) {
-        chartHtml = `<div style="background:white;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:16px">
-            <div style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Wellbeing Trend</div>
-            <canvas id="wellnessChart" height="90"></canvas>
-        </div>`;
-    }
-
-    // Top stressors
-    let stressorHtml = '';
-    if (topStressors.length) {
-        stressorHtml = `<div style="background:white;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:16px">
-            <div style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Top Stressors</div>
-            ${topStressors.map(([s,n])=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-                <div style="flex:1;font-size:12px;font-weight:600;color:#374151">${s}</div>
-                <div style="background:#fef2f2;color:#dc2626;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px">${n}×</div>
-            </div>`).join('')}
-        </div>`;
-    }
-
-    // Wins gallery
-    let winsHtml = '';
-    if (wins.length) {
-        winsHtml = `<div style="background:linear-gradient(135deg,#fdf4ff,#fce7f3);border:1.5px solid #f0abfc;border-radius:14px;padding:16px;margin-bottom:16px">
-            <div style="font-size:12px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">🏆 Highlight Reel</div>
-            ${wins.map(e=>`<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">
-                <div style="font-size:16px;flex-shrink:0">⭐</div>
-                <div>
-                    <div style="font-size:12px;font-weight:600;color:#1e1b4b">${e.win}</div>
-                    <div style="font-size:10px;color:#7c3aed;margin-top:1px">${e.date}</div>
-                </div>
-            </div>`).join('')}
-        </div>`;
-    }
-
-    // History
-    let histHtml = '';
-    if (!entries.length) {
-        histHtml = `<div style="text-align:center;padding:40px 20px;color:#94a3b8">
-            <div style="font-size:36px;margin-bottom:8px">💆</div>
-            <div style="font-size:14px;font-weight:600">No check-ins yet</div>
-            <div style="font-size:12px;margin-top:4px">Tap "Check In" to start tracking your wellness</div>
-        </div>`;
-    } else {
-        histHtml = entries.map(e => {
-            let col = wbColor(e.wellbeing);
-            return `<div style="background:white;border:1.5px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:10px;border-left:4px solid ${col}">
-                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-                    <div style="flex:1">
-                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-                            <div style="font-size:20px;font-weight:900;color:${col}">${e.wellbeing}/10</div>
-                            <div style="font-size:12px;font-weight:600;color:#374151">${WELLBEING_LABELS[e.wellbeing]||''}</div>
-                            ${e.postCall ? '<span style="background:#fef2f2;color:#dc2626;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;border:1px solid #fecaca">POST-CALL</span>' : ''}
-                        </div>
-                        <div style="font-size:11px;color:#64748b;margin-bottom:4px">${e.date}${e.sleep != null ? ` · 💤 ${e.sleep}h sleep` : ''}</div>
-                        ${e.stressors&&e.stressors.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">${e.stressors.map(s=>`<span style="background:#fef2f2;color:#dc2626;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;border:1px solid #fecaca">${s}</span>`).join('')}</div>` : ''}
-                        ${e.win ? `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:7px 10px;margin-bottom:5px;font-size:12px;color:#78350f"><span style="font-weight:700">⭐ Win:</span> ${e.win}</div>` : ''}
-                        ${e.notes ? `<div style="font-size:12px;color:#475569;font-style:italic">${e.notes}</div>` : ''}
-                    </div>
-                    <div style="display:flex;gap:4px;flex-shrink:0">
-                        <button onclick="openWellnessModal('${e.id}')" style="width:26px;height:26px;padding:0;margin:0;background:#f1f5f9;border-radius:7px;box-shadow:none;display:flex;align-items:center;justify-content:center;border:1px solid #e2e8f0">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                        </button>
-                        <button onclick="deleteWellness('${e.id}')" style="width:26px;height:26px;padding:0;margin:0;background:#fef2f2;border-radius:7px;box-shadow:none;display:flex;align-items:center;justify-content:center;border:1px solid #fecaca">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-                        </button>
-                    </div>
-                </div>
-            </div>`;
-        }).join('');
-    }
-
-    let mainEl = document.getElementById('ws-wellness');
-    if (!mainEl) return;
-    mainEl.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div>
-            <div style="font-size:18px;font-weight:800;color:#1e1b4b">Wellness Check-in 💆</div>
-            <div style="font-size:12px;color:#94a3b8;margin-top:2px">Track how you're doing — mind, body, burnout</div>
-        </div>
-        <button onclick="openWellnessModal()" style="background:linear-gradient(135deg,#ec4899,#8b5cf6);color:white;font-size:12px;font-weight:700;padding:9px 16px;border-radius:12px;border:none;box-shadow:0 4px 12px rgba(139,92,246,0.3)">+ Check In</button>
-    </div>
-    ${statsHtml}
-    ${chartHtml}
-    ${stressorHtml}
-    ${winsHtml}
-    <div id="wellnessList">${histHtml}</div>`;
-
-    // Draw chart if enough data
-    if (entries.length >= 3) {
-        setTimeout(() => {
-            let canvas = document.getElementById('wellnessChart');
-            if (!canvas) return;
-            if (wellnessChartInst) { wellnessChartInst.destroy(); wellnessChartInst = null; }
-            let recent = [...entries].reverse().slice(-30); // oldest first, max 30
-            wellnessChartInst = new Chart(canvas.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: recent.map(e => e.date.slice(5)),
-                    datasets: [{
-                        label: 'Wellbeing',
-                        data: recent.map(e => e.wellbeing),
-                        borderColor: '#8b5cf6',
-                        backgroundColor: 'rgba(139,92,246,0.08)',
-                        borderWidth: 2.5,
-                        pointRadius: 4,
-                        pointBackgroundColor: recent.map(e => wbColor(e.wellbeing)),
-                        tension: 0.35,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => WELLBEING_LABELS[ctx.raw] || ctx.raw+'/10' } } },
-                    scales: {
-                        y: { min: 0, max: 10, ticks: { stepSize: 2, font: { size: 10 } }, grid: { color: '#f1f5f9' } },
-                        x: { ticks: { font: { size: 9 }, maxRotation: 45 }, grid: { display: false } }
-                    }
-                }
-            });
-        }, 50);
-    }
 }
 
 // ── OKAP / ITE Question Bank ──────────────────────────────────────────────────
