@@ -3868,28 +3868,20 @@ function showWorkspaceTab(tab) {
 }
 
 function showStudySubTab(sub) {
-    const tabColors = { okap:'#2563eb', clinician:'#0891b2', uveitis:'#ea580c', retina:'#dc2626', cornea:'#2563eb' };
-    ['okap','clinician','uveitis','retina','cornea'].forEach(s => {
+    // Show/hide panels (keep legacy panels hidden)
+    ['okap','clinician','uveitis','retina','cornea','qbank','didactics'].forEach(s => {
         let el = document.getElementById('st-'+s);
-        if (el) el.style.display = s === sub ? 'block' : 'none';
+        if (el) el.style.display = (s === sub) ? 'block' : 'none';
+    });
+    // Update 2-tab bar
+    ['okap','clinician'].forEach(s => {
         let btn = document.getElementById('st-tab-'+s);
-        if (btn) {
-            if (s === sub) {
-                btn.style.background = tabColors[s] || '#0f172a';
-                btn.style.color = 'white';
-                btn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
-            } else {
-                btn.style.background = '#f1f5f9';
-                btn.style.color = '#64748b';
-                btn.style.boxShadow = 'none';
-            }
-        }
+        if (!btn) return;
+        if (s === sub) { btn.classList.add('st-tab-active'); }
+        else           { btn.classList.remove('st-tab-active'); }
     });
     if (sub === 'okap')      renderIteScores();
     if (sub === 'clinician') renderClinicianNotes();
-    if (sub === 'uveitis')   renderClinicianNotesForCat('uveitis',  'clinicianNotesList-uveitis');
-    if (sub === 'retina')    renderClinicianNotesForCat('retina',   'clinicianNotesList-retina');
-    if (sub === 'cornea')    renderClinicianNotesForCat('cornea',   'clinicianNotesList-cornea');
 }
 
 function backToWsGrid() {
@@ -5110,12 +5102,41 @@ function showJournalSection(section) {
         let mob = document.getElementById('jmob-' + v);
         if (mob) mob.classList.toggle('jnl-mob-active', v === section);
     });
+    // Update banner date
+    let bd = document.getElementById('jnlBannerDate');
+    if (bd) {
+        let now = new Date();
+        bd.textContent = now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+    }
+    // Restore saved accent color
+    let savedAccent = localStorage.getItem('jnlAccent');
+    if (savedAccent) _applyJournalAccent(savedAccent, false);
 
     if (section === 'daily')    renderDailyLog();
     if (section === 'entries')  renderJournalList();
     if (section === 'notes')    renderJournalNotes();
     if (section === 'insights') renderJournalInsights();
     if (section === 'week')     renderWeeklyReport();
+}
+
+function setJournalAccent(hex) {
+    localStorage.setItem('jnlAccent', hex);
+    _applyJournalAccent(hex, true);
+}
+
+function _applyJournalAccent(hex, animate) {
+    let shell = document.getElementById('ws-journal');
+    if (!shell) return;
+    shell.style.setProperty('--jnl-gold', hex);
+    // Update active dot indicator
+    document.querySelectorAll('.jnl-accent-dot').forEach(d => {
+        d.classList.toggle('jnl-accent-on', d.dataset.color === hex);
+    });
+    // Brief flash on save button if animating
+    if (animate) {
+        let btn = shell.querySelector('.jnl-save-btn');
+        if (btn) { btn.style.borderColor = hex; setTimeout(()=>btn.style.borderColor='', 600); }
+    }
 }
 
 function renderJournalNotes() {
@@ -5867,15 +5888,15 @@ function _jLinkNavigate(type, id) {
 // ── Fitness Tracker ───────────────────────────────────────────────────────────
 const FITNESS_KEY = 'eyeFitness';
 const FITNESS_TYPES = {
-    run:     { label:'Run',     icon:'🏃', color:'#16a34a', bg:'#f0fdf4', border:'#bbf7d0' },
-    lift:    { label:'Lift',    icon:'🏋️', color:'#7c3aed', bg:'#faf5ff', border:'#ddd6fe' },
-    cardio:  { label:'Cardio',  icon:'❤️', color:'#dc2626', bg:'#fef2f2', border:'#fecaca' },
-    yoga:    { label:'Yoga',    icon:'🧘', color:'#0891b2', bg:'#ecfeff', border:'#a5f3fc' },
-    cycling: { label:'Cycling', icon:'🚴', color:'#d97706', bg:'#fffbeb', border:'#fde68a' },
-    walk:    { label:'Walk',    icon:'🚶', color:'#059669', bg:'#ecfdf5', border:'#a7f3d0' },
-    hiit:    { label:'HIIT',    icon:'⚡', color:'#ea580c', bg:'#fff7ed', border:'#fed7aa' },
-    swim:    { label:'Swim',    icon:'🏊', color:'#2563eb', bg:'#eff6ff', border:'#bfdbfe' },
-    other:   { label:'Other',   icon:'💪', color:'#64748b', bg:'#f8fafc', border:'#e2e8f0' },
+    run:     { label:'Run',     color:'#22c55e', bg:'rgba(34,197,94,0.15)',   svgPath:'<path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/><path d="m5 17 2-7 5 2 2-4 4 2"/><path d="M3 20h18"/>' },
+    lift:    { label:'Lift',    color:'#a78bfa', bg:'rgba(167,139,250,0.15)', svgPath:'<path d="M6 5v14"/><path d="M18 5v14"/><path d="M6 12h12"/><path d="M3 9h3M3 15h3M18 9h3M18 15h3"/>' },
+    cardio:  { label:'Cardio',  color:'#f87171', bg:'rgba(248,113,113,0.15)', svgPath:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>' },
+    yoga:    { label:'Yoga',    color:'#38bdf8', bg:'rgba(56,189,248,0.15)',  svgPath:'<circle cx="12" cy="5" r="1"/><path d="M9 20l3-6 3 6"/><path d="M6 10l6 4 6-4"/>' },
+    cycling: { label:'Cycling', color:'#fbbf24', bg:'rgba(251,191,36,0.15)',  svgPath:'<circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/>' },
+    walk:    { label:'Walk',    color:'#34d399', bg:'rgba(52,211,153,0.15)',  svgPath:'<path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/><path d="m9 20 2-5.5 2 3 2-8"/><path d="m6.5 9.5 2.5 1 3-2"/>' },
+    hiit:    { label:'HIIT',    color:'#fb923c', bg:'rgba(251,146,60,0.15)',  svgPath:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>' },
+    swim:    { label:'Swim',    color:'#60a5fa', bg:'rgba(96,165,250,0.15)',  svgPath:'<path d="M2 12c.6.5 1.2 1 2.5 1C7 13 7 11 9.5 11s2.5 2 5 2 2.5-2 5-2 2.5 2 2.5 2"/><path d="M2 17c.6.5 1.2 1 2.5 1C7 18 7 16 9.5 16s2.5 2 5 2 2.5-2 5-2 2.5 2 2.5 2"/><path d="M12 3V8"/><path d="m9 5 3-2 3 2"/>' },
+    other:   { label:'Other',   color:'#94a3b8', bg:'rgba(148,163,184,0.12)', svgPath:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>' },
 };
 
 function getFitness()        { return JSON.parse(localStorage.getItem(FITNESS_KEY) || '[]'); }
@@ -5886,32 +5907,16 @@ let activeFitnessFilter  = '';
 
 function selectFitnessType(type) {
     selectedFitnessType = type;
-    document.querySelectorAll('.fitness-type-btn').forEach(btn => {
-        btn.style.background  = '#f8fafc';
-        btn.style.color       = '#64748b';
-        btn.style.borderColor = '#e2e8f0';
-    });
+    document.querySelectorAll('.fitness-type-btn').forEach(btn => btn.classList.remove('fit-type-sel'));
     let active = document.getElementById('ft-' + type);
-    if (active) {
-        let t = FITNESS_TYPES[type] || FITNESS_TYPES.other;
-        active.style.background  = t.bg;
-        active.style.color       = t.color;
-        active.style.borderColor = t.border;
-    }
+    if (active) active.classList.add('fit-type-sel');
 }
 
 function setFitnessFilter(type) {
     activeFitnessFilter = type;
-    const all = ['', 'run', 'lift', 'cardio', 'yoga', 'cycling', 'walk', 'hiit', 'swim'];
-    all.forEach(t => {
+    ['', 'run', 'lift', 'cardio', 'yoga', 'cycling', 'walk', 'hiit', 'swim'].forEach(t => {
         let btn = document.getElementById('ff-' + (t || 'all'));
-        if (!btn) return;
-        if (t === type) {
-            if (!t) { btn.style.background = '#0f172a'; btn.style.color = 'white'; btn.style.borderColor = '#0f172a'; }
-            else { let ft = FITNESS_TYPES[t]; btn.style.background = ft.bg; btn.style.color = ft.color; btn.style.borderColor = ft.border; }
-        } else {
-            btn.style.background = 'white'; btn.style.color = '#64748b'; btn.style.borderColor = '#e2e8f0';
-        }
+        if (btn) btn.classList.toggle('fit-chip-on', t === type);
     });
     renderFitness();
 }
@@ -5975,17 +5980,17 @@ function renderFitnessStats() {
     let cur     = new Date(today + 'T12:00:00');
     while (dateSet.has(cur.toISOString().slice(0, 10))) { streak++; cur.setDate(cur.getDate() - 1); }
 
-    const stat = (val, label, color) =>
-        `<div style="flex-shrink:0;background:white;border:1.5px solid #f1f5f9;border-radius:12px;padding:10px 14px;text-align:center;min-width:72px">
-            <div style="font-size:20px;font-weight:800;color:${color};line-height:1">${val}</div>
-            <div style="font-size:10px;font-weight:600;color:#94a3b8;margin-top:2px;white-space:nowrap">${label}</div>
+    const stat = (val, label, accent) =>
+        `<div class="fit-stat-card" style="--fit-accent:${accent}">
+            <div class="fit-stat-val">${val}</div>
+            <div class="fit-stat-lbl">${label}</div>
         </div>`;
 
     el.innerHTML =
         stat(thisWeek.length, 'This Week', '#e11d48') +
-        stat(streak, 'Day Streak', streak >= 7 ? '#f59e0b' : streak >= 3 ? '#e11d48' : '#94a3b8') +
-        stat(weekMins, 'Mins/Week', '#7c3aed') +
-        stat(totalMins >= 1000 ? Math.round(totalMins / 60) + 'h' : totalMins + 'm', 'Total Time', '#2563eb');
+        stat(streak + (streak === 1 ? ' day' : ' days'), 'Streak', streak >= 7 ? '#f5c842' : streak >= 3 ? '#f97316' : '#64748b') +
+        stat(weekMins + 'm', 'Week Mins', '#7b8fff') +
+        stat(totalMins >= 1000 ? Math.round(totalMins / 60) + 'h' : totalMins + 'm', 'Total', '#3ecfcf');
 }
 
 function renderFitness() {
@@ -5998,10 +6003,10 @@ function renderFitness() {
     if (activeFitnessFilter) entries = entries.filter(e => e.type === activeFitnessFilter);
 
     if (!entries.length) {
-        el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:#94a3b8">
-            <div style="font-size:40px;margin-bottom:10px">🏃</div>
-            <p style="font-size:14px;font-weight:600;color:#64748b;margin-bottom:6px">${activeFitnessFilter ? 'No workouts of this type' : 'No workouts yet'}</p>
-            <p style="font-size:13px">Tap <strong>Log Workout</strong> to start tracking</p>
+        el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:#64748b">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 12px"><path d="M6 5v14"/><path d="M18 5v14"/><path d="M6 12h12"/><path d="M3 9h3M3 15h3M18 9h3M18 15h3"/></svg>
+            <p style="font-size:14px;font-weight:600;color:#94a3b8;margin-bottom:4px">${activeFitnessFilter ? 'No workouts of this type' : 'No workouts yet'}</p>
+            <p style="font-size:12px;color:#475569">Tap <strong style="color:#f0ece2">Log</strong> to start tracking</p>
         </div>`;
         return;
     }
@@ -6014,33 +6019,35 @@ function renderFitness() {
     for (let month of Object.keys(grouped).sort().reverse()) {
         let label = new Date(month + '-02').toLocaleString('default', { month:'long', year:'numeric' });
         let monthMins = grouped[month].reduce((s, e) => s + (e.duration || 0), 0);
-        html += `<div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px">
-            <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">${label}</span>
-            <span style="font-size:11px;font-weight:600;color:#94a3b8">${grouped[month].length} sessions · ${monthMins}min</span>
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;margin:18px 0 8px">
+            <span style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:1.4px">${label}</span>
+            <span style="font-size:11px;font-weight:600;color:#475569;font-family:'JetBrains Mono',monospace">${grouped[month].length} sessions · ${monthMins}m</span>
         </div>`;
         for (let e of grouped[month]) {
             let ft      = FITNESS_TYPES[e.type] || FITNESS_TYPES.other;
             let dateStr = new Date(e.date + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
-            html += `<div style="background:white;border:1.5px solid #f1f5f9;border-radius:14px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:box-shadow 0.15s,border-color 0.15s"
-                onclick="openFitnessModal('${e.id}')"
-                onmouseover="this.style.boxShadow='0 4px 14px rgba(0,0,0,0.07)';this.style.borderColor='${ft.border}'"
-                onmouseout="this.style.boxShadow='none';this.style.borderColor='#f1f5f9'">
-                <div style="width:42px;height:42px;border-radius:12px;background:${ft.bg};border:1.5px solid ${ft.border};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${ft.icon}</div>
-                <div style="flex:1;min-width:0">
-                    <div style="font-weight:700;font-size:14px;color:#0f172a">${ft.label}${e.details ? ' — ' + e.details : ''}</div>
-                    <div style="font-size:11px;color:#94a3b8;margin-top:2px">${dateStr} · ${e.duration} min</div>
-                    ${e.notes ? `<div style="font-size:12px;color:#64748b;margin-top:4px;font-style:italic">${e.notes}</div>` : ''}
+            html += `<div class="fit-log-entry" onclick="openFitnessModal('${e.id}')">
+                <div class="fit-log-icon-box" style="background:${ft.bg}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${ft.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ft.svgPath}</svg>
                 </div>
-                <button onclick="event.stopPropagation();deleteFitnessEntry('${e.id}')" style="background:transparent;border:none;color:#d1d5db;padding:4px;margin:0;width:auto;min-width:0;cursor:pointer;line-height:0;border-radius:6px" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#d1d5db'">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-                </button>
+                <div style="flex:1;min-width:0">
+                    <div class="fit-log-name">${ft.label}${e.details ? ' · ' + e.details : ''}</div>
+                    <div class="fit-log-meta">${dateStr}</div>
+                    ${e.notes ? `<div style="font-size:12px;color:#64748b;margin-top:3px;font-style:italic">${e.notes}</div>` : ''}
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span class="fit-log-dur">${e.duration}m</span>
+                    <button onclick="event.stopPropagation();deleteFitnessEntry('${e.id}')" style="all:unset;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#475569;transition:color 0.15s" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#475569'">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                    </button>
+                </div>
             </div>`;
         }
     }
 
     let total = getFitness().length;
     let totalMin = getFitness().reduce((s, e) => s + (e.duration || 0), 0);
-    html += `<div style="text-align:center;padding:16px;color:#94a3b8;font-size:12px;margin-top:4px">${total} workout${total !== 1 ? 's' : ''} · ${Math.round(totalMin / 60)}h ${totalMin % 60}m total</div>`;
+    html += `<div style="text-align:center;padding:16px;color:#475569;font-size:11px;font-family:'JetBrains Mono',monospace;margin-top:4px">${total} workout${total !== 1 ? 's' : ''} · ${Math.round(totalMin / 60)}h ${totalMin % 60}m total</div>`;
     el.innerHTML = html;
 }
 
@@ -6199,18 +6206,20 @@ function renderProgramCards() {
     det.style.display = 'none';
     el.style.display  = 'block';
 
-    let html = `<p style="font-size:12px;color:#94a3b8;margin-bottom:12px">Choose a program to see the full exercise guide. Drag exercises to rearrange.</p>
+    let html = `<p style="font-size:11px;color:#64748b;margin-bottom:14px;font-family:'JetBrains Mono',monospace">Select a program to view the full exercise guide</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
     for (let [key, prog] of Object.entries(WORKOUT_PROGRAMS)) {
-        html += `<div onclick="openProgram('${key}')" style="border-radius:16px;padding:16px 14px;background:${prog.bg};border:1.5px solid ${prog.border};cursor:pointer;transition:transform 0.15s,box-shadow 0.15s"
-            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'"
-            onmouseout="this.style.transform='';this.style.boxShadow=''">
-            <div style="font-size:28px;margin-bottom:8px">${prog.icon}</div>
-            <div style="font-weight:800;font-size:14px;color:#0f172a;margin-bottom:3px">${prog.label}</div>
-            <div style="font-size:11px;color:#64748b;line-height:1.4;margin-bottom:8px">${prog.muscle}</div>
-            <div style="display:flex;align-items:center;justify-content:space-between">
-                <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:${prog.color}20;color:${prog.color}">⏱ ${prog.duration}</span>
-                <span style="font-size:10px;color:#94a3b8">${WORKOUT_PROGRAMS[key].exercises.length} exercises</span>
+        html += `<div class="fit-prog-card" onclick="openProgram('${key}')">
+            <div class="fit-prog-header" style="background:linear-gradient(135deg,${prog.color}cc,${prog.color}66)">
+                <div class="fit-prog-bg"><div class="fit-prog-bg-anim"></div></div>
+                <span class="fit-prog-name">${prog.label}</span>
+            </div>
+            <div class="fit-prog-body">
+                <div class="fit-prog-sub">${prog.muscle}</div>
+                <div class="fit-prog-tags">
+                    <span class="fit-prog-tag">${prog.duration}</span>
+                    <span class="fit-prog-tag">${prog.exercises.length} exercises</span>
+                </div>
             </div>
         </div>`;
     }

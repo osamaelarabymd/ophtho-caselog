@@ -95,6 +95,7 @@
     --jnl-muted:    #8a8fa8;
     --jnl-dim:      #4a4f63;
     display: flex;
+    flex-direction: column;
     min-height: 560px;
     background: var(--jnl-bg);
     border-radius: 14px;
@@ -103,6 +104,50 @@
     color: var(--jnl-text);
     position: relative;
 }
+.jnl-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+}
+/* ── Journal Banner ── */
+.jnl-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--jnl-surface);
+    border-bottom: 1px solid var(--jnl-border);
+    flex-shrink: 0;
+    z-index: 10;
+}
+.jnl-banner-left { display: flex; align-items: baseline; gap: 12px; }
+.jnl-banner-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 17px;
+    color: var(--jnl-text);
+    letter-spacing: -0.2px;
+}
+.jnl-banner-date {
+    font-size: 11px;
+    color: var(--jnl-muted);
+    font-family: 'JetBrains Mono', monospace;
+}
+.jnl-banner-right { display: flex; align-items: center; gap: 10px; }
+.jnl-accent-label { font-size: 9px; font-weight: 700; color: var(--jnl-dim); text-transform: uppercase; letter-spacing: 1.2px; }
+.jnl-accents { display: flex; gap: 7px; align-items: center; }
+.jnl-accent-dot {
+    all: unset;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    border: 2px solid transparent;
+    flex-shrink: 0;
+}
+.jnl-accent-dot:hover { transform: scale(1.3); }
+.jnl-accent-dot.jnl-accent-on { border-color: rgba(255,255,255,0.55); transform: scale(1.25); box-shadow: 0 0 0 2px rgba(255,255,255,0.12); }
 .jnl-sidebar {
     width: 196px;
     flex-shrink: 0;
@@ -389,8 +434,11 @@
 /* Mobile nav */
 .jnl-mobile-nav { display: none; }
 @media (max-width: 680px) {
-    .jnl-shell { flex-direction: column; min-height: auto; border-radius: 10px; }
+    .jnl-shell { min-height: auto; border-radius: 10px; }
+    .jnl-body { flex: 1; }
     .jnl-sidebar { display: none; }
+    .jnl-banner { padding: 10px 14px; }
+    .jnl-banner-date { display: none; }
     .jnl-main { padding: 18px 16px 72px; }
     .jnl-mobile-nav {
         display: flex;
@@ -418,6 +466,79 @@
     .jnl-mob-active { color: var(--jnl-text) !important; background: var(--jnl-elevated); }
     .jnl-date-display { font-size: 26px; }
 }
+
+/* ── Study Tabs (2-tab) ──────────────────────────────────── */
+.st-tab-bar { display:flex; background:#1e293b; border-radius:12px; padding:4px; gap:4px; margin-bottom:18px; }
+.st-tab { all:unset; flex:1; text-align:center; padding:10px; border-radius:9px; font-size:13px; font-weight:700; color:#64748b; cursor:pointer; transition:all 0.15s; font-family:'IBM Plex Sans',sans-serif; }
+.st-tab:hover { color:#cbd5e1; }
+.st-tab-active { background:#2563eb; color:white !important; box-shadow:0 2px 8px rgba(37,99,235,0.35); }
+
+/* ── Fitness Redesign ────────────────────────────────────── */
+.fit-stat-row { display:flex; gap:10px; margin-bottom:18px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+.fit-stat-card {
+    flex-shrink:0; min-width:80px; background:#0f172a; border:1px solid rgba(255,255,255,0.07);
+    border-radius:14px; padding:14px 12px 10px; text-align:center; position:relative; overflow:hidden;
+}
+.fit-stat-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background:var(--fit-accent,#f5c842);
+}
+.fit-stat-val { font-size:22px; font-weight:800; color:#f0ece2; letter-spacing:-0.5px; line-height:1; font-variant-numeric:tabular-nums; }
+.fit-stat-lbl { font-size:9px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+
+.fit-chip-bar { display:flex; gap:6px; margin-bottom:16px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+.fit-chip {
+    all:unset; display:flex; align-items:center; gap:5px; padding:6px 13px; border-radius:8px;
+    border:1.5px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02); color:#94a3b8;
+    font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.15s;
+    font-family:'IBM Plex Sans',sans-serif;
+}
+.fit-chip:hover { border-color:rgba(255,255,255,0.16); color:#e2e8f0; }
+.fit-chip.fit-chip-on { background:rgba(245,200,66,0.1); border-color:rgba(245,200,66,0.38); color:#f5c842; }
+
+.fit-log-entry {
+    display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.025);
+    border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:13px 15px;
+    margin-bottom:8px; cursor:pointer; transition:border-color 0.15s, background 0.15s;
+}
+.fit-log-entry:hover { border-color:rgba(255,255,255,0.13); background:rgba(255,255,255,0.045); }
+.fit-log-icon-box { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.fit-log-name { font-size:14px; font-weight:700; color:#f0ece2; margin-bottom:2px; }
+.fit-log-meta { font-size:11px; color:#64748b; font-family:'JetBrains Mono',monospace; }
+.fit-log-dur { font-size:12px; font-weight:700; color:#94a3b8; font-variant-numeric:tabular-nums; white-space:nowrap; }
+
+.fit-prog-card {
+    border-radius:14px; overflow:hidden; margin-bottom:10px; cursor:pointer;
+    transition:transform 0.2s, box-shadow 0.2s; transform-style:preserve-3d;
+}
+.fit-prog-card:hover { transform:translateY(-2px) rotateX(1deg); box-shadow:0 16px 40px rgba(0,0,0,0.35); }
+.fit-prog-header { height:76px; display:flex; align-items:flex-end; padding:14px 18px; position:relative; overflow:hidden; }
+.fit-prog-bg { position:absolute; inset:0; }
+.fit-prog-bg-anim {
+    position:absolute; inset:0; opacity:0.18;
+    background: radial-gradient(ellipse 120% 80% at 80% 50%, white 0%, transparent 70%);
+    animation: fitBgPulse 4s ease-in-out infinite;
+}
+@keyframes fitBgPulse { 0%,100%{opacity:0.12} 50%{opacity:0.22} }
+.fit-prog-name { font-size:16px; font-weight:800; color:white; position:relative; z-index:1; letter-spacing:-0.2px; text-shadow:0 1px 4px rgba(0,0,0,0.3); }
+.fit-prog-body { background:#131720; border:1px solid rgba(255,255,255,0.07); border-top:none; padding:14px 18px; }
+.fit-prog-sub { font-size:12px; color:#64748b; margin-bottom:6px; }
+.fit-prog-tags { display:flex; gap:6px; flex-wrap:wrap; }
+.fit-prog-tag { font-size:10px; font-weight:600; color:#94a3b8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:5px; padding:2px 8px; }
+
+/* Fit type selector in modal */
+.fit-type-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+.fit-type-option {
+    all:unset; display:flex; flex-direction:column; align-items:center; gap:6px;
+    padding:12px 6px; border-radius:11px; border:1.5px solid #e2e8f0;
+    background:#f8fafc; cursor:pointer; transition:all 0.15s; font-family:'IBM Plex Sans',sans-serif;
+    text-align:center;
+}
+.fit-type-option span { font-size:11px; font-weight:700; color:#64748b; }
+.fit-type-option:hover { border-color:#94a3b8; background:white; }
+.fit-type-option.fit-type-sel { background:#0f172a; border-color:#0f172a; }
+.fit-type-option.fit-type-sel span { color:white; }
+.fit-type-option.fit-type-sel svg { stroke:white; }
 
 /* ── Premium Cases ───────────────────────────────────────── */
 .case-hero {
@@ -1713,6 +1834,26 @@
             </div>
             <!-- Journal section -->
             <div id="ws-journal" class="jnl-shell">
+                <!-- Fixed banner -->
+                <div class="jnl-banner" id="jnlBanner">
+                    <div class="jnl-banner-left">
+                        <span class="jnl-banner-title">Journal</span>
+                        <span class="jnl-banner-date" id="jnlBannerDate"></span>
+                    </div>
+                    <div class="jnl-banner-right">
+                        <span class="jnl-accent-label">Accent</span>
+                        <div class="jnl-accents">
+                            <button class="jnl-accent-dot jnl-accent-on" data-color="#f5c842" onclick="setJournalAccent('#f5c842')" style="background:#f5c842" title="Gold"></button>
+                            <button class="jnl-accent-dot" data-color="#3ecfcf" onclick="setJournalAccent('#3ecfcf')" style="background:#3ecfcf" title="Teal"></button>
+                            <button class="jnl-accent-dot" data-color="#ff7eb3" onclick="setJournalAccent('#ff7eb3')" style="background:#ff7eb3" title="Rose"></button>
+                            <button class="jnl-accent-dot" data-color="#7b8fff" onclick="setJournalAccent('#7b8fff')" style="background:#7b8fff" title="Indigo"></button>
+                            <button class="jnl-accent-dot" data-color="#50fa7b" onclick="setJournalAccent('#50fa7b')" style="background:#50fa7b" title="Emerald"></button>
+                            <button class="jnl-accent-dot" data-color="#ff9f43" onclick="setJournalAccent('#ff9f43')" style="background:#ff9f43" title="Amber"></button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Body: sidebar + main -->
+                <div class="jnl-body">
                 <!-- Left Sidebar -->
                 <aside class="jnl-sidebar">
                     <div class="jnl-snap">
@@ -1722,7 +1863,6 @@
                     <nav class="jnl-nav">
                         <button class="jnl-nav-item jnl-nav-active" id="jnav-daily"   onclick="showJournalSection('daily')">Daily Log</button>
                         <button class="jnl-nav-item" id="jnav-entries"  onclick="showJournalSection('entries')">All Entries</button>
-                        <button class="jnl-nav-item" id="jnav-notes"    onclick="showJournalSection('notes')">Notes</button>
                         <button class="jnl-nav-item" id="jnav-insights" onclick="showJournalSection('insights')">Insights</button>
                         <button class="jnl-nav-item" id="jnav-week"     onclick="showJournalSection('week')">Week Report</button>
                     </nav>
@@ -1832,12 +1972,12 @@
                         <div id="journalWeekReport"></div>
                     </div>
                 </main>
+                </div><!-- /jnl-body -->
 
                 <!-- Mobile bottom nav -->
                 <div class="jnl-mobile-nav">
                     <button class="jnl-mob-btn jnl-mob-active" id="jmob-daily"   onclick="showJournalSection('daily')">Log</button>
                     <button class="jnl-mob-btn" id="jmob-entries"  onclick="showJournalSection('entries')">Entries</button>
-                    <button class="jnl-mob-btn" id="jmob-notes"    onclick="showJournalSection('notes')">Notes</button>
                     <button class="jnl-mob-btn" id="jmob-insights" onclick="showJournalSection('insights')">Insights</button>
                     <button class="jnl-mob-btn" id="jmob-week"     onclick="showJournalSection('week')">Week</button>
                     <button class="jnl-mob-btn" style="color:var(--jnl-gold);font-weight:700" onclick="openJournalModal()">+ New</button>
@@ -1853,12 +1993,9 @@
             </div>
             <!-- Study hub: QBank + OKAP + Didactics -->
             <div id="ws-study" style="display:none">
-                <div style="display:flex;gap:4px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:1px">
-                    <button id="st-tab-okap"      onclick="showStudySubTab('okap')"      style="flex:0 0 auto;margin:0;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:700;border:none;background:#2563eb;color:white;box-shadow:0 1px 4px rgba(0,0,0,0.12);white-space:nowrap">OKAP</button>
-                    <button id="st-tab-clinician" onclick="showStudySubTab('clinician')" style="flex:0 0 auto;margin:0;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:700;border:none;background:#f1f5f9;color:#64748b;white-space:nowrap">Clinician</button>
-                    <button id="st-tab-uveitis"   onclick="showStudySubTab('uveitis')"   style="flex:0 0 auto;margin:0;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:700;border:none;background:#f1f5f9;color:#64748b;white-space:nowrap">Uveitis</button>
-                    <button id="st-tab-retina"    onclick="showStudySubTab('retina')"    style="flex:0 0 auto;margin:0;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:700;border:none;background:#f1f5f9;color:#64748b;white-space:nowrap">Retina</button>
-                    <button id="st-tab-cornea"    onclick="showStudySubTab('cornea')"    style="flex:0 0 auto;margin:0;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:700;border:none;background:#f1f5f9;color:#64748b;white-space:nowrap">Cornea</button>
+                <div class="st-tab-bar">
+                    <button id="st-tab-okap"      class="st-tab st-tab-active" onclick="showStudySubTab('okap')">OKAP Notes</button>
+                    <button id="st-tab-clinician" class="st-tab"               onclick="showStudySubTab('clinician')">Clinic Notes</button>
                 </div>
                 <!-- Hidden legacy panels (data preserved) -->
                 <div id="st-qbank" style="display:none"><div id="qbankHome"></div><div id="qbankQuiz" style="display:none"></div></div>
@@ -1907,14 +2044,14 @@
                     <!-- Category filter chips -->
                     <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none">
                         <button onclick="filterClinicianNotes('')" id="cn-all" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #0891b2;background:#0891b2;color:white;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">All</button>
-                        <button onclick="filterClinicianNotes('cornea')"        id="cn-cornea"        style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">👁️ Cornea</button>
-                        <button onclick="filterClinicianNotes('glaucoma')"      id="cn-glaucoma"      style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🔵 Glaucoma</button>
-                        <button onclick="filterClinicianNotes('retina')"        id="cn-retina"        style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🔴 Retina</button>
-                        <button onclick="filterClinicianNotes('neuro')"         id="cn-neuro"         style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🧠 Neuro</button>
-                        <button onclick="filterClinicianNotes('pediatric')"     id="cn-pediatric"     style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🩷 Pediatric</button>
-                        <button onclick="filterClinicianNotes('oculoplastics')" id="cn-oculoplastics" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">✂️ Oculoplastics</button>
-                        <button onclick="filterClinicianNotes('uveitis')"       id="cn-uveitis"       style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🟠 Uveitis</button>
-                        <button onclick="filterClinicianNotes('general')"       id="cn-general"       style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">📋 General</button>
+                        <button onclick="filterClinicianNotes('cornea')"        id="cn-cornea"        style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">Cornea</button>
+                        <button onclick="filterClinicianNotes('glaucoma')"      id="cn-glaucoma"      style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">Glaucoma</button>
+                        <button onclick="filterClinicianNotes('retina')"        id="cn-retina"        style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">Retina</button>
+                        <button onclick="filterClinicianNotes('neuro')"         id="cn-neuro"         style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">Neuro</button>
+                        <button onclick="filterClinicianNotes('pediatric')"     id="cn-pediatric"     style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">Pediatric</button>
+                        <button onclick="filterClinicianNotes('oculoplastics')" id="cn-oculoplastics" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">Oculoplastics</button>
+                        <button onclick="filterClinicianNotes('uveitis')"       id="cn-uveitis"       style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">Uveitis</button>
+                        <button onclick="filterClinicianNotes('general')"       id="cn-general"       style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">General</button>
                     </div>
                     <!-- Search -->
                     <div style="position:relative;margin-bottom:14px">
@@ -2111,43 +2248,58 @@
             </div>
 
             <!-- Fitness Tracker -->
-            <div id="ws-fitness" style="display:none">
-                <!-- Stats bar -->
-                <div id="fitnessStats" style="display:flex;gap:10px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none"></div>
-                <!-- Toolbar: heading + view toggle + log button -->
-                <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
+            <div id="ws-fitness" style="display:none;background:#0d0f14;border-radius:14px;padding:20px">
+                <!-- Header row -->
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
                     <div>
-                        <h3 style="margin:0 0 2px;font-size:16px;font-weight:800;color:#0f172a">Fitness</h3>
-                        <p style="margin:0;font-size:12px;color:#94a3b8">Train smart · Track progress</p>
+                        <h3 style="margin:0 0 2px;font-size:20px;font-weight:800;color:#f0ece2;font-family:'DM Serif Display',serif;letter-spacing:-0.3px">Fitness</h3>
+                        <p style="margin:0;font-size:11px;color:#64748b;font-family:'JetBrains Mono',monospace;letter-spacing:0.3px">Train consistent · Recover well</p>
                     </div>
-                    <div style="display:flex;background:#f1f5f9;border-radius:12px;padding:3px;gap:2px;margin-left:auto">
-                        <button onclick="showFitnessView('programs')" id="fv-programs" style="margin:0;padding:7px 13px;border-radius:9px;font-size:11px;font-weight:700;border:none;background:#0f172a;color:white;transition:all 0.15s">Programs</button>
-                        <button onclick="showFitnessView('log')" id="fv-log" style="margin:0;padding:7px 13px;border-radius:9px;font-size:11px;font-weight:700;border:none;background:transparent;color:#64748b;transition:all 0.15s">My Log</button>
+                    <div style="display:flex;gap:6px;align-items:center">
+                        <div style="display:flex;background:#1e293b;border-radius:10px;padding:3px;gap:2px">
+                            <button onclick="showFitnessView('programs')" id="fv-programs" style="all:unset;padding:7px 14px;border-radius:8px;font-size:11px;font-weight:700;background:#0f172a;color:white;cursor:pointer;transition:all 0.15s">Programs</button>
+                            <button onclick="showFitnessView('log')"      id="fv-log"      style="all:unset;padding:7px 14px;border-radius:8px;font-size:11px;font-weight:700;background:transparent;color:#64748b;cursor:pointer;transition:all 0.15s">Log</button>
+                        </div>
+                        <button onclick="openFitnessModal()" style="all:unset;padding:8px 15px;font-size:12px;font-weight:700;border-radius:9px;background:linear-gradient(135deg,#e11d48,#f97316);color:white;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Log
+                        </button>
                     </div>
-                    <button onclick="openFitnessModal()" style="width:auto;margin:0;padding:9px 14px;font-size:12px;font-weight:700;border-radius:12px;background:linear-gradient(135deg,#e11d48,#f97316);color:white;border:none;display:flex;align-items:center;gap:6px;flex-shrink:0">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Log
-                    </button>
                 </div>
-
-                <!-- Programs view (default) -->
+                <!-- Animated stats -->
+                <div id="fitnessStats" class="fit-stat-row"></div>
+                <!-- Programs view -->
                 <div id="fitnessProgramsView">
                     <div id="programCards"></div>
                     <div id="programDetail" style="display:none"></div>
                 </div>
-
-                <!-- Log view (hidden by default) -->
+                <!-- Log view -->
                 <div id="fitnessLogView" style="display:none">
-                    <!-- Type filter chips -->
-                    <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none">
-                        <button onclick="setFitnessFilter('')" id="ff-all" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #0f172a;background:#0f172a;color:white;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">All</button>
-                        <button onclick="setFitnessFilter('run')"     id="ff-run"     style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🏃 Run</button>
-                        <button onclick="setFitnessFilter('lift')"    id="ff-lift"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🏋️ Lift</button>
-                        <button onclick="setFitnessFilter('cardio')"  id="ff-cardio"  style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">❤️ Cardio</button>
-                        <button onclick="setFitnessFilter('yoga')"    id="ff-yoga"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🧘 Yoga</button>
-                        <button onclick="setFitnessFilter('cycling')" id="ff-cycling" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🚴 Cycling</button>
-                        <button onclick="setFitnessFilter('walk')"    id="ff-walk"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🚶 Walk</button>
-                        <button onclick="setFitnessFilter('hiit')"    id="ff-hiit"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">⚡ HIIT</button>
-                        <button onclick="setFitnessFilter('swim')"    id="ff-swim"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🏊 Swim</button>
+                    <div class="fit-chip-bar">
+                        <button onclick="setFitnessFilter('')"        id="ff-all"     class="fit-chip fit-chip-on">All</button>
+                        <button onclick="setFitnessFilter('run')"     id="ff-run"     class="fit-chip">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/><path d="m5 17 2-7 5 2 2-4 4 2"/><path d="M3 20h18"/></svg>Run
+                        </button>
+                        <button onclick="setFitnessFilter('lift')"    id="ff-lift"    class="fit-chip">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14"/><path d="M18 5v14"/><path d="M6 12h12"/><path d="M3 9h3M3 15h3M18 9h3M18 15h3"/></svg>Lift
+                        </button>
+                        <button onclick="setFitnessFilter('cardio')"  id="ff-cardio"  class="fit-chip">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Cardio
+                        </button>
+                        <button onclick="setFitnessFilter('yoga')"    id="ff-yoga"    class="fit-chip">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><path d="M9 20l3-6 3 6"/><path d="M6 10l6 4 6-4"/></svg>Yoga
+                        </button>
+                        <button onclick="setFitnessFilter('cycling')" id="ff-cycling" class="fit-chip">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg>Cycle
+                        </button>
+                        <button onclick="setFitnessFilter('walk')"    id="ff-walk"    class="fit-chip">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/><path d="m9 20 2-5.5 2 3 2-8"/><path d="m6.5 9.5 2.5 1 3-2"/></svg>Walk
+                        </button>
+                        <button onclick="setFitnessFilter('hiit')"    id="ff-hiit"    class="fit-chip">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>HIIT
+                        </button>
+                        <button onclick="setFitnessFilter('swim')"    id="ff-swim"    class="fit-chip">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c.6.5 1.2 1 2.5 1C7 13 7 11 9.5 11s2.5 2 5 2 2.5-2 5-2 2.5 2 2.5 2"/><path d="M2 17c.6.5 1.2 1 2.5 1C7 18 7 16 9.5 16s2.5 2 5 2 2.5-2 5-2 2.5 2 2.5 2"/><path d="M12 3V8"/><path d="m9 5 3-2 3 2"/></svg>Swim
+                        </button>
                     </div>
                     <div id="fitnessList"></div>
                 </div>
@@ -2295,16 +2447,43 @@
                 <!-- Type -->
                 <div style="margin-bottom:14px">
                     <label style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;display:block">Type</label>
-                    <div style="display:flex;flex-wrap:wrap;gap:6px" id="fitnessTypeBtns">
-                        <button onclick="selectFitnessType('run')"     id="ft-run"     class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #bbf7d0;background:#f0fdf4;color:#16a34a;font-size:12px;font-weight:700;margin:0;box-shadow:none">🏃 Run</button>
-                        <button onclick="selectFitnessType('lift')"    id="ft-lift"    class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:700;margin:0;box-shadow:none">🏋️ Lift</button>
-                        <button onclick="selectFitnessType('cardio')"  id="ft-cardio"  class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:700;margin:0;box-shadow:none">❤️ Cardio</button>
-                        <button onclick="selectFitnessType('yoga')"    id="ft-yoga"    class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:700;margin:0;box-shadow:none">🧘 Yoga</button>
-                        <button onclick="selectFitnessType('cycling')" id="ft-cycling" class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:700;margin:0;box-shadow:none">🚴 Cycling</button>
-                        <button onclick="selectFitnessType('walk')"    id="ft-walk"    class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:700;margin:0;box-shadow:none">🚶 Walk</button>
-                        <button onclick="selectFitnessType('hiit')"    id="ft-hiit"    class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:700;margin:0;box-shadow:none">⚡ HIIT</button>
-                        <button onclick="selectFitnessType('swim')"    id="ft-swim"    class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:700;margin:0;box-shadow:none">🏊 Swim</button>
-                        <button onclick="selectFitnessType('other')"   id="ft-other"   class="fitness-type-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:700;margin:0;box-shadow:none">💪 Other</button>
+                    <div class="fit-type-grid" id="fitnessTypeBtns">
+                        <button onclick="selectFitnessType('run')"     id="ft-run"     class="fitness-type-btn fit-type-option fit-type-sel">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/><path d="m5 17 2-7 5 2 2-4 4 2"/><path d="M3 20h18"/></svg>
+                            <span>Run</span>
+                        </button>
+                        <button onclick="selectFitnessType('lift')"    id="ft-lift"    class="fitness-type-btn fit-type-option">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14"/><path d="M18 5v14"/><path d="M6 12h12"/><path d="M3 9h3M3 15h3M18 9h3M18 15h3"/></svg>
+                            <span>Lift</span>
+                        </button>
+                        <button onclick="selectFitnessType('cardio')"  id="ft-cardio"  class="fitness-type-btn fit-type-option">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                            <span>Cardio</span>
+                        </button>
+                        <button onclick="selectFitnessType('yoga')"    id="ft-yoga"    class="fitness-type-btn fit-type-option">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><path d="M9 20l3-6 3 6"/><path d="M6 10l6 4 6-4"/></svg>
+                            <span>Yoga</span>
+                        </button>
+                        <button onclick="selectFitnessType('cycling')" id="ft-cycling" class="fitness-type-btn fit-type-option">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg>
+                            <span>Cycle</span>
+                        </button>
+                        <button onclick="selectFitnessType('walk')"    id="ft-walk"    class="fitness-type-btn fit-type-option">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/><path d="m9 20 2-5.5 2 3 2-8"/><path d="m6.5 9.5 2.5 1 3-2"/></svg>
+                            <span>Walk</span>
+                        </button>
+                        <button onclick="selectFitnessType('hiit')"    id="ft-hiit"    class="fitness-type-btn fit-type-option">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                            <span>HIIT</span>
+                        </button>
+                        <button onclick="selectFitnessType('swim')"    id="ft-swim"    class="fitness-type-btn fit-type-option">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c.6.5 1.2 1 2.5 1C7 13 7 11 9.5 11s2.5 2 5 2 2.5-2 5-2 2.5 2 2.5 2"/><path d="M2 17c.6.5 1.2 1 2.5 1C7 18 7 16 9.5 16s2.5 2 5 2 2.5-2 5-2 2.5 2 2.5 2"/><path d="M12 3V8"/><path d="m9 5 3-2 3 2"/></svg>
+                            <span>Swim</span>
+                        </button>
+                        <button onclick="selectFitnessType('other')"   id="ft-other"   class="fitness-type-btn fit-type-option">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                            <span>Other</span>
+                        </button>
                     </div>
                 </div>
 
