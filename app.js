@@ -3822,13 +3822,14 @@ function showWorkspaceTab(tab) {
 }
 
 function showStudySubTab(sub) {
-    ['qbank','okap','didactics'].forEach(s => {
+    const tabColors = { qbank:'#7c3aed', okap:'#2563eb', didactics:'#059669', clinician:'#0891b2' };
+    ['qbank','okap','didactics','clinician'].forEach(s => {
         let el = document.getElementById('st-'+s);
         if (el) el.style.display = s === sub ? 'block' : 'none';
         let btn = document.getElementById('st-tab-'+s);
         if (btn) {
             if (s === sub) {
-                btn.style.background = s === 'qbank' ? '#7c3aed' : s === 'okap' ? '#2563eb' : '#059669';
+                btn.style.background = tabColors[s] || '#0f172a';
                 btn.style.color = 'white';
                 btn.style.boxShadow = '0 1px 4px rgba(0,0,0,0.12)';
             } else {
@@ -3841,6 +3842,7 @@ function showStudySubTab(sub) {
     if (sub === 'qbank')     renderQbankHome();
     if (sub === 'okap')      renderIteScores();
     if (sub === 'didactics') renderDidactics();
+    if (sub === 'clinician') renderClinicianNotes();
 }
 
 function backToWsGrid() {
@@ -5836,6 +5838,322 @@ function renderFitness() {
     el.innerHTML = html;
 }
 
+// ── Workout Programs ──────────────────────────────────────────────────────────
+const POSE_SVGS = {
+  squat: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="8" r="5.5" fill="#0f172a"/><line x1="15" y1="20" x2="65" y2="20" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="40" cy="14" x2="38" y2="42" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="38" y1="22" x2="18" y2="30" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="38" y1="22" x2="58" y2="30" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="38" y1="42" x2="24" y2="64" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="38" y1="42" x2="52" y2="64" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="24" y1="64" x2="20" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="52" y1="64" x2="56" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="10" y1="83" x2="28" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="48" y1="83" x2="66" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+  rdl: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="56" cy="18" r="5.5" fill="#0f172a"/><line x1="51" y1="23" x2="26" y2="50" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="60" x2="52" y2="46" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="42" y1="38" x2="16" y2="60" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="42" y1="38" x2="50" y2="46" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="26" y1="50" x2="24" y2="83" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="26" y1="50" x2="36" y2="83" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="12" y1="83" x2="28" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="34" y1="83" x2="50" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+  bench: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="67" width="64" height="7" rx="3.5" fill="#e2e8f0"/><circle cx="13" cy="52" r="5.5" fill="#0f172a"/><line x1="19" y1="52" x2="62" y2="52" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="14" y1="28" x2="66" y2="28" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="28" y1="52" x2="28" y2="28" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="52" y1="52" x2="52" y2="28" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="62" y1="52" x2="68" y2="67" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/></svg>`,
+  ohp: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="10" r="5.5" fill="#0f172a"/><line x1="40" y1="16" x2="40" y2="52" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="24" x2="68" y2="24" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="40" y1="28" x2="16" y2="24" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="40" y1="28" x2="64" y2="24" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="40" y1="52" x2="32" y2="75" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="52" x2="48" y2="75" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="20" y1="83" x2="36" y2="75" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="48" y1="75" x2="62" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+  row: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="56" cy="24" r="5.5" fill="#0f172a"/><line x1="52" y1="29" x2="26" y2="54" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="10" y1="54" x2="52" y2="40" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="40" y1="40" x2="14" y2="54" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="40" y1="40" x2="50" y2="40" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="26" y1="54" x2="22" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="26" y1="54" x2="34" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="10" y1="83" x2="26" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="32" y1="83" x2="48" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+  pullup: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="10" x2="72" y2="10" stroke="#94a3b8" stroke-width="5" stroke-linecap="round"/><line x1="40" y1="20" x2="28" y2="10" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="40" y1="20" x2="52" y2="10" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><circle cx="40" cy="28" r="5.5" fill="#0f172a"/><line x1="40" y1="34" x2="40" y2="62" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="62" x2="34" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="62" x2="46" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/></svg>`,
+  lunge: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="42" cy="8" r="5.5" fill="#0f172a"/><line x1="42" y1="14" x2="42" y2="44" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="42" y1="28" x2="30" y2="40" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="42" y1="28" x2="54" y2="38" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="42" y1="44" x2="54" y2="66" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="54" y1="66" x2="60" y2="83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="42" y1="44" x2="28" y2="62" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="28" y1="62" x2="18" y2="76" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="52" y1="83" x2="68" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+  plank: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="48" r="5" fill="#0f172a"/><line x1="18" y1="50" x2="68" y2="50" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="28" y1="50" x2="26" y2="65" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/><line x1="46" y1="50" x2="44" y2="65" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/><line x1="20" y1="65" x2="52" y2="65" stroke="#e2e8f0" stroke-width="2.5" stroke-linecap="round"/><line x1="34" y1="50" x2="60" y2="50" stroke="#e11d48" stroke-width="5" stroke-linecap="round" opacity="0.55"/><line x1="68" y1="50" x2="72" y2="65" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="64" y1="65" x2="78" y2="65" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+  run: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="36" cy="8" r="5.5" fill="#0f172a"/><line x1="34" y1="14" x2="32" y2="44" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="34" y1="26" x2="18" y2="18" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="34" y1="26" x2="52" y2="36" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="32" y1="44" x2="48" y2="64" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="48" y1="64" x2="60" y2="76" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="32" y1="44" x2="20" y2="60" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="20" y1="60" x2="28" y2="74" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="52" y1="76" x2="70" y2="80" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+  curl: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="8" r="5.5" fill="#0f172a"/><line x1="40" y1="14" x2="40" y2="52" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="38" y1="24" x2="30" y2="52" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="42" y1="24" x2="54" y2="36" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="54" y1="36" x2="46" y2="24" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><circle cx="46" cy="22" r="4" fill="none" stroke="#94a3b8" stroke-width="2.5"/><line x1="40" y1="52" x2="33" y2="75" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="52" x2="47" y2="75" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="22" y1="83" x2="37" y2="75" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="47" y1="75" x2="60" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+  lateral: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="8" r="5.5" fill="#0f172a"/><line x1="40" y1="14" x2="40" y2="52" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="26" x2="12" y2="40" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><line x1="40" y1="26" x2="68" y2="40" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round"/><circle cx="10" cy="40" r="4" fill="none" stroke="#94a3b8" stroke-width="2.5"/><circle cx="70" cy="40" r="4" fill="none" stroke="#94a3b8" stroke-width="2.5"/><line x1="40" y1="52" x2="33" y2="75" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="52" x2="47" y2="75" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="22" y1="83" x2="37" y2="75" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><line x1="47" y1="75" x2="60" y2="83" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+  leg_press: `<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="44" r="5.5" fill="#0f172a"/><line x1="18" y1="46" x2="42" y2="62" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/><line x1="42" y1="62" x2="66" y2="44" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="66" y1="44" x2="74" y2="26" stroke="#e11d48" stroke-width="5" stroke-linecap="round"/><line x1="66" y1="20" x2="78" y2="20" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="26" y1="50" x2="22" y2="62" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><rect x="36" y="65" width="14" height="5" rx="2.5" fill="#e2e8f0"/></svg>`,
+};
+
+const WORKOUT_PROGRAMS = {
+  push: {
+    label:'Push Day', icon:'💪', color:'#7c3aed', bg:'linear-gradient(135deg,#faf5ff,#ede9fe)', border:'#c4b5fd',
+    muscle:'Chest · Shoulders · Triceps', duration:'50–60 min', logType:'lift',
+    exercises:[
+      { id:'bench_press',  name:'Barbell Bench Press',    muscles:['Chest','Triceps','Shoulders'],  sets:4, reps:'8–10', rest:'90s', optional:false, pose:'bench',
+        tips:'Retract scapulae, keep natural arch. Bar path: lower chest. Drive feet into floor for stability.' },
+      { id:'incline_db',   name:'Incline Dumbbell Press', muscles:['Upper Chest','Shoulders'],      sets:3, reps:'10–12', rest:'75s', optional:false, pose:'bench',
+        tips:'30–45° incline. Control the descent fully. Think "push ceiling away" not "push bar up."' },
+      { id:'ohp',          name:'Overhead Press',         muscles:['Shoulders','Triceps'],          sets:3, reps:'8–10', rest:'90s', optional:false, pose:'ohp',
+        tips:'Brace core hard. Bar starts at collarbone, press straight up. Squeeze glutes to protect lower back.' },
+      { id:'lateral',      name:'Lateral Raises',         muscles:['Side Delts'],                   sets:4, reps:'12–15', rest:'60s', optional:false, pose:'lateral',
+        tips:'Lead with elbows. Slight forward lean. Stop at shoulder height — no higher. Slow the negative.' },
+      { id:'tri_push',     name:'Tricep Pushdown',        muscles:['Triceps'],                      sets:3, reps:'12–15', rest:'60s', optional:false, pose:'ohp',
+        tips:'Elbows pinned to sides throughout. Full extension at bottom. Controlled 2-sec return.' },
+      { id:'pec_fly',      name:'Cable / Pec Fly',        muscles:['Chest'],                        sets:3, reps:'12–15', rest:'60s', optional:true,  pose:'bench',
+        tips:'Slight bend in elbows throughout. Focus on chest squeeze at midline. Avoid flaring shoulders.' },
+    ]
+  },
+  pull: {
+    label:'Pull Day', icon:'🔙', color:'#2563eb', bg:'linear-gradient(135deg,#eff6ff,#dbeafe)', border:'#93c5fd',
+    muscle:'Back · Biceps · Rear Delts', duration:'50–60 min', logType:'lift',
+    exercises:[
+      { id:'pullup',       name:'Pull-ups / Lat Pulldown', muscles:['Lats','Biceps'],              sets:4, reps:'6–10', rest:'90s', optional:false, pose:'pullup',
+        tips:'Dead hang at bottom — full stretch. Drive elbows down and back. Chest to the bar at top.' },
+      { id:'bb_row',       name:'Barbell Bent-Over Row',   muscles:['Lats','Rhomboids','Biceps'],  sets:4, reps:'8–10', rest:'90s', optional:false, pose:'row',
+        tips:'Hinge ~45°. Pull bar to lower chest. Pause at top and squeeze shoulder blades together.' },
+      { id:'cable_row',    name:'Seated Cable Row',         muscles:['Mid Back','Biceps'],          sets:3, reps:'10–12', rest:'75s', optional:false, pose:'row',
+        tips:'Keep chest tall and proud. Full stretch forward, then drive elbows past your body line.' },
+      { id:'face_pull',    name:'Face Pulls',               muscles:['Rear Delts','Rotator Cuff'], sets:3, reps:'15–20', rest:'60s', optional:false, pose:'row',
+        tips:'Rope to forehead, externally rotate at top (hands wide). Essential for shoulder longevity.' },
+      { id:'bb_curl',      name:'Barbell / EZ Bar Curl',    muscles:['Biceps'],                    sets:3, reps:'10–12', rest:'60s', optional:false, pose:'curl',
+        tips:'No swinging. Supinate wrists at top. Full eccentric stretch at bottom counts most.' },
+      { id:'hammer',       name:'Hammer Curls',             muscles:['Brachialis','Forearms'],     sets:3, reps:'12', rest:'60s', optional:true, pose:'curl',
+        tips:'Neutral grip (thumbs up). Curl up with control, resist gravity on the way down.' },
+    ]
+  },
+  legs: {
+    label:'Leg Day', icon:'🦵', color:'#dc2626', bg:'linear-gradient(135deg,#fff1f2,#fce7f3)', border:'#fca5a5',
+    muscle:'Quads · Hamstrings · Glutes · Calves', duration:'55–65 min', logType:'lift',
+    exercises:[
+      { id:'squat',        name:'Barbell Back Squat',       muscles:['Quads','Glutes','Core'],           sets:4, reps:'6–8',   rest:'2 min', optional:false, pose:'squat',
+        tips:'Big breath + brace before descent. Knees track toes. Break parallel. Drive floor away on ascent.' },
+      { id:'rdl',          name:'Romanian Deadlift',        muscles:['Hamstrings','Glutes','Lower Back'], sets:3, reps:'10–12', rest:'90s',   optional:false, pose:'rdl',
+        tips:'Hip hinge — not a squat. Bar stays close to legs. Feel the hamstring stretch at bottom, then drive.' },
+      { id:'leg_press',    name:'Leg Press',                muscles:['Quads','Glutes'],                  sets:3, reps:'12–15', rest:'90s',   optional:false, pose:'leg_press',
+        tips:"Don't lock knees at top. Foot position changes emphasis: high/wide = glutes, low = more quads." },
+      { id:'lunge',        name:'Walking Lunges',           muscles:['Quads','Glutes','Balance'],        sets:3, reps:'10 each', rest:'75s',  optional:false, pose:'lunge',
+        tips:"Front knee stays over ankle. Upright torso. Back knee lightly brushes the floor, don't crash it." },
+      { id:'leg_curl',     name:'Lying Leg Curl',           muscles:['Hamstrings'],                      sets:3, reps:'12–15', rest:'60s',   optional:false, pose:'rdl',
+        tips:'Point toes slightly down for more hamstring activation. Pause at full contraction for 1 second.' },
+      { id:'calf',         name:'Standing Calf Raises',     muscles:['Calves','Soleus'],                 sets:4, reps:'15–20', rest:'45s',   optional:false, pose:'ohp',
+        tips:'Full range: deep stretch at bottom, fully up on toes. Slow tempo beats heavy weight here.' },
+    ]
+  },
+  fullbody: {
+    label:'Full Body', icon:'🏋️', color:'#059669', bg:'linear-gradient(135deg,#ecfdf5,#d1fae5)', border:'#6ee7b7',
+    muscle:'All major muscle groups', duration:'45–55 min', logType:'lift',
+    exercises:[
+      { id:'deadlift',     name:'Conventional Deadlift',    muscles:['Posterior Chain','Core'],     sets:4, reps:'5',    rest:'2 min', optional:false, pose:'rdl',
+        tips:'Bar over mid-foot. Neutral spine throughout. Push floor away, then hips lock through at top.' },
+      { id:'goblet',       name:'Goblet Squat',             muscles:['Quads','Core'],               sets:3, reps:'10',   rest:'90s',   optional:false, pose:'squat',
+        tips:'Dumbbell at chest, elbows inside knees at bottom. Great pattern trainer for squat mechanics.' },
+      { id:'bench_fb',     name:'Bench Press',              muscles:['Chest','Triceps'],            sets:3, reps:'8',    rest:'90s',   optional:false, pose:'bench',
+        tips:"Controlled descent — don't bounce off chest. Full lockout at top." },
+      { id:'db_row',       name:'Dumbbell Row',             muscles:['Back','Biceps'],              sets:3, reps:'10',   rest:'75s',   optional:false, pose:'row',
+        tips:'One hand on bench. Pull elbow to hip — think "fill your back pocket." Full stretch at bottom.' },
+      { id:'db_ohp',       name:'Dumbbell Shoulder Press',  muscles:['Shoulders'],                  sets:3, reps:'10',   rest:'75s',   optional:false, pose:'ohp',
+        tips:"Neutral grip (palms in) is kinder to shoulders. Brace core like you're about to take a punch." },
+      { id:'plank',        name:'Plank + Variations',       muscles:['Core','Stabilisers'],         sets:3, reps:'40s',  rest:'45s',   optional:false, pose:'plank',
+        tips:"No sagging hips. Add shoulder taps or hip dips for progression. Breathe — don't hold." },
+    ]
+  },
+  hiit: {
+    label:'HIIT & Cardio', icon:'⚡', color:'#ea580c', bg:'linear-gradient(135deg,#fff7ed,#fed7aa)', border:'#fb923c',
+    muscle:'Full body · Cardiovascular', duration:'25–35 min', logType:'hiit',
+    exercises:[
+      { id:'warmup',       name:'Warm-Up Jog / March',      muscles:['Cardiovascular'],             sets:1, reps:'5 min',       rest:'–', optional:false, pose:'run',
+        tips:'Easy pace. Heart rate to ~120 bpm. Arm circles, leg swings — wake the joints before intensity.' },
+      { id:'sprint',       name:'Sprint Intervals',         muscles:['Legs','Cardiovascular'],      sets:8, reps:'20s on / 40s off', rest:'–', optional:false, pose:'run',
+        tips:'All-out during the 20s — hold nothing back. Walk or slow jog during the recovery window.' },
+      { id:'burpee',       name:'Burpees',                  muscles:['Full Body'],                  sets:3, reps:'10',          rest:'60s', optional:false, pose:'plank',
+        tips:'Chest fully to floor. Explosive jump at top. Modify: step out feet instead of jumping for lower impact.' },
+      { id:'jump_squat',   name:'Jump Squats',              muscles:['Quads','Glutes','Power'],     sets:3, reps:'15',          rest:'60s', optional:false, pose:'squat',
+        tips:'Land soft with knees bent — absorb the impact. Focus on explosive hip extension on the way up.' },
+      { id:'mtn_climber',  name:'Mountain Climbers',        muscles:['Core','Shoulders'],           sets:3, reps:'30s',         rest:'45s', optional:false, pose:'plank',
+        tips:"Hips level — don't let them rise. Drive knees fast for cardio, slow for core strength." },
+      { id:'cooldown',     name:'Cool-Down Walk + Stretch', muscles:['Recovery'],                   sets:1, reps:'5 min',       rest:'–', optional:false, pose:'run',
+        tips:'Bring heart rate below 100 bpm before stopping. Light quad + calf + hip stretch here.' },
+    ]
+  },
+  mobility: {
+    label:'Mobility & Stretch', icon:'🧘', color:'#0891b2', bg:'linear-gradient(135deg,#ecfeff,#cffafe)', border:'#67e8f9',
+    muscle:'Flexibility · Joint health · Recovery', duration:'20–30 min', logType:'yoga',
+    exercises:[
+      { id:'hip_flexor',   name:'Kneeling Hip Flexor Stretch', muscles:['Hip Flexors','Quads'],       sets:2, reps:'45s each', rest:'–', optional:false, pose:'lunge',
+        tips:'Rear knee padded. Tuck pelvis, lean gently forward. Feel it deep in the hip crease — not in the knee.' },
+      { id:'hamstring_s',  name:'Standing Hamstring Stretch',  muscles:['Hamstrings'],               sets:2, reps:'45s each', rest:'–', optional:false, pose:'rdl',
+        tips:'Hinge at hip — not waist. Soft knee bend. Flat back. You should feel the pull in the belly of the muscle.' },
+      { id:'thoracic',     name:'Thoracic Rotation (Quadruped)', muscles:['Spine','Lats'],            sets:2, reps:'10 each', rest:'–', optional:false, pose:'plank',
+        tips:'Hand behind head. Rotate elbow toward ceiling. Exhale as you rotate — it deepens the range.' },
+      { id:'shoulder_op',  name:'Shoulder Opener (Band / Wall)', muscles:['Chest','Biceps','Shoulders'], sets:2, reps:'45s', rest:'–', optional:false, pose:'ohp',
+        tips:'Hold band wide behind body or reach back against wall. Gentle forward lean. No bouncing.' },
+      { id:'pigeon',       name:'Pigeon Pose (Hip Opener)',     muscles:['Glutes','Hip Rotators'],    sets:2, reps:'60s each', rest:'–', optional:false, pose:'lunge',
+        tips:'Front shin parallel to mat if possible. Walk hands forward to deepen. Breathe into the tension.' },
+      { id:'child_pose',   name:"Child's Pose",                 muscles:['Lats','Lower Back','Hips'], sets:2, reps:'60s',   rest:'–', optional:false, pose:'plank',
+        tips:"Knees wide, arms extended forward. Forehead on mat. Let gravity do the stretching — no forcing." },
+    ]
+  },
+};
+
+let activeFitnessView  = 'programs';
+let activeProgramKey   = null;
+let programOrders      = JSON.parse(localStorage.getItem('fitnessProgOrders') || '{}');
+let _dragSrcIdx        = -1;
+let _dragNodes         = [];
+
+function showFitnessView(v) {
+    activeFitnessView = v;
+    let pv = document.getElementById('fitnessProgramsView');
+    let lv = document.getElementById('fitnessLogView');
+    let bp = document.getElementById('fv-programs');
+    let bl = document.getElementById('fv-log');
+    if (!pv || !lv) return;
+    pv.style.display = v === 'programs' ? 'block' : 'none';
+    lv.style.display = v === 'log' ? 'block' : 'none';
+    if (bp) { bp.style.background = v==='programs' ? '#0f172a' : 'transparent'; bp.style.color = v==='programs' ? 'white' : '#64748b'; }
+    if (bl) { bl.style.background = v==='log' ? '#0f172a' : 'transparent'; bl.style.color = v==='log' ? 'white' : '#64748b'; }
+    if (v === 'programs') renderProgramCards();
+    else renderFitness();
+}
+
+function renderProgramCards() {
+    let el = document.getElementById('programCards');
+    let det = document.getElementById('programDetail');
+    if (!el) return;
+    det.style.display = 'none';
+    el.style.display  = 'block';
+
+    let html = `<p style="font-size:12px;color:#94a3b8;margin-bottom:12px">Choose a program to see the full exercise guide. Drag exercises to rearrange.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
+    for (let [key, prog] of Object.entries(WORKOUT_PROGRAMS)) {
+        html += `<div onclick="openProgram('${key}')" style="border-radius:16px;padding:16px 14px;background:${prog.bg};border:1.5px solid ${prog.border};cursor:pointer;transition:transform 0.15s,box-shadow 0.15s"
+            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'"
+            onmouseout="this.style.transform='';this.style.boxShadow=''">
+            <div style="font-size:28px;margin-bottom:8px">${prog.icon}</div>
+            <div style="font-weight:800;font-size:14px;color:#0f172a;margin-bottom:3px">${prog.label}</div>
+            <div style="font-size:11px;color:#64748b;line-height:1.4;margin-bottom:8px">${prog.muscle}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:${prog.color}20;color:${prog.color}">⏱ ${prog.duration}</span>
+                <span style="font-size:10px;color:#94a3b8">${WORKOUT_PROGRAMS[key].exercises.length} exercises</span>
+            </div>
+        </div>`;
+    }
+    html += '</div>';
+    el.innerHTML = html;
+}
+
+function openProgram(key) {
+    activeProgramKey = key;
+    let el  = document.getElementById('programCards');
+    let det = document.getElementById('programDetail');
+    if (!el || !det) return;
+    el.style.display  = 'none';
+    det.style.display = 'block';
+    renderProgramDetail(key);
+}
+
+function renderProgramDetail(key) {
+    let prog = WORKOUT_PROGRAMS[key];
+    if (!prog) return;
+    let det = document.getElementById('programDetail');
+    if (!det) return;
+
+    // Get exercise order (user may have reordered)
+    let order = programOrders[key] || prog.exercises.map(e => e.id);
+    // Filter to only valid ids, then append any new ones
+    let validIds = prog.exercises.map(e => e.id);
+    order = [...order.filter(id => validIds.includes(id)), ...validIds.filter(id => !order.includes(id))];
+    let exercises = order.map(id => prog.exercises.find(e => e.id === id)).filter(Boolean);
+
+    let exHtml = exercises.map((ex, idx) => {
+        let pose = POSE_SVGS[ex.pose] || POSE_SVGS.squat;
+        let muscleChips = ex.muscles.map(m => `<span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:${prog.color}18;color:${prog.color};margin:2px 3px 2px 0">${m}</span>`).join('');
+        return `<div class="prog-ex-item" data-idx="${idx}" data-id="${ex.id}" draggable="true"
+            style="background:white;border:1.5px solid #f1f5f9;border-radius:16px;margin-bottom:10px;overflow:hidden;transition:border-color 0.15s,box-shadow 0.15s;cursor:grab"
+            onmouseover="this.style.borderColor='${prog.border}';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.06)'"
+            onmouseout="this.style.borderColor='#f1f5f9';this.style.boxShadow='none'">
+            <div style="display:flex;align-items:stretch">
+                <!-- Drag handle + pose -->
+                <div style="width:90px;flex-shrink:0;background:${prog.bg};display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 6px;border-right:1.5px solid ${prog.border}20;gap:6px">
+                    <div style="font-size:8px;font-weight:700;color:${prog.color};letter-spacing:0.5px;opacity:0.6">⠿ DRAG</div>
+                    ${pose}
+                    ${ex.optional ? `<span style="font-size:9px;font-weight:700;color:${prog.color};opacity:0.7;background:${prog.color}15;padding:1px 6px;border-radius:10px">optional</span>` : ''}
+                </div>
+                <!-- Exercise info -->
+                <div style="flex:1;padding:12px 14px">
+                    <div style="font-weight:800;font-size:14px;color:#0f172a;margin-bottom:4px">${ex.name}</div>
+                    <div style="margin-bottom:8px">${muscleChips}</div>
+                    <!-- Sets/Reps/Rest row -->
+                    <div style="display:flex;gap:8px;margin-bottom:9px;flex-wrap:wrap">
+                        <div style="text-align:center;background:#f8fafc;border-radius:10px;padding:5px 10px">
+                            <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase">Sets</div>
+                            <div style="font-size:15px;font-weight:900;color:${prog.color}">${ex.sets}</div>
+                        </div>
+                        <div style="text-align:center;background:#f8fafc;border-radius:10px;padding:5px 10px">
+                            <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase">Reps</div>
+                            <div style="font-size:14px;font-weight:900;color:${prog.color};white-space:nowrap">${ex.reps}</div>
+                        </div>
+                        <div style="text-align:center;background:#f8fafc;border-radius:10px;padding:5px 10px">
+                            <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase">Rest</div>
+                            <div style="font-size:14px;font-weight:900;color:#64748b">${ex.rest}</div>
+                        </div>
+                    </div>
+                    <!-- Form tip -->
+                    <div style="background:${prog.color}08;border-left:3px solid ${prog.color};border-radius:0 8px 8px 0;padding:7px 10px">
+                        <div style="font-size:10px;font-weight:700;color:${prog.color};margin-bottom:2px">💡 Form Tip</div>
+                        <div style="font-size:12px;color:#374151;line-height:1.5">${ex.tips}</div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+
+    det.innerHTML = `
+        <!-- Header -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+            <button onclick="renderProgramCards();document.getElementById('programCards').style.display='block';document.getElementById('programDetail').style.display='none'" style="width:36px;height:36px;padding:0;margin:0;background:#f1f5f9;border-radius:10px;font-size:16px;border:none;display:flex;align-items:center;justify-content:center;flex-shrink:0">←</button>
+            <div style="flex:1">
+                <div style="font-size:22px;line-height:1">${prog.icon} <span style="font-weight:900;font-size:18px;color:#0f172a">${prog.label}</span></div>
+                <div style="font-size:12px;color:#64748b;margin-top:2px">${prog.muscle} · ⏱ ${prog.duration}</div>
+            </div>
+            <button onclick="startWorkoutFromProgram('${key}')" style="margin:0;padding:9px 14px;font-size:12px;font-weight:700;border-radius:12px;background:${prog.color};color:white;border:none;white-space:nowrap;flex-shrink:0">▶ Start</button>
+        </div>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:12px;display:flex;align-items:center;gap:5px">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Drag exercises to reorder • Changes save automatically
+        </div>
+        <!-- Exercise list (draggable) -->
+        <div id="progExList-${key}">${exHtml}</div>
+    `;
+
+    initExerciseDrag(key);
+}
+
+function initExerciseDrag(key) {
+    let container = document.getElementById('progExList-' + key);
+    if (!container) return;
+    _dragNodes = Array.from(container.querySelectorAll('.prog-ex-item'));
+    _dragSrcIdx = -1;
+
+    _dragNodes.forEach((node, i) => {
+        node.addEventListener('dragstart', (e) => {
+            _dragSrcIdx = i;
+            e.dataTransfer.effectAllowed = 'move';
+            setTimeout(() => { node.style.opacity = '0.4'; }, 0);
+        });
+        node.addEventListener('dragend', () => {
+            node.style.opacity = '';
+            _dragNodes.forEach(n => n.style.borderTop = '');
+        });
+        node.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            _dragNodes.forEach(n => n.style.borderTop = '');
+            if (i !== _dragSrcIdx) node.style.borderTop = '3px solid ' + (WORKOUT_PROGRAMS[key]?.color || '#2563eb');
+        });
+        node.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (_dragSrcIdx === i || _dragSrcIdx < 0) return;
+            node.style.borderTop = '';
+            node.style.opacity   = '';
+
+            let prog = WORKOUT_PROGRAMS[key];
+            let order = programOrders[key] || prog.exercises.map(ex => ex.id);
+            let validIds = prog.exercises.map(ex => ex.id);
+            order = [...order.filter(id => validIds.includes(id)), ...validIds.filter(id => !order.includes(id))];
+
+            let moved = order.splice(_dragSrcIdx, 1)[0];
+            order.splice(i, 0, moved);
+            programOrders[key] = order;
+            localStorage.setItem('fitnessProgOrders', JSON.stringify(programOrders));
+            renderProgramDetail(key);
+        });
+    });
+}
+
+function startWorkoutFromProgram(key) {
+    let prog = WORKOUT_PROGRAMS[key];
+    if (!prog) return;
+    showFitnessView('log');
+    openFitnessModal();
+    setTimeout(() => {
+        selectFitnessType(prog.logType || 'lift');
+        let detailEl = document.getElementById('fitnessDetails');
+        if (detailEl) detailEl.value = prog.label + ' — ' + prog.exercises.slice(0,3).map(e=>e.name).join(', ');
+    }, 100);
+    showToast('💪 ' + prog.label + ' loaded — log it when done!');
+}
+
 // ── To-Do ─────────────────────────────────────────────────────────────────────
 const TODO_KEY = 'eyeTodos';
 let selectedPriority = 'medium';
@@ -6146,6 +6464,13 @@ function openStudyModal(id) {
     document.getElementById('studyTopic').value = item ? item.topic : '';
     document.getElementById('studyType').value  = item ? item.type : 'Textbook';
     document.getElementById('studyNotes').value = item ? (item.notes || '') : '';
+    let authorEl = document.getElementById('bookAuthor');
+    let totalEl  = document.getElementById('bookTotalPages');
+    let curEl    = document.getElementById('bookCurrentPage');
+    if (authorEl) authorEl.value = item ? (item.bookAuthor || '') : '';
+    if (totalEl)  totalEl.value  = item ? (item.bookTotalPages || '') : '';
+    if (curEl)    curEl.value    = item ? (item.bookCurrentPage || '') : '';
+    toggleBookFields();
     document.getElementById('studyModal').style.display = 'flex';
     setTimeout(() => document.getElementById('studyTopic').focus(), 100);
 }
@@ -6156,7 +6481,15 @@ function saveStudyItem() {
     if (!topic) { showToast('⚠️ Enter a topic', 'warning'); return; }
     let items = getStudyItems();
     let id    = document.getElementById('studyId').value;
-    let item  = { id: id || crypto.randomUUID(), topic, type: document.getElementById('studyType').value, notes: document.getElementById('studyNotes').value.trim(), status: 'to-read', createdAt: new Date().toISOString() };
+    let type = document.getElementById('studyType').value;
+    let item  = { id: id || crypto.randomUUID(), topic, type, notes: document.getElementById('studyNotes').value.trim(), status: 'to-read', createdAt: new Date().toISOString() };
+    if (type === 'Book') {
+        item.bookAuthor      = document.getElementById('bookAuthor').value.trim();
+        item.bookTotalPages  = parseInt(document.getElementById('bookTotalPages').value) || 0;
+        item.bookCurrentPage = parseInt(document.getElementById('bookCurrentPage').value) || 0;
+        if (item.bookTotalPages && item.bookCurrentPage >= item.bookTotalPages) item.status = 'done';
+        else if (item.bookCurrentPage > 0) item.status = 'reading';
+    }
     if (id) { let idx = items.findIndex(s => s.id === id); if (idx !== -1) { item.status = items[idx].status; items[idx] = item; } else items.unshift(item); }
     else items.unshift(item);
     saveStudyItems(items);
@@ -6187,12 +6520,33 @@ function deleteStudyItem(id) {
 
 function filterStudy(f) {
     studyFilter = f;
-    ['all','to-read','reading','done'].forEach(x => {
+    ['all','to-read','reading','done','books'].forEach(x => {
         let btn = document.getElementById('sf-'+x);
         if (!btn) return;
         btn.style.background = x === f ? '#7c3aed' : '#f1f5f9';
         btn.style.color      = x === f ? 'white' : '#64748b';
     });
+    renderStudyList();
+}
+
+function toggleBookFields() {
+    let type = document.getElementById('studyType').value;
+    let bf = document.getElementById('bookFields');
+    if (bf) bf.style.display = type === 'Book' ? 'block' : 'none';
+}
+
+function updateBookProgress(id, val) {
+    let items = getStudyItems();
+    let item = items.find(s => s.id === id);
+    if (!item) return;
+    item.bookCurrentPage = parseInt(val) || 0;
+    if (item.bookTotalPages && item.bookCurrentPage >= item.bookTotalPages) {
+        item.status = 'done';
+    } else if (item.bookCurrentPage > 0) {
+        item.status = 'reading';
+    }
+    saveStudyItems(items);
+    _cloudUpsert('workspace_study', item, _wsMap.study);
     renderStudyList();
 }
 
@@ -6219,7 +6573,9 @@ function renderStudyList() {
         </div>`;
     } else if (progressEl) { progressEl.innerHTML = ''; }
 
-    let items = studyFilter === 'all' ? all : all.filter(s => s.status === studyFilter);
+    let items = studyFilter === 'all'   ? all :
+                studyFilter === 'books' ? all.filter(s => s.type === 'Book') :
+                all.filter(s => s.status === studyFilter);
 
     if (items.length === 0) {
         el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#94a3b8">
@@ -6238,17 +6594,54 @@ function renderStudyList() {
         'Article':       _tsvg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>', '#2563eb'),
         'Video':         _tsvg('<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>', '#dc2626'),
         'Question Bank': _tsvg('<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>', '#d97706'),
+        'Book':          _tsvg('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>', '#059669'),
         'Other':         _tsvg('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>', '#64748b')
     };
 
-    el.innerHTML = items.map(s => `
-        <div style="background:white;border:1.5px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:8px">
+    // Book shelf stats banner when Books filter is active
+    if (studyFilter === 'books' && progressEl) {
+        let books    = all.filter(s => s.type === 'Book');
+        let bDone    = books.filter(s => s.status === 'done').length;
+        let bReading = books.filter(s => s.status === 'reading').length;
+        progressEl.innerHTML = books.length ? `
+        <div style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:16px;padding:16px;margin-bottom:4px">
+            <div style="display:flex;gap:16px;flex-wrap:wrap">
+                <div style="text-align:center"><div style="font-size:24px;font-weight:900;color:#059669">${bDone}</div><div style="font-size:11px;color:#059669;font-weight:700">Finished</div></div>
+                <div style="text-align:center"><div style="font-size:24px;font-weight:900;color:#d97706">${bReading}</div><div style="font-size:11px;color:#d97706;font-weight:700">Reading</div></div>
+                <div style="text-align:center"><div style="font-size:24px;font-weight:900;color:#64748b">${books.length}</div><div style="font-size:11px;color:#64748b;font-weight:700">Total</div></div>
+            </div>
+        </div>` : '';
+    }
+
+    el.innerHTML = items.map(s => {
+        let isBook = s.type === 'Book';
+        let bookPct = isBook && s.bookTotalPages ? Math.min(100, Math.round(((s.bookCurrentPage||0) / s.bookTotalPages) * 100)) : 0;
+        let bookBar = isBook && s.bookTotalPages ? `
+            <div style="margin-top:10px">
+                <div style="display:flex;justify-content:space-between;font-size:11px;color:#64748b;margin-bottom:4px">
+                    <span>Page ${s.bookCurrentPage||0} of ${s.bookTotalPages}</span>
+                    <span style="font-weight:700;color:#059669">${bookPct}%</span>
+                </div>
+                <div style="background:#e2e8f0;border-radius:99px;height:7px;position:relative">
+                    <div style="background:linear-gradient(90deg,#059669,#34d399);width:${bookPct}%;height:7px;border-radius:99px;transition:width 0.4s"></div>
+                </div>
+                <div style="margin-top:6px;display:flex;gap:6px;align-items:center">
+                    <input type="number" value="${s.bookCurrentPage||0}" min="0" max="${s.bookTotalPages}"
+                        onchange="updateBookProgress('${s.id}',this.value)"
+                        style="width:70px;padding:4px 8px;font-size:12px;border:1.5px solid #e2e8f0;border-radius:8px;margin:0"
+                        placeholder="Page">
+                    <span style="font-size:11px;color:#94a3b8">update current page</span>
+                </div>
+            </div>` : '';
+        return `
+        <div style="background:white;border:1.5px solid ${isBook?'#bbf7d0':'#e2e8f0'};border-radius:14px;padding:14px;margin-bottom:8px">
             <div style="display:flex;align-items:flex-start;gap:10px">
                 <div style="flex:1;min-width:0">
-                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
                         <span style="display:flex;align-items:center">${typeIcon[s.type]||typeIcon['Other']}</span>
                         <p style="font-weight:700;font-size:14px;color:#0f172a;margin:0">${s.topic}</p>
                     </div>
+                    ${isBook && s.bookAuthor ? `<p style="font-size:12px;color:#64748b;margin:0 0 4px;font-style:italic">by ${s.bookAuthor}</p>` : ''}
                     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                         <span style="font-size:11px;color:#64748b">${s.type}</span>
                         <button onclick="cycleStudyStatus('${s.id}')"
@@ -6257,6 +6650,7 @@ function renderStudyList() {
                         </button>
                     </div>
                     ${s.notes?`<p style="font-size:12px;color:#64748b;margin-top:6px;line-height:1.5">${s.notes}</p>`:''}
+                    ${bookBar}
                 </div>
                 <div style="display:flex;gap:4px;flex-shrink:0">
                     <button onclick="openStudyModal('${s.id}')" style="width:28px;height:28px;padding:0;margin:0;background:#f1f5f9;border-radius:8px;box-shadow:none;display:flex;align-items:center;justify-content:center" title="Edit">
@@ -6267,7 +6661,165 @@ function renderStudyList() {
                     </button>
                 </div>
             </div>
-        </div>`).join('');
+        </div>`;
+    }).join('');
+}
+
+// ── Clinician Notes ───────────────────────────────────────────────────────────
+const CLNOTE_KEY = 'eyeClinicianNotes';
+const CLNOTE_CAT = {
+    cornea:        { label:'Cornea',        icon:'👁️', color:'#2563eb', bg:'#eff6ff',  border:'#bfdbfe' },
+    glaucoma:      { label:'Glaucoma',      icon:'🔵', color:'#059669', bg:'#ecfdf5',  border:'#a7f3d0' },
+    retina:        { label:'Retina',        icon:'🔴', color:'#dc2626', bg:'#fef2f2',  border:'#fecaca' },
+    neuro:         { label:'Neuro-Ophtho',  icon:'🧠', color:'#7c3aed', bg:'#faf5ff',  border:'#ddd6fe' },
+    pediatric:     { label:'Pediatrics',    icon:'🩷', color:'#db2777', bg:'#fdf2f8',  border:'#fbcfe8' },
+    oculoplastics: { label:'Oculoplastics', icon:'✂️', color:'#9333ea', bg:'#faf5ff',  border:'#e9d5ff' },
+    uveitis:       { label:'Uveitis',       icon:'🟠', color:'#d97706', bg:'#fffbeb',  border:'#fde68a' },
+    general:       { label:'General',       icon:'📋', color:'#64748b', bg:'#f8fafc',  border:'#e2e8f0' },
+};
+
+function getClinicianNotes()      { return JSON.parse(localStorage.getItem(CLNOTE_KEY) || '[]'); }
+function saveClinicianNotes(arr)  { localStorage.setItem(CLNOTE_KEY, JSON.stringify(arr)); }
+
+let selectedNoteCategory = 'general';
+let activeNoteFilter     = '';
+
+function selectNoteCategory(cat) {
+    selectedNoteCategory = cat;
+    Object.keys(CLNOTE_CAT).forEach(k => {
+        let btn = document.getElementById('nc-' + k);
+        if (!btn) return;
+        let m = CLNOTE_CAT[k];
+        if (k === cat) {
+            btn.style.background = m.color;
+            btn.style.color      = 'white';
+            btn.style.borderColor = m.color;
+        } else {
+            btn.style.background = m.bg;
+            btn.style.color      = m.color;
+            btn.style.borderColor = m.border;
+        }
+    });
+}
+
+function filterClinicianNotes(cat) {
+    activeNoteFilter = cat;
+    let all = ['', ...Object.keys(CLNOTE_CAT)];
+    all.forEach(k => {
+        let btn = document.getElementById('cn-' + (k || 'all'));
+        if (!btn) return;
+        let active = k === cat;
+        if (k === '') {
+            btn.style.background  = active ? '#0891b2' : 'white';
+            btn.style.color       = active ? 'white' : '#64748b';
+            btn.style.borderColor = active ? '#0891b2' : '#e2e8f0';
+        } else {
+            let m = CLNOTE_CAT[k];
+            btn.style.background  = active ? m.color : 'white';
+            btn.style.color       = active ? 'white' : '#64748b';
+            btn.style.borderColor = active ? m.color : '#e2e8f0';
+        }
+    });
+    renderClinicianNotes();
+}
+
+function openClinicianNoteModal(id) {
+    let note = id ? getClinicianNotes().find(n => n.id === id) : null;
+    document.getElementById('clinNoteId').value      = note ? note.id : '';
+    document.getElementById('clinNoteTitle').value   = note ? note.title : '';
+    document.getElementById('clinNoteContent').value = note ? note.content : '';
+    let delBtn = document.getElementById('clinNoteDeleteBtn');
+    if (delBtn) delBtn.style.display = note ? 'block' : 'none';
+    selectNoteCategory(note ? (note.category || 'general') : 'general');
+    document.getElementById('clinicianNoteModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('clinNoteTitle').focus(), 100);
+}
+
+function closeClinicianNoteModal() {
+    document.getElementById('clinicianNoteModal').style.display = 'none';
+}
+
+function saveClinicianNote() {
+    let title   = document.getElementById('clinNoteTitle').value.trim();
+    let content = document.getElementById('clinNoteContent').value.trim();
+    if (!title)   { showToast('⚠️ Enter a title', 'warning'); return; }
+    if (!content) { showToast('⚠️ Add some content', 'warning'); return; }
+    let notes = getClinicianNotes();
+    let id    = document.getElementById('clinNoteId').value;
+    let note  = {
+        id:        id || crypto.randomUUID(),
+        title,
+        content,
+        category:  selectedNoteCategory,
+        updatedAt: new Date().toISOString(),
+        createdAt: id ? (notes.find(n => n.id === id)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+    };
+    if (id) { let idx = notes.findIndex(n => n.id === id); if (idx !== -1) notes[idx] = note; else notes.unshift(note); }
+    else notes.unshift(note);
+    saveClinicianNotes(notes);
+    closeClinicianNoteModal();
+    renderClinicianNotes();
+    showToast('📋 Note saved');
+}
+
+function deleteClinicianNote() {
+    let id = document.getElementById('clinNoteId').value;
+    if (!id || !confirm('Delete this note?')) return;
+    saveClinicianNotes(getClinicianNotes().filter(n => n.id !== id));
+    closeClinicianNoteModal();
+    renderClinicianNotes();
+    showToast('🗑️ Note deleted', 'warning');
+}
+
+function renderClinicianNotes() {
+    let el = document.getElementById('clinicianNotesList');
+    if (!el) return;
+    let notes = getClinicianNotes();
+    if (activeNoteFilter) notes = notes.filter(n => n.category === activeNoteFilter);
+    let q = (document.getElementById('clinNoteSearch')?.value || '').toLowerCase();
+    if (q) notes = notes.filter(n => n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q));
+
+    if (!notes.length) {
+        el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:#94a3b8">
+            <div style="font-size:36px;margin-bottom:10px">🏥</div>
+            <p style="font-size:14px;font-weight:600;color:#64748b;margin-bottom:6px">${activeNoteFilter || q ? 'No notes match' : 'No clinical notes yet'}</p>
+            <p style="font-size:13px">Tap <strong>New Note</strong> to capture a clinical pearl or management protocol</p>
+        </div>`;
+        return;
+    }
+
+    // Group by category
+    let grouped = {};
+    notes.forEach(n => { let c = n.category || 'general'; if (!grouped[c]) grouped[c] = []; grouped[c].push(n); });
+
+    let html = '';
+    let order = activeNoteFilter ? [activeNoteFilter] : Object.keys(CLNOTE_CAT).filter(k => grouped[k]);
+    for (let cat of order) {
+        if (!grouped[cat]) continue;
+        let m = CLNOTE_CAT[cat];
+        html += `<div style="margin-bottom:20px">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+                <span style="font-size:14px">${m.icon}</span>
+                <span style="font-size:11px;font-weight:800;color:${m.color};text-transform:uppercase;letter-spacing:0.8px">${m.label}</span>
+                <span style="font-size:11px;color:#94a3b8">${grouped[cat].length}</span>
+            </div>`;
+        for (let n of grouped[cat]) {
+            let preview = n.content.replace(/\n/g,' ').slice(0, 120);
+            let ago = (() => { let d = new Date(n.updatedAt); let diff = Math.floor((Date.now()-d)/86400000); return diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : diff + 'd ago'; })();
+            html += `<div onclick="openClinicianNoteModal('${n.id}')"
+                style="background:white;border:1.5px solid ${m.border};border-left:4px solid ${m.color};border-radius:14px;padding:14px;margin-bottom:8px;cursor:pointer;transition:box-shadow 0.15s"
+                onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'"
+                onmouseout="this.style.boxShadow='none'">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:5px">
+                    <p style="font-weight:700;font-size:14px;color:#0f172a;margin:0;flex:1">${n.title}</p>
+                    <span style="font-size:10px;color:#94a3b8;flex-shrink:0;margin-top:2px">${ago}</span>
+                </div>
+                <p style="font-size:12px;color:#64748b;margin:0;line-height:1.5">${preview}${n.content.length > 120 ? '…' : ''}</p>
+            </div>`;
+        }
+        html += '</div>';
+    }
+    el.innerHTML = html;
 }
 
 // ── Duty Hours ────────────────────────────────────────────────────────────────

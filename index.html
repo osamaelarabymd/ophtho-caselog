@@ -1357,6 +1357,7 @@
                     <button id="st-tab-qbank"     onclick="showStudySubTab('qbank')"     style="flex:1;margin:0;padding:8px 4px;border-radius:9px;font-size:11px;font-weight:700;border:none;background:#7c3aed;color:white;box-shadow:0 1px 4px rgba(0,0,0,0.12)">📝 QBank</button>
                     <button id="st-tab-okap"      onclick="showStudySubTab('okap')"      style="flex:1;margin:0;padding:8px 4px;border-radius:9px;font-size:11px;font-weight:700;border:none;background:transparent;color:#64748b;box-shadow:none">📊 OKAP</button>
                     <button id="st-tab-didactics" onclick="showStudySubTab('didactics')" style="flex:1;margin:0;padding:8px 4px;border-radius:9px;font-size:11px;font-weight:700;border:none;background:transparent;color:#64748b;box-shadow:none">📖 Didactics</button>
+                    <button id="st-tab-clinician" onclick="showStudySubTab('clinician')" style="flex:1;margin:0;padding:8px 4px;border-radius:9px;font-size:11px;font-weight:700;border:none;background:transparent;color:#64748b;box-shadow:none">🏥 Clinician</button>
                 </div>
                 <!-- QBank sub-panel -->
                 <div id="st-qbank">
@@ -1394,6 +1395,36 @@
                     <div id="didacticsStats" style="margin-bottom:16px"></div>
                     <div id="didacticsList"></div>
                 </div>
+                <!-- Clinician Notes sub-panel -->
+                <div id="st-clinician" style="display:none">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+                        <div>
+                            <h3 style="margin:0 0 2px;font-size:16px;font-weight:800;color:#0f172a">Clinician Notes</h3>
+                            <p style="margin:0;font-size:12px;color:#94a3b8">Clinical pearls · Management · DDx · Guidelines</p>
+                        </div>
+                        <button onclick="openClinicianNoteModal()" style="width:auto;margin:0;padding:9px 14px;font-size:12px;font-weight:700;border-radius:12px;background:#0891b2;color:white;display:flex;align-items:center;gap:6px">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Note
+                        </button>
+                    </div>
+                    <!-- Category filter chips -->
+                    <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none">
+                        <button onclick="filterClinicianNotes('')" id="cn-all" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #0891b2;background:#0891b2;color:white;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">All</button>
+                        <button onclick="filterClinicianNotes('cornea')"        id="cn-cornea"        style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">👁️ Cornea</button>
+                        <button onclick="filterClinicianNotes('glaucoma')"      id="cn-glaucoma"      style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🔵 Glaucoma</button>
+                        <button onclick="filterClinicianNotes('retina')"        id="cn-retina"        style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🔴 Retina</button>
+                        <button onclick="filterClinicianNotes('neuro')"         id="cn-neuro"         style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🧠 Neuro</button>
+                        <button onclick="filterClinicianNotes('pediatric')"     id="cn-pediatric"     style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🩷 Pediatric</button>
+                        <button onclick="filterClinicianNotes('oculoplastics')" id="cn-oculoplastics" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">✂️ Oculoplastics</button>
+                        <button onclick="filterClinicianNotes('uveitis')"       id="cn-uveitis"       style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🟠 Uveitis</button>
+                        <button onclick="filterClinicianNotes('general')"       id="cn-general"       style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">📋 General</button>
+                    </div>
+                    <!-- Search -->
+                    <div style="position:relative;margin-bottom:14px">
+                        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input id="clinNoteSearch" oninput="renderClinicianNotes()" type="text" placeholder="Search clinical notes…" style="padding-left:36px;margin:0;width:100%;box-sizing:border-box;border-radius:12px;border:1.5px solid #e2e8f0;font-size:13px">
+                    </div>
+                    <div id="clinicianNotesList"></div>
+                </div>
             </div>
             <!-- Reading List (was Study) -->
             <div id="ws-reading" style="display:none">
@@ -1403,6 +1434,7 @@
                         <button onclick="filterStudy('to-read')" id="sf-to-read" class="study-filter"           style="width:auto;margin:0;padding:7px 10px;font-size:12px;border-radius:20px;background:#f1f5f9;color:#64748b;box-shadow:none">To Read</button>
                         <button onclick="filterStudy('reading')" id="sf-reading" class="study-filter"           style="width:auto;margin:0;padding:7px 10px;font-size:12px;border-radius:20px;background:#f1f5f9;color:#64748b;box-shadow:none">Reading</button>
                         <button onclick="filterStudy('done')"    id="sf-done"    class="study-filter"           style="width:auto;margin:0;padding:7px 10px;font-size:12px;border-radius:20px;background:#f1f5f9;color:#64748b;box-shadow:none">Done</button>
+                        <button onclick="filterStudy('books')"   id="sf-books"   class="study-filter"           style="width:auto;margin:0;padding:7px 10px;font-size:12px;border-radius:20px;background:#f1f5f9;color:#64748b;box-shadow:none">📚 Books</button>
                     </div>
                     <button onclick="openStudyModal()" style="width:auto;margin:0;padding:10px 14px;font-size:13px;border-radius:12px;background:#7c3aed;display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</button>
                 </div>
@@ -1545,29 +1577,43 @@
             <div id="ws-fitness" style="display:none">
                 <!-- Stats bar -->
                 <div id="fitnessStats" style="display:flex;gap:10px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none"></div>
-                <!-- Toolbar -->
+                <!-- Toolbar: heading + view toggle + log button -->
                 <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
                     <div>
                         <h3 style="margin:0 0 2px;font-size:16px;font-weight:800;color:#0f172a">Fitness</h3>
-                        <p style="margin:0;font-size:12px;color:#94a3b8">Track workouts · Stay consistent</p>
+                        <p style="margin:0;font-size:12px;color:#94a3b8">Train smart · Track progress</p>
                     </div>
-                    <button onclick="openFitnessModal()" style="width:auto;margin:0 0 0 auto;padding:9px 14px;font-size:12px;font-weight:700;border-radius:12px;background:linear-gradient(135deg,#e11d48,#f97316);color:white;border:none;display:flex;align-items:center;gap:6px;flex-shrink:0">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Log Workout
+                    <div style="display:flex;background:#f1f5f9;border-radius:12px;padding:3px;gap:2px;margin-left:auto">
+                        <button onclick="showFitnessView('programs')" id="fv-programs" style="margin:0;padding:7px 13px;border-radius:9px;font-size:11px;font-weight:700;border:none;background:#0f172a;color:white;transition:all 0.15s">Programs</button>
+                        <button onclick="showFitnessView('log')" id="fv-log" style="margin:0;padding:7px 13px;border-radius:9px;font-size:11px;font-weight:700;border:none;background:transparent;color:#64748b;transition:all 0.15s">My Log</button>
+                    </div>
+                    <button onclick="openFitnessModal()" style="width:auto;margin:0;padding:9px 14px;font-size:12px;font-weight:700;border-radius:12px;background:linear-gradient(135deg,#e11d48,#f97316);color:white;border:none;display:flex;align-items:center;gap:6px;flex-shrink:0">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Log
                     </button>
                 </div>
-                <!-- Type filter chips -->
-                <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none">
-                    <button onclick="setFitnessFilter('')" id="ff-all" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #0f172a;background:#0f172a;color:white;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">All</button>
-                    <button onclick="setFitnessFilter('run')"     id="ff-run"     style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🏃 Run</button>
-                    <button onclick="setFitnessFilter('lift')"    id="ff-lift"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🏋️ Lift</button>
-                    <button onclick="setFitnessFilter('cardio')"  id="ff-cardio"  style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">❤️ Cardio</button>
-                    <button onclick="setFitnessFilter('yoga')"    id="ff-yoga"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🧘 Yoga</button>
-                    <button onclick="setFitnessFilter('cycling')" id="ff-cycling" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🚴 Cycling</button>
-                    <button onclick="setFitnessFilter('walk')"    id="ff-walk"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🚶 Walk</button>
-                    <button onclick="setFitnessFilter('hiit')"    id="ff-hiit"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">⚡ HIIT</button>
-                    <button onclick="setFitnessFilter('swim')"    id="ff-swim"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🏊 Swim</button>
+
+                <!-- Programs view (default) -->
+                <div id="fitnessProgramsView">
+                    <div id="programCards"></div>
+                    <div id="programDetail" style="display:none"></div>
                 </div>
-                <div id="fitnessList"></div>
+
+                <!-- Log view (hidden by default) -->
+                <div id="fitnessLogView" style="display:none">
+                    <!-- Type filter chips -->
+                    <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none">
+                        <button onclick="setFitnessFilter('')" id="ff-all" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #0f172a;background:#0f172a;color:white;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">All</button>
+                        <button onclick="setFitnessFilter('run')"     id="ff-run"     style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🏃 Run</button>
+                        <button onclick="setFitnessFilter('lift')"    id="ff-lift"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🏋️ Lift</button>
+                        <button onclick="setFitnessFilter('cardio')"  id="ff-cardio"  style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">❤️ Cardio</button>
+                        <button onclick="setFitnessFilter('yoga')"    id="ff-yoga"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🧘 Yoga</button>
+                        <button onclick="setFitnessFilter('cycling')" id="ff-cycling" style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🚴 Cycling</button>
+                        <button onclick="setFitnessFilter('walk')"    id="ff-walk"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🚶 Walk</button>
+                        <button onclick="setFitnessFilter('hiit')"    id="ff-hiit"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">⚡ HIIT</button>
+                        <button onclick="setFitnessFilter('swim')"    id="ff-swim"    style="white-space:nowrap;padding:5px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:11px;font-weight:700;margin:0;box-shadow:none;flex-shrink:0">🏊 Swim</button>
+                    </div>
+                    <div id="fitnessList"></div>
+                </div>
             </div>
 
         </div>
@@ -2221,13 +2267,29 @@
                     <button onclick="startVoiceFill('studyTopic',this)" title="Voice input" style="width:38px;height:38px;padding:0;margin:0;background:#eff6ff;border-radius:10px;box-shadow:none;border:1.5px solid #bfdbfe;flex-shrink:0;display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
                 </div>
                 <label>Type</label>
-                <select id="studyType">
+                <select id="studyType" onchange="toggleBookFields()">
                     <option value="Textbook">Textbook</option>
                     <option value="Article">Article / Paper</option>
                     <option value="Video">Video / Lecture</option>
                     <option value="Question Bank">Question Bank</option>
+                    <option value="Book">📖 Book</option>
                     <option value="Other">Other</option>
                 </select>
+                <!-- Book-specific fields (shown only when type = Book) -->
+                <div id="bookFields" style="display:none">
+                    <label style="margin-top:12px">Author <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span></label>
+                    <input type="text" id="bookAuthor" placeholder="e.g. Malcolm Gladwell">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                        <div>
+                            <label>Total Pages</label>
+                            <input type="number" id="bookTotalPages" placeholder="e.g. 320" min="1">
+                        </div>
+                        <div>
+                            <label>Current Page</label>
+                            <input type="number" id="bookCurrentPage" placeholder="e.g. 80" min="0">
+                        </div>
+                    </div>
+                </div>
                 <label style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">Notes <span style="font-size:11px;color:#94a3b8;font-weight:400">(optional)</span> <button onclick="startVoiceFill('studyNotes',this)" title="Voice input" style="width:32px;height:32px;padding:0;margin:0;background:#eff6ff;border-radius:8px;box-shadow:none;border:1.5px solid #bfdbfe;display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button></label>
                 <textarea id="studyNotes" rows="3" placeholder="Why you're studying this, key points to focus on…"></textarea>
                 <div style="display:flex;gap:10px;margin-top:16px">
@@ -2237,6 +2299,41 @@
             </div>
         </div>
 
+
+        <!-- Clinician Note Modal -->
+        <div id="clinicianNoteModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)" onclick="if(event.target===this)closeClinicianNoteModal()">
+            <div style="background:white;border-radius:20px;padding:24px;width:92%;max-width:520px;box-shadow:0 24px 64px rgba(0,0,0,0.25);max-height:92vh;overflow-y:auto">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+                    <h2 style="margin:0;font-size:18px;font-weight:800;color:#0f172a;display:flex;align-items:center;gap:8px">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        Clinical Note
+                    </h2>
+                    <button onclick="closeClinicianNoteModal()" style="width:32px;height:32px;padding:0;margin:0;background:#f1f5f9;border-radius:50%;font-size:16px;color:#64748b">✕</button>
+                </div>
+                <input type="hidden" id="clinNoteId">
+                <!-- Category -->
+                <label style="margin-bottom:8px;display:block">Category</label>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+                    <button onclick="selectNoteCategory('cornea')"        id="nc-cornea"        style="padding:6px 12px;margin:0;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid #bfdbfe;background:#eff6ff;color:#2563eb;transition:all 0.15s">👁️ Cornea</button>
+                    <button onclick="selectNoteCategory('glaucoma')"      id="nc-glaucoma"      style="padding:6px 12px;margin:0;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid #a7f3d0;background:#ecfdf5;color:#059669;transition:all 0.15s">🔵 Glaucoma</button>
+                    <button onclick="selectNoteCategory('retina')"        id="nc-retina"        style="padding:6px 12px;margin:0;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid #fecaca;background:#fef2f2;color:#dc2626;transition:all 0.15s">🔴 Retina</button>
+                    <button onclick="selectNoteCategory('neuro')"         id="nc-neuro"         style="padding:6px 12px;margin:0;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid #ddd6fe;background:#faf5ff;color:#7c3aed;transition:all 0.15s">🧠 Neuro-Ophtho</button>
+                    <button onclick="selectNoteCategory('pediatric')"     id="nc-pediatric"     style="padding:6px 12px;margin:0;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid #fbcfe8;background:#fdf2f8;color:#db2777;transition:all 0.15s">🩷 Pediatric</button>
+                    <button onclick="selectNoteCategory('oculoplastics')" id="nc-oculoplastics" style="padding:6px 12px;margin:0;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid #e9d5ff;background:#faf5ff;color:#9333ea;transition:all 0.15s">✂️ Oculoplastics</button>
+                    <button onclick="selectNoteCategory('uveitis')"       id="nc-uveitis"       style="padding:6px 12px;margin:0;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid #fde68a;background:#fffbeb;color:#d97706;transition:all 0.15s">🟠 Uveitis</button>
+                    <button onclick="selectNoteCategory('general')"       id="nc-general"       style="padding:6px 12px;margin:0;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid #cbd5e1;background:#f8fafc;color:#64748b;transition:all 0.15s">📋 General</button>
+                </div>
+                <label>Title</label>
+                <input type="text" id="clinNoteTitle" placeholder="e.g. Glaucoma Management Algorithm, AMD Treatment Protocol…">
+                <label style="margin-top:12px">Clinical Notes</label>
+                <textarea id="clinNoteContent" rows="10" placeholder="DDx, workup, management steps, key clinical pearls, guidelines…" style="font-size:13px;line-height:1.65;font-family:inherit"></textarea>
+                <div style="display:flex;gap:8px;margin-top:16px">
+                    <button onclick="saveClinicianNote()" style="flex:1;margin:0;background:#0891b2">Save Note</button>
+                    <button onclick="closeClinicianNoteModal()" style="flex:0 0 auto;margin:0;background:#64748b;padding:0 16px">Cancel</button>
+                    <button id="clinNoteDeleteBtn" onclick="deleteClinicianNote()" style="display:none;flex:0 0 auto;margin:0;background:#fef2f2;color:#dc2626;border:1.5px solid #fecaca;padding:0 16px;box-shadow:none">Delete</button>
+                </div>
+            </div>
+        </div>
 
         <!-- Event Modal -->
         <div id="eventModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
