@@ -970,6 +970,7 @@ function showTab(tab, e) {
     } else if (tab === 'caseList') {
         document.getElementById('caseListTab').style.display = 'block';
         showCasesSubTab('list');
+        renderCaseHero();
         renderSavedFiltersBar();
         displayCaseList(allCases);
     } else if (tab === 'analytics') {
@@ -1018,16 +1019,52 @@ function showCasesSubTab(which) {
     if (which === 'insights') {
         listEl.style.display     = 'none';
         insightsEl.style.display = 'block';
-        if (listBtn) { listBtn.style.background = 'transparent'; listBtn.style.color = '#6B7280'; listBtn.style.boxShadow = 'none'; }
-        if (insBtn)  { insBtn.style.background  = 'white';       insBtn.style.color  = '#111827'; insBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)'; }
+        listBtn?.classList.remove('case-sub-active');
+        insBtn?.classList.add('case-sub-active');
         showAnalytics();
         renderLearningCurve();
     } else {
         insightsEl.style.display = 'none';
         listEl.style.display     = 'block';
-        if (insBtn)  { insBtn.style.background  = 'transparent'; insBtn.style.color  = '#6B7280'; insBtn.style.boxShadow = 'none'; }
-        if (listBtn) { listBtn.style.background = 'white';       listBtn.style.color = '#111827'; listBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)'; }
+        insBtn?.classList.remove('case-sub-active');
+        listBtn?.classList.add('case-sub-active');
+        applyFilter();
     }
+}
+
+function renderCaseHero() {
+    let total   = allCases.length;
+    let primary = allCases.filter(c => c.role === 'Primary Surgeon').length;
+    let thisMonth = getTodayStr().slice(0, 7);
+    let monthCount = allCases.filter(c => c.date && c.date.slice(0, 7) === thisMonth).length;
+    let procs   = new Set(allCases.map(c => c.procedure).filter(Boolean)).size;
+    let pct     = total ? Math.round(primary / total * 100) : 0;
+    let tv = document.getElementById('ch-total');   if (tv) tv.innerHTML = total;
+    let pv = document.getElementById('ch-primary'); if (pv) pv.innerHTML = `${pct}<span>%</span>`;
+    let mv = document.getElementById('ch-month');   if (mv) mv.innerHTML = monthCount;
+    let rv = document.getElementById('ch-procs');   if (rv) rv.innerHTML = procs;
+}
+
+function setCaseRoleFilter(role) {
+    let sel = document.getElementById('filterRole');
+    if (sel) sel.value = role;
+    ['all','primary','asst','obs'].forEach(id => {
+        let btn = document.getElementById('crf-' + id);
+        if (btn) btn.classList.remove('case-chip-active');
+    });
+    let map = { '':'all', 'Primary Surgeon':'primary', 'Assistant':'asst', 'Observer':'obs' };
+    let activeId = document.getElementById('crf-' + (map[role] || 'all'));
+    if (activeId) activeId.classList.add('case-chip-active');
+    applyFilter();
+}
+
+function toggleCaseAdvFilters() {
+    let el = document.getElementById('caseAdvFilters');
+    let btn = document.getElementById('crf-filter');
+    if (!el) return;
+    let open = el.style.display !== 'none';
+    el.style.display = open ? 'none' : 'flex';
+    if (btn) btn.style.background = open ? '' : '#0f172a', btn.style.color = open ? '' : 'white', btn.style.borderColor = open ? '' : '#0f172a';
 }
 
 // ── Learning Curve ────────────────────────────────────────────────────────────
@@ -1503,6 +1540,7 @@ async function loadCases() {
     checkSmartAlerts(allCases);
     updateStreak(allCases);
     hideLoading();
+    if (document.getElementById('caseListTab').style.display !== 'none') renderCaseHero();
     // Procedure-level milestone checks (runs after loading, non-blocking)
     setTimeout(() => checkProcedureMilestones(allCases), 800);
 }
@@ -2325,70 +2363,78 @@ function exportAnalyticsPDF() {
 
 function displayCaseList(cases) {
     let countEl = document.getElementById('caseCount');
-    if (countEl) countEl.textContent = cases.length + ' case' + (cases.length !== 1 ? 's' : '') + ' found';
+    if (countEl) countEl.textContent = cases.length + ' case' + (cases.length !== 1 ? 's' : '');
 
     if (cases.length === 0) {
-        document.getElementById('caseList').innerHTML =
-            '<div style="text-align:center; padding:60px 20px; color:#94a3b8">' +
-            '<div style="margin-bottom:16px;display:flex;justify-content:center"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>' +
-            '<p style="font-size:16px; font-weight:600; margin-bottom:8px">No cases found</p>' +
-            '<p style="font-size:14px">Try adjusting your filters or log a new case</p>' +
-            '</div>';
+        document.getElementById('caseList').innerHTML = `
+            <div style="text-align:center;padding:60px 20px;color:#94a3b8">
+                <div style="width:56px;height:56px;background:#f8fafc;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </div>
+                <p style="font-size:15px;font-weight:600;color:#64748b;margin-bottom:6px">No cases found</p>
+                <p style="font-size:13px">Try adjusting your filters or log a new case</p>
+            </div>`;
         return;
     }
 
-    let html = '<div style="display:flex; flex-direction:column; gap:12px">';
+    // Group by month
+    let grouped = {};
     for (let c of cases) {
-        let color     = procedureColors[c.procedure] || '#2563eb';
-        let roleColor = roleColors[c.role] || '#64748b';
-        let dateStr   = c.date ? new Date(c.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
-        let initials  = c.procedure ? c.procedure.slice(0,2).toUpperCase() : '??';
-
-        let ratingColor = c.pd_rating === 'Excellent' ? '#16a34a' : c.pd_rating === 'Good' ? '#2563eb' : c.pd_rating === 'Needs Work' ? '#d97706' : '#64748b';
-        html += `
-        <div style="background:white; border-radius:16px; padding:0; box-shadow:0 2px 12px rgba(37,99,235,0.08); border:1px solid #e2e8f0; overflow:hidden; transition:transform 0.2s, box-shadow 0.2s"
-             onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 28px rgba(37,99,235,0.13)'"
-             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 12px rgba(37,99,235,0.08)'">
-            <div style="height:5px; background:${color}; border-radius:16px 16px 0 0"></div>
-            <div style="padding:16px 18px">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px">
-                    <div style="display:flex; align-items:center; gap:12px">
-                        <div style="width:44px; height:44px; border-radius:12px; background:${color}18; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:${color}; flex-shrink:0">${initials}</div>
-                        <div>
-                            <div style="font-size:15px; font-weight:700; color:#0f172a; margin-bottom:3px">${c.procedure}</div>
-                            <div style="display:flex; gap:6px; flex-wrap:wrap">
-                                <span style="background:${roleColor}18; color:${roleColor}; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px">${c.role}</span>
-                                <span style="background:#f1f5f9; color:#64748b; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${dateStr}</span>
-                                ${c.pgy_year ? `<span style="background:#f1f5f9; color:#64748b; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px">${c.pgy_year}</span>` : ''}
-                                ${c.is_teaching ? `<span style="background:#fef3c7; color:#d97706; font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px; display:inline-flex; align-items:center; gap:4px"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/></svg>Teaching</span>` : ''}
-                                ${c.pd_rating  ? `<span style="background:${ratingColor}18; color:${ratingColor}; font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px">PD: ${c.pd_rating}</span>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                    <div style="display:flex; gap:6px; flex-shrink:0">
-                        <button onclick="openEditModal('${c.id}')" title="Edit" style="background:#2563eb18;color:#2563eb;padding:7px 9px;font-size:13px;margin:0;width:auto;border-radius:8px;line-height:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                        <button onclick="duplicateCase('${c.id}')" title="Duplicate" style="background:#7c3aed18;color:#7c3aed;padding:7px 9px;font-size:13px;margin:0;width:auto;border-radius:8px;line-height:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
-                        <button onclick="deleteCase('${c.id}')" title="Delete" style="background:#dc262618;color:#dc2626;padding:7px 9px;font-size:13px;margin:0;width:auto;border-radius:8px;line-height:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
-                    </div>
-                </div>
-                <div style="display:flex; gap:16px; flex-wrap:wrap; border-top:1px solid #f1f5f9; padding-top:10px">
-                    ${c.attending ? `<span style="font-size:12px; color:#64748b"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><strong>${c.attending}</strong></span>` : ''}
-                    ${c.hospital  ? `<span style="font-size:12px; color:#64748b"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><strong>${c.hospital}</strong></span>` : ''}
-                    ${c.notes     ? `<span style="font-size:12px; color:#64748b; flex:1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>${stripComplexity(c.notes)}</span>` : ''}
-                    ${parseComplexity(c.notes) !== 'Routine' ? `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; background:${parseComplexity(c.notes)==='Challenging'?'#fef2f2':'#fefce8'}; color:${parseComplexity(c.notes)==='Challenging'?'#dc2626':'#ca8a04'}"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${parseComplexity(c.notes)==='Challenging'?'#dc2626':'#ca8a04'};margin-right:4px;vertical-align:middle"></span>${parseComplexity(c.notes)}</span>` : ''}
-                </div>
-                ${c.pd_feedback ? `<div style="margin-top:10px;background:#f0fdf4;border-left:3px solid #16a34a;border-radius:0 8px 8px 0;padding:8px 12px">
-                    <div style="font-size:10px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">PD Feedback</div>
-                    <div style="font-size:12px;color:#374151;line-height:1.5">${c.pd_feedback}</div>
-                </div>` : ''}
-                ${c.is_teaching && c.teaching_note ? `<div style="margin-top:8px;background:#fefce8;border-left:3px solid #d97706;border-radius:0 8px 8px 0;padding:8px 12px">
-                    <div style="font-size:10px;font-weight:700;color:#d97706;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">Teaching Point</div>
-                    <div style="font-size:12px;color:#374151;line-height:1.5">${c.teaching_note}</div>
-                </div>` : ''}
-            </div>
-        </div>`;
+        let key = (c.date || '').slice(0, 7) || 'unknown';
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(c);
     }
-    html += '</div>';
+
+    let html = '';
+    for (let month of Object.keys(grouped).sort().reverse()) {
+        let label = month === 'unknown' ? 'Unknown Date'
+            : new Date(month + '-02').toLocaleString('default', { month: 'long', year: 'numeric' });
+        html += `<div class="case-month-hdr">${label} <span style="font-weight:400;color:#cbd5e1;font-size:10px;letter-spacing:0">${grouped[month].length}</span></div>`;
+
+        for (let c of grouped[month]) {
+            let color      = procedureColors[c.procedure] || '#2563eb';
+            let roleColor  = roleColors[c.role] || '#64748b';
+            let dateStr    = c.date ? new Date(c.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+            let complexity = parseComplexity(c.notes);
+            let ratingColor = c.pd_rating === 'Excellent' ? '#16a34a' : c.pd_rating === 'Good' ? '#2563eb' : c.pd_rating === 'Needs Work' ? '#d97706' : '#64748b';
+            let notesClean = stripComplexity(c.notes || '');
+
+            html += `<div class="case-card-v2">
+                <div class="case-card-accent" style="background:${color}"></div>
+                <div class="case-card-body" onclick="openEditModal('${c.id}')">
+                    <div class="case-card-hdr">
+                        <div class="case-card-proc">${c.procedure || '—'}</div>
+                        <div class="case-card-date">${dateStr}</div>
+                    </div>
+                    <div class="case-card-tags">
+                        <span class="case-card-tag" style="background:${roleColor}15;color:${roleColor}">${c.role}</span>
+                        ${complexity !== 'Routine' ? `<span class="case-card-tag" style="background:${complexity==='Challenging'?'#fef2f2':'#fefce8'};color:${complexity==='Challenging'?'#dc2626':'#ca8a04'}">${complexity}</span>` : ''}
+                        ${c.is_teaching ? `<span class="case-card-tag" style="background:#fef3c7;color:#d97706">Teaching</span>` : ''}
+                        ${c.pd_rating   ? `<span class="case-card-tag" style="background:${ratingColor}15;color:${ratingColor}">${c.pd_rating}</span>` : ''}
+                        ${c.pgy_year    ? `<span class="case-card-tag" style="background:#f1f5f9;color:#64748b">${c.pgy_year}</span>` : ''}
+                    </div>
+                    <div class="case-card-meta">
+                        ${c.attending ? `<span><strong style="color:#374151">${c.attending}</strong></span>` : ''}
+                        ${c.hospital  ? `<span style="color:#94a3b8">${c.hospital}</span>` : ''}
+                        ${notesClean  ? `<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#94a3b8">${notesClean.slice(0,90)}</span>` : ''}
+                    </div>
+                    ${c.pd_feedback ? `<div class="case-fb-box" style="background:#f0fdf4;border-left:3px solid #16a34a"><div class="case-fb-label" style="color:#16a34a">PD Feedback</div><div style="color:#374151">${c.pd_feedback}</div></div>` : ''}
+                    ${c.is_teaching && c.teaching_note ? `<div class="case-fb-box" style="background:#fefce8;border-left:3px solid #d97706"><div class="case-fb-label" style="color:#d97706">Teaching Point</div><div style="color:#374151">${c.teaching_note}</div></div>` : ''}
+                </div>
+                <div class="case-card-actions">
+                    <button class="case-act-btn" onclick="event.stopPropagation();openEditModal('${c.id}')" title="Edit" style="background:#2563eb12" onmouseover="this.style.background='#2563eb22'" onmouseout="this.style.background='#2563eb12'">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="case-act-btn" onclick="event.stopPropagation();duplicateCase('${c.id}')" title="Duplicate" style="background:#7c3aed12" onmouseover="this.style.background='#7c3aed22'" onmouseout="this.style.background='#7c3aed12'">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
+                    <button class="case-act-btn" onclick="event.stopPropagation();deleteCase('${c.id}')" title="Delete" style="background:#dc262612" onmouseover="this.style.background='#dc262622'" onmouseout="this.style.background='#dc262612'">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                    </button>
+                </div>
+            </div>`;
+        }
+    }
     document.getElementById('caseList').innerHTML = html;
 }
 

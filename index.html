@@ -418,6 +418,51 @@
     .jnl-mob-active { color: var(--jnl-text) !important; background: var(--jnl-elevated); }
     .jnl-date-display { font-size: 26px; }
 }
+
+/* ── Premium Cases ───────────────────────────────────────── */
+.case-hero {
+    background: linear-gradient(135deg, #0f172a 0%, #1a2744 100%);
+    border-radius: 16px;
+    padding: 18px 6px;
+    margin-bottom: 14px;
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+}
+.case-hero-stat { text-align:center; padding:4px 8px; }
+.case-hero-stat+.case-hero-stat { border-left:1px solid rgba(255,255,255,0.07); }
+.case-hero-val { font-size:26px;font-weight:800;color:#f0ece2;line-height:1.1;letter-spacing:-0.5px;font-variant-numeric:tabular-nums }
+.case-hero-val span { font-size:14px;font-weight:500;opacity:0.55;letter-spacing:0 }
+.case-hero-lbl { font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.9px;margin-top:4px }
+.case-sub-wrap { display:flex;background:#f1f5f9;border-radius:12px;padding:4px;margin-bottom:16px;gap:4px }
+.case-sub-btn { all:unset;flex:1;text-align:center;padding:9px;border-radius:9px;font-size:12px;font-weight:700;color:#6b7280;cursor:pointer;transition:all 0.15s }
+.case-sub-active { background:white;color:#111827;box-shadow:0 1px 3px rgba(0,0,0,0.1) }
+.case-search-row { display:flex;gap:8px;margin-bottom:12px;align-items:center }
+.case-search-wrap { flex:1;position:relative }
+.case-search-icon { position:absolute;left:13px;top:50%;transform:translateY(-50%);pointer-events:none }
+.case-search-inp { width:100%;box-sizing:border-box;padding:10px 14px 10px 38px;border:1.5px solid #e2e8f0;border-radius:11px;font-size:13px;background:white;color:#0f172a;outline:none;transition:border-color 0.15s;margin:0;font-family:inherit }
+.case-search-inp:focus { border-color:#0f172a }
+.case-search-inp::placeholder { color:#94a3b8 }
+.case-role-chips { display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap }
+.case-chip { all:unset;padding:6px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:600;color:#64748b;cursor:pointer;background:white;transition:all 0.14s;white-space:nowrap }
+.case-chip:hover { border-color:#94a3b8;color:#374151 }
+.case-chip-active { background:#0f172a!important;color:white!important;border-color:#0f172a!important }
+.case-month-hdr { font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1.4px;margin:20px 0 10px;display:flex;align-items:center;gap:10px }
+.case-month-hdr::after { content:'';flex:1;height:1px;background:#f1f5f9 }
+.case-card-v2 { background:white;border-radius:13px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,0.04),0 3px 10px rgba(0,0,0,0.04);border:1px solid #f1f5f9;margin-bottom:8px;display:flex;transition:box-shadow 0.18s,transform 0.18s }
+.case-card-v2:hover { box-shadow:0 6px 24px rgba(0,0,0,0.09);transform:translateY(-1px) }
+.case-card-accent { width:4px;flex-shrink:0 }
+.case-card-body { flex:1;padding:14px 16px;min-width:0;cursor:pointer }
+.case-card-hdr { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;gap:8px }
+.case-card-proc { font-size:15px;font-weight:700;color:#0f172a;line-height:1.25 }
+.case-card-date { font-size:11px;font-weight:500;color:#94a3b8;white-space:nowrap;flex-shrink:0;font-variant-numeric:tabular-nums;margin-top:2px }
+.case-card-tags { display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px }
+.case-card-tag { font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;white-space:nowrap }
+.case-card-meta { font-size:12px;color:#64748b;display:flex;gap:14px;flex-wrap:wrap;align-items:center }
+.case-card-actions { display:flex;flex-direction:column;gap:3px;padding:10px 10px 10px 0;opacity:0;transition:opacity 0.15s;justify-content:center }
+.case-card-v2:hover .case-card-actions { opacity:1 }
+.case-act-btn { all:unset;width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.12s;flex-shrink:0 }
+.case-fb-box { margin-top:10px;padding:8px 12px;border-radius:0 8px 8px 0;font-size:12px;line-height:1.5 }
+.case-fb-label { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px }
     </style>
 
     <!-- Stats Card Modal -->
@@ -1226,61 +1271,78 @@
         <!-- Cases (List + Insights merged) -->
         <div id="caseListTab" style="display:none">
 
-            <!-- Sub-toggle: List | Insights -->
-            <div style="display:flex;gap:3px;margin-bottom:16px;background:#F3F4F6;border-radius:14px;padding:4px">
-                <button id="cl-tab-list" onclick="showCasesSubTab('list')" style="flex:1;margin:0;border-radius:10px;padding:9px;font-size:12px;font-weight:700;background:white;color:#111827;box-shadow:0 1px 3px rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:center;gap:6px">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                    List
-                </button>
-                <button id="cl-tab-insights" onclick="showCasesSubTab('insights')" style="flex:1;margin:0;border-radius:10px;padding:9px;font-size:12px;font-weight:700;background:transparent;color:#6B7280;box-shadow:none;display:flex;align-items:center;justify-content:center;gap:6px">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                    Insights
-                </button>
+            <!-- Stats Hero -->
+            <div class="case-hero" id="caseHero">
+                <div class="case-hero-stat"><div class="case-hero-val" id="ch-total">—</div><div class="case-hero-lbl">Total Cases</div></div>
+                <div class="case-hero-stat"><div class="case-hero-val" id="ch-primary">—<span>%</span></div><div class="case-hero-lbl">As Primary</div></div>
+                <div class="case-hero-stat"><div class="case-hero-val" id="ch-month">—</div><div class="case-hero-lbl">This Month</div></div>
+                <div class="case-hero-stat"><div class="case-hero-val" id="ch-procs">—</div><div class="case-hero-lbl">Procedure Types</div></div>
+            </div>
+
+            <!-- Sub-toggle: Cases | Analytics -->
+            <div class="case-sub-wrap">
+                <button id="cl-tab-list"     onclick="showCasesSubTab('list')"     class="case-sub-btn case-sub-active">Cases</button>
+                <button id="cl-tab-insights" onclick="showCasesSubTab('insights')" class="case-sub-btn">Analytics</button>
             </div>
 
             <!-- LIST sub-section -->
             <div id="cl-section-list">
-                <div style="background:white;padding:12px 14px;border-radius:14px;margin-bottom:12px;border:1px solid #E5E7EB;box-shadow:0 1px 4px rgba(0,0,0,0.04);display:flex;gap:8px;align-items:center">
-                    <input type="text" id="searchNotes" placeholder="Search cases…" oninput="applyFilter()" style="margin:0;padding:10px 14px;border-radius:10px;font-size:13px;flex:1">
-                    <div style="display:flex;background:#f1f5f9;border-radius:9px;padding:3px;gap:2px;flex-shrink:0">
-                        <button id="caseViewList" onclick="setCaseView('list')" title="List view" style="width:30px;height:30px;margin:0;padding:0;border-radius:7px;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:center">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                        </button>
-                        <button id="caseViewGallery" onclick="setCaseView('gallery')" title="Gallery view" style="width:30px;height:30px;margin:0;padding:0;border-radius:7px;background:transparent;box-shadow:none;display:flex;align-items:center;justify-content:center">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                        </button>
+                <!-- Search row -->
+                <div class="case-search-row">
+                    <div class="case-search-wrap">
+                        <svg class="case-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="searchNotes" class="case-search-inp" placeholder="Search cases, attendings, hospitals…" oninput="applyFilter()">
                     </div>
-                </div>
-                <div id="savedFiltersBar" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center"></div>
-                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
-                    <select id="filterProcedure" onchange="applyFilter()" style="width:auto;padding:7px 10px;font-size:12px;border-radius:20px;margin-top:0;border:1.5px solid #E5E7EB;background:white">
-                        <option value="">All Procedures</option>
-                        <option>Cataract / Phaco</option>
-                        <option>Vitreoretinal (PPV)</option>
-                        <option>Glaucoma</option>
-                        <option>Cornea / Keratoplasty</option>
-                        <option>Oculoplastics</option>
-                        <option>Strabismus</option>
-                        <option>Laser (LIO / SLT / YAG)</option>
-                    </select>
-                    <select id="filterRole" onchange="applyFilter()" style="width:auto;padding:7px 10px;font-size:12px;border-radius:20px;margin-top:0;border:1.5px solid #E5E7EB;background:white">
-                        <option value="">All Roles</option>
-                        <option>Primary Surgeon</option>
-                        <option>Assistant</option>
-                        <option>Observer</option>
-                    </select>
-                    <input type="date" id="filterDateFrom" onchange="applyFilter()" style="width:auto;padding:7px 10px;font-size:12px;border-radius:20px;margin-top:0;border:1.5px solid #E5E7EB">
-                    <input type="date" id="filterDateTo" onchange="applyFilter()" style="width:auto;padding:7px 10px;font-size:12px;border-radius:20px;margin-top:0;border:1.5px solid #E5E7EB">
-                    <button onclick="clearFilter()" style="width:auto;padding:7px 12px;font-size:12px;border-radius:20px;margin-top:0;background:#F3F4F6;color:#374151;box-shadow:none;border:1.5px solid #E5E7EB">✕ Clear</button>
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                    <span id="caseCount" style="font-size:12px;font-weight:600;color:#9CA3AF"></span>
-                    <select id="sortOrder" onchange="applyFilter()" style="width:auto;padding:7px 10px;font-size:12px;border-radius:10px;margin-top:0;border:1.5px solid #E5E7EB;background:white">
-                        <option value="newest">Newest First</option>
-                        <option value="oldest">Oldest First</option>
+                    <select id="sortOrder" onchange="applyFilter()" style="all:unset;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:12px;font-weight:600;color:#374151;background:white;cursor:pointer;white-space:nowrap;flex-shrink:0">
+                        <option value="newest">Newest</option>
+                        <option value="oldest">Oldest</option>
                         <option value="procedure">By Procedure</option>
                         <option value="role">By Role</option>
                     </select>
+                </div>
+
+                <!-- Role quick-filter chips -->
+                <div class="case-role-chips">
+                    <button class="case-chip case-chip-active" id="crf-all"     onclick="setCaseRoleFilter('')">All</button>
+                    <button class="case-chip"                  id="crf-primary" onclick="setCaseRoleFilter('Primary Surgeon')">Primary Surgeon</button>
+                    <button class="case-chip"                  id="crf-asst"    onclick="setCaseRoleFilter('Assistant')">Assistant</button>
+                    <button class="case-chip"                  id="crf-obs"     onclick="setCaseRoleFilter('Observer')">Observer</button>
+                    <button class="case-chip" onclick="toggleCaseAdvFilters()" id="crf-filter" style="margin-left:auto">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>Filters
+                    </button>
+                </div>
+
+                <!-- Advanced filters (hidden by default) -->
+                <div id="caseAdvFilters" style="display:none;background:#f8fafc;border-radius:12px;padding:12px 14px;margin-bottom:12px;border:1px solid #f1f5f9">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                        <select id="filterProcedure" onchange="applyFilter()" style="padding:7px 10px;font-size:12px;border-radius:8px;border:1.5px solid #e2e8f0;background:white;color:#374151;flex:1;min-width:140px">
+                            <option value="">All Procedures</option>
+                            <option>Cataract / Phaco</option>
+                            <option>Vitreoretinal (PPV)</option>
+                            <option>Glaucoma</option>
+                            <option>Cornea / Keratoplasty</option>
+                            <option>Oculoplastics</option>
+                            <option>Strabismus</option>
+                            <option>Laser (LIO / SLT / YAG)</option>
+                        </select>
+                        <input type="date" id="filterDateFrom" onchange="applyFilter()" style="padding:7px 10px;font-size:12px;border-radius:8px;border:1.5px solid #e2e8f0;flex:1;min-width:120px">
+                        <input type="date" id="filterDateTo"   onchange="applyFilter()" style="padding:7px 10px;font-size:12px;border-radius:8px;border:1.5px solid #e2e8f0;flex:1;min-width:120px">
+                        <button onclick="clearFilter()" style="all:unset;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;color:#64748b;background:#f1f5f9;cursor:pointer;white-space:nowrap">Clear</button>
+                    </div>
+                </div>
+
+                <!-- Hidden role select (read by applyFilter) -->
+                <select id="filterRole" onchange="applyFilter()" style="display:none">
+                    <option value="">All Roles</option>
+                    <option>Primary Surgeon</option>
+                    <option>Assistant</option>
+                    <option>Observer</option>
+                </select>
+
+                <div id="savedFiltersBar" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center"></div>
+
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                    <span id="caseCount" style="font-size:12px;font-weight:600;color:#94a3b8"></span>
                 </div>
                 <div id="caseList"></div>
             </div>
