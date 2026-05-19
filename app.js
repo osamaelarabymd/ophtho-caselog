@@ -116,7 +116,7 @@ let _cpActions = []; // flat list of executable items currently shown
 const _CP_COMMANDS = [
     // Navigate
     { section:'Navigate', label:'Dashboard',    sub:'Go to Dashboard',       icon:'#dbeafe', iconColor:'#2563eb', iconPath:'<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>', action:"showTab('dashboard',null);closeGlobalSearch()" },
-    { section:'Navigate', label:'Log a Case',   sub:'Open case logging form', icon:'#dcfce7', iconColor:'#16a34a', iconPath:'<circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>', action:"showTab('logCase',null);closeGlobalSearch()" },
+    { section:'Navigate', label:'Log a Case',   sub:'Open case logging form', icon:'#dcfce7', iconColor:'#16a34a', iconPath:'<circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>', action:"openLogCaseModal();closeGlobalSearch()" },
     { section:'Navigate', label:'My Cases',     sub:'Browse case history',    icon:'#f3e8ff', iconColor:'#7c3aed', iconPath:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>', action:"showTab('caseList',null);closeGlobalSearch()" },
     { section:'Navigate', label:'Journal',      sub:'Open journal workspace', icon:'#faf5ff', iconColor:'#7c3aed', iconPath:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/>', action:"showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch()" },
     { section:'Navigate', label:'Missions',     sub:'Calendar & daily missions',icon:'#fef9c3', iconColor:'#ca8a04', iconPath:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', action:"showTab('journal',null);showWorkspaceTab('calendar');closeGlobalSearch()" },
@@ -926,9 +926,33 @@ async function duplicateCase(id) {
 }
 
 // Tab navigation
+function openLogCaseModal() {
+    let modal = document.getElementById('logCaseModal');
+    if (!modal) return;
+    modal.classList.add('lco-open');
+    document.body.style.overflow = 'hidden';
+    loadTemplates();
+    loadCustomProcList();
+    refreshProcedureDropdowns();
+    let dateEl = document.getElementById('date');
+    if (dateEl && !dateEl.value) dateEl.value = getTodayStr();
+    updateRoleLabels();
+    updateCxLabels();
+    // Ensure Cases tab is visible behind the modal
+    if (document.getElementById('caseListTab').style.display === 'none') {
+        showTab('caseList', null);
+    }
+}
+
+function closeLogCaseModal() {
+    let modal = document.getElementById('logCaseModal');
+    if (!modal) return;
+    modal.classList.remove('lco-open');
+    document.body.style.overflow = '';
+}
+
 function showTab(tab, e) {
     document.getElementById('dashboard').style.display    = 'none';
-    document.getElementById('logCase').style.display      = 'none';
     document.getElementById('caseListTab').style.display  = 'none';
     document.getElementById('analyticsTab').style.display = 'none';
     document.getElementById('profileTab').style.display   = 'none';
@@ -942,14 +966,14 @@ function showTab(tab, e) {
     if (tab === 'dashboard') {
         document.getElementById('dashboard').style.display = 'block';
     } else if (tab === 'logCase') {
-        document.getElementById('logCase').style.display = 'block';
-        loadTemplates();
-        loadCustomProcList();
-        refreshProcedureDropdowns();
-        let dateEl = document.getElementById('date');
-        if (dateEl && !dateEl.value) dateEl.value = getTodayStr();
-        updateRoleLabels();
-        updateCxLabels();
+        // logCase is now a modal — show Cases tab then open modal
+        document.getElementById('caseListTab').style.display = 'block';
+        showCasesSubTab('list');
+        renderCaseHero();
+        renderSavedFiltersBar();
+        displayCaseList(allCases);
+        setTimeout(() => openLogCaseModal(), 50);
+        return;
     } else if (tab === 'caseList') {
         document.getElementById('caseListTab').style.display = 'block';
         showCasesSubTab('list');
@@ -989,7 +1013,7 @@ function showTab(tab, e) {
     if (e && e.target && e.target.classList.contains('tab-btn')) {
         e.target.classList.add('active-tab');
     }
-    const navMap = { dashboard: 'nav-dashboard', logCase: 'nav-logCase', caseList: 'nav-caseList', analytics: 'nav-analytics', journal: 'nav-journal', help: 'nav-help' };
+    const navMap = { dashboard: 'nav-dashboard', caseList: 'nav-caseList', analytics: 'nav-caseList', journal: 'nav-journal', help: 'nav-help' };
     if (navMap[tab]) setActiveNav(navMap[tab]);
 }
 
@@ -1414,7 +1438,7 @@ async function showApp() {
         checkPendingUsers();
     }
     if (currentUserRole === 'attending') {
-        ['tabBtnDashboard','tabBtnLogCase','tabBtnAnalytics','nav-dashboard','nav-logCase','nav-analytics'].forEach(id => {
+        ['tabBtnDashboard','tabBtnCases','nav-dashboard','nav-caseList','nav-logCase'].forEach(id => {
             let el = document.getElementById(id);
             if (el) el.style.display = 'none';
         });
@@ -1509,6 +1533,8 @@ document.addEventListener('DOMContentLoaded', function() {
             let procEl = document.getElementById('procedure');
             if (procEl) procEl.value = 'Cataract / Phaco';
             loadCases();
+            closeLogCaseModal();
+            showTab('caseList', null);
             showToast('✅ Case saved!');
         }
     });
@@ -5515,7 +5541,7 @@ function renderTodayWidget() {
                 <h3 style="margin:0 0 1px;font-size:14px;font-weight:700">Today</h3>
                 <p style="margin:0;font-size:11px;color:#94a3b8">${dateLabel}</p>
             </div>
-            <button onclick="showTab('logCase',null)" style="width:auto;padding:5px 14px;margin:0;background:#0f172a;color:white;border-radius:9px;font-size:12px;font-weight:700;box-shadow:none">+ Log Case</button>
+            <button onclick="openLogCaseModal()" style="width:auto;padding:5px 14px;margin:0;background:#0f172a;color:white;border-radius:9px;font-size:12px;font-weight:700;box-shadow:none">+ Log Case</button>
         </div>
         ${rows}
         ${isSunday ? `<div style="margin-top:10px"><button onclick="showTab('journal',null);showWorkspaceTab('journal');setTimeout(()=>{openJournalModal();setTimeout(()=>applyJournalTemplate('weekly'),80)},100)" style="width:100%;margin:0;background:#fffbeb;color:#92400e;border:1.5px solid #fde68a;border-radius:10px;font-size:12px;font-weight:700;padding:9px;box-shadow:none">📋 Write your weekly review</button></div>` : ''}

@@ -541,19 +541,186 @@
 .fit-type-option.fit-type-sel svg { stroke:white; }
 
 /* ── Premium Cases ───────────────────────────────────────── */
-.case-hero {
-    background: linear-gradient(135deg, #0f172a 0%, #1a2744 100%);
-    border-radius: 16px;
-    padding: 18px 6px;
-    margin-bottom: 14px;
-    display: grid;
-    grid-template-columns: repeat(4,1fr);
+/* ── Cases Tab Premium Banner ─────────────────────────────────────────────── */
+.cases-banner {
+    position: relative;
+    background: linear-gradient(135deg, #060d1f 0%, #0f172a 45%, #0a1628 100%);
+    border-radius: 20px;
+    padding: 22px 20px 20px;
+    margin-bottom: 16px;
+    overflow: hidden;
 }
-.case-hero-stat { text-align:center; padding:4px 8px; }
-.case-hero-stat+.case-hero-stat { border-left:1px solid rgba(255,255,255,0.07); }
-.case-hero-val { font-size:26px;font-weight:800;color:#f0ece2;line-height:1.1;letter-spacing:-0.5px;font-variant-numeric:tabular-nums }
-.case-hero-val span { font-size:14px;font-weight:500;opacity:0.55;letter-spacing:0 }
-.case-hero-lbl { font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.9px;margin-top:4px }
+.cases-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 80% 60% at 85% 20%, rgba(37,99,235,0.18) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 40% at 10% 80%, rgba(124,58,237,0.1) 0%, transparent 60%);
+    pointer-events: none;
+}
+.cases-banner::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+}
+.cases-banner-top {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+.cases-banner-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #f0ece2;
+    font-family: 'DM Serif Display', Georgia, serif;
+    letter-spacing: -0.4px;
+    line-height: 1.1;
+}
+.cases-banner-sub {
+    font-size: 11px;
+    color: #475569;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.3px;
+    margin-top: 3px;
+}
+.cases-log-btn {
+    all: unset;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+    color: white;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 0 0 0 rgba(37,99,235,0.5);
+    transition: transform 0.15s, box-shadow 0.15s;
+    flex-shrink: 0;
+    font-family: 'IBM Plex Sans', sans-serif;
+    letter-spacing: -0.1px;
+    animation: casesLogBtnGlow 2.8s ease-in-out infinite;
+}
+@keyframes casesLogBtnGlow {
+    0%, 100% { box-shadow: 0 4px 20px rgba(37,99,235,0.35); }
+    50%       { box-shadow: 0 4px 28px rgba(37,99,235,0.55), 0 0 0 4px rgba(37,99,235,0.1); }
+}
+.cases-log-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(37,99,235,0.55)!important; animation: none; }
+.cases-log-btn:active { transform: translateY(0); }
+.cases-stats-row {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+}
+.cases-stat {
+    text-align: center;
+    padding: 4px 6px;
+}
+.cases-stat + .cases-stat {
+    border-left: 1px solid rgba(255,255,255,0.06);
+}
+.cases-stat-val {
+    font-size: 24px;
+    font-weight: 800;
+    color: #f0ece2;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    font-variant-numeric: tabular-nums;
+    font-family: 'DM Serif Display', Georgia, serif;
+}
+.cases-stat-val span { font-size: 13px; font-weight: 500; opacity: 0.5; letter-spacing: 0; }
+.cases-stat-lbl {
+    font-size: 9px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+    margin-top: 4px;
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* ── Log Case Modal Sheet ──────────────────────────────────────────────────── */
+.log-case-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 400;
+    align-items: flex-end;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.log-case-overlay.lco-open { display: flex; }
+.log-case-sheet {
+    background: white;
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    max-width: 560px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 -12px 60px rgba(0,0,0,0.25);
+    animation: lcSheetUp 0.28s cubic-bezier(0.32,0.72,0,1);
+}
+@keyframes lcSheetUp {
+    from { transform: translateY(100%); opacity: 0.6; }
+    to   { transform: translateY(0); opacity: 1; }
+}
+.log-case-hdr {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+    padding: 16px 20px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 24px 24px 0 0;
+}
+.log-case-hdr-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: white;
+    font-family: 'DM Serif Display', Georgia, serif;
+    letter-spacing: -0.3px;
+}
+.log-case-hdr-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 2px;
+}
+.log-case-close {
+    all: unset;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+.log-case-close:hover { background: rgba(255,255,255,0.18); }
+.log-case-body { padding: 18px 20px max(20px, env(safe-area-inset-bottom)); }
+
+/* Legacy case-hero hidden (replaced by cases-banner) */
+.case-hero { display: none !important; }
 .case-sub-wrap { display:flex;background:#f1f5f9;border-radius:12px;padding:4px;margin-bottom:16px;gap:4px }
 .case-sub-btn { all:unset;flex:1;text-align:center;padding:9px;border-radius:9px;font-size:12px;font-weight:700;color:#6b7280;cursor:pointer;transition:all 0.15s }
 .case-sub-active { background:white;color:#111827;box-shadow:0 1px 3px rgba(0,0,0,0.1) }
@@ -871,8 +1038,7 @@
         <div id="tabs">
             <button onclick="showTab('dashboard', event)" class="tab-btn active-tab" id="tabBtnDashboard"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg> Dashboard</button>
             <button onclick="showTab('profile', event)"   class="tab-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile</button>
-            <button onclick="showTab('logCase', event)"   class="tab-btn" id="tabBtnLogCase"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg> Log Case</button>
-            <button onclick="showTab('caseList', event)"  class="tab-btn" id="tabBtnAnalytics"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Cases</button>
+            <button onclick="showTab('caseList', event)"  class="tab-btn" id="tabBtnCases"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Cases</button>
             <button onclick="showTab('journal', event)"   class="tab-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/></svg> Journal</button>
             <button onclick="showTab('help', event)"      class="tab-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Help</button>
             <button onclick="showTab('settings', event)"  class="tab-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Settings</button>
@@ -1201,20 +1367,28 @@
             </div>
         </div>
 
-        <!-- Log Case -->
-        <div id="logCase" style="display:none">
-
-            <!-- Header -->
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-                <div>
-                    <h2 style="margin:0 0 2px;font-size:20px;font-weight:800;color:#0f172a">Log a Case</h2>
-                    <p style="margin:0;font-size:12px;color:#9CA3AF;font-weight:500">Record your surgical experience</p>
+        <!-- Log Case — Modal Sheet -->
+        <div id="logCaseModal" class="log-case-overlay" onclick="if(event.target===this)closeLogCaseModal()">
+            <div class="log-case-sheet">
+                <!-- Modal Header -->
+                <div class="log-case-hdr">
+                    <div>
+                        <div class="log-case-hdr-title">Log a Case</div>
+                        <div class="log-case-hdr-sub">Record your surgical experience</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <button onclick="startVoiceLog()" id="voiceBtn" style="all:unset;display:flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(37,99,235,0.9);color:white;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;transition:background 0.15s">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                            Voice
+                        </button>
+                        <button class="log-case-close" onclick="closeLogCaseModal()">✕</button>
+                    </div>
                 </div>
-                <button onclick="startVoiceLog()" id="voiceBtn" style="width:auto;padding:9px 16px;margin:0;background:#2563eb;color:white;border-radius:12px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:7px;box-shadow:0 2px 8px rgba(37,99,235,0.35);border:1px solid #2563eb;transition:background 0.15s,box-shadow 0.15s">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                    <span>Voice</span>
-                </button>
-            </div>
+                <!-- Modal Body -->
+                <div class="log-case-body">
+        <!-- (legacy id kept for JS compatibility) -->
+        <div id="logCase">
+
             <div id="voiceStatus" style="display:none;background:linear-gradient(135deg,#7c3aed,#2563eb);color:white;padding:12px 18px;border-radius:12px;margin-bottom:14px;text-align:center;font-size:14px;font-weight:600"></div>
 
             <!-- Templates row -->
@@ -1387,17 +1561,32 @@
                     </button>
                 </div>
             </div>
-        </div>
+        </div><!-- /id=logCase -->
+                </div><!-- /log-case-body -->
+            </div><!-- /log-case-sheet -->
+        </div><!-- /logCaseModal -->
 
         <!-- Cases (List + Insights merged) -->
         <div id="caseListTab" style="display:none">
 
-            <!-- Stats Hero -->
-            <div class="case-hero" id="caseHero">
-                <div class="case-hero-stat"><div class="case-hero-val" id="ch-total">—</div><div class="case-hero-lbl">Total Cases</div></div>
-                <div class="case-hero-stat"><div class="case-hero-val" id="ch-primary">—<span>%</span></div><div class="case-hero-lbl">As Primary</div></div>
-                <div class="case-hero-stat"><div class="case-hero-val" id="ch-month">—</div><div class="case-hero-lbl">This Month</div></div>
-                <div class="case-hero-stat"><div class="case-hero-val" id="ch-procs">—</div><div class="case-hero-lbl">Procedure Types</div></div>
+            <!-- Premium Cases Banner -->
+            <div class="cases-banner" id="caseHero">
+                <div class="cases-banner-top">
+                    <div>
+                        <div class="cases-banner-title">Cases</div>
+                        <div class="cases-banner-sub">Your surgical training log</div>
+                    </div>
+                    <button class="cases-log-btn" onclick="openLogCaseModal()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Log Case
+                    </button>
+                </div>
+                <div class="cases-stats-row">
+                    <div class="cases-stat"><div class="cases-stat-val" id="ch-total">—</div><div class="cases-stat-lbl">Total</div></div>
+                    <div class="cases-stat"><div class="cases-stat-val" id="ch-primary">—<span>%</span></div><div class="cases-stat-lbl">Primary</div></div>
+                    <div class="cases-stat"><div class="cases-stat-val" id="ch-month">—</div><div class="cases-stat-lbl">This Month</div></div>
+                    <div class="cases-stat"><div class="cases-stat-val" id="ch-procs">—</div><div class="cases-stat-lbl">Proc. Types</div></div>
+                </div>
             </div>
 
             <!-- Sub-toggle: Cases | Analytics -->
@@ -3038,7 +3227,7 @@
                     <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
                     <span>Cases</span>
                 </button>
-                <button class="nav-item nav-center" id="nav-logCase" onclick="showTab('logCase', event); setActiveNav('nav-logCase')">
+                <button class="nav-item nav-center" id="nav-logCase" onclick="openLogCaseModal()">
                     <span class="nav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
                     <span>Log</span>
                 </button>
