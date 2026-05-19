@@ -6119,7 +6119,7 @@ const POSE_PHOTOS = {
   bench:     'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=160&h=200&fit=crop&crop=faces,center&q=80',
   ohp:       'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=160&h=200&fit=crop&crop=faces,center&q=80',
   row:       'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=160&h=200&fit=crop&crop=faces,center&q=80',
-  pullup:    'https://images.unsplash.com/photo-1520334363930-fcfe8c9bbc51?w=160&h=200&fit=crop&crop=faces,center&q=80',
+  pullup:    'https://images.unsplash.com/photo-1598971861713-54ad16a7e72e?w=160&h=200&fit=crop&crop=faces,center&q=80',
   lunge:     'https://images.unsplash.com/photo-1434682881908-b43d0467b798?w=160&h=200&fit=crop&crop=faces,center&q=80',
   plank:     'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=160&h=200&fit=crop&crop=faces,center&q=80',
   run:       'https://images.unsplash.com/photo-1461897104016-0b3b00cc81ee?w=160&h=200&fit=crop&crop=faces,center&q=80',
