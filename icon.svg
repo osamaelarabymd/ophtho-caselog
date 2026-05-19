@@ -1,35 +1,137 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-  <rect x="0" y="0" width="512" height="512" rx="80" fill="#8C1515"/>
+  <defs>
 
-  <ellipse cx="256" cy="200" rx="175" ry="100" fill="none" stroke="white" stroke-width="18"/>
-  <ellipse cx="256" cy="200" rx="175" ry="100" fill="none" stroke="#E8D5A3" stroke-width="4" opacity="0.6"/>
+    <!-- Deep navy background with centered blue warmth -->
+    <radialGradient id="bgGrad" cx="50%" cy="44%" r="58%" gradientUnits="objectBoundingBox">
+      <stop offset="0%"   stop-color="#0d1f48"/>
+      <stop offset="100%" stop-color="#060c1e"/>
+    </radialGradient>
 
-  <circle cx="256" cy="200" r="72" fill="white"/>
-  <circle cx="256" cy="200" r="48" fill="#6B1010"/>
+    <!-- Iris gradient: electric blue core fading out -->
+    <radialGradient id="irisGrad" cx="38%" cy="36%" r="65%" gradientUnits="objectBoundingBox">
+      <stop offset="0%"   stop-color="#60a5fa"/>
+      <stop offset="45%"  stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1a3a8f"/>
+    </radialGradient>
 
-  <line x1="256" y1="152" x2="256" y2="98" stroke="#E8D5A3" stroke-width="3.5" opacity="0.8" stroke-linecap="round"/>
-  <path d="M256 152 Q292 132 316 110" fill="none" stroke="#E8D5A3" stroke-width="3" opacity="0.7" stroke-linecap="round"/>
-  <path d="M256 152 Q220 132 196 110" fill="none" stroke="#E8D5A3" stroke-width="3" opacity="0.7" stroke-linecap="round"/>
-  <path d="M256 152 Q298 158 324 148" fill="none" stroke="#E8D5A3" stroke-width="2.5" opacity="0.6" stroke-linecap="round"/>
-  <path d="M256 152 Q214 158 188 148" fill="none" stroke="#E8D5A3" stroke-width="2.5" opacity="0.6" stroke-linecap="round"/>
-  <path d="M256 152 Q294 175 316 188" fill="none" stroke="#E8D5A3" stroke-width="2" opacity="0.5" stroke-linecap="round"/>
-  <path d="M256 152 Q218 175 196 188" fill="none" stroke="#E8D5A3" stroke-width="2" opacity="0.5" stroke-linecap="round"/>
+    <!-- Pupil gradient: very dark center -->
+    <radialGradient id="pupilGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#020510"/>
+      <stop offset="100%" stop-color="#07101f"/>
+    </radialGradient>
 
-  <circle cx="256" cy="200" r="20" fill="#E8D5A3"/>
-  <circle cx="256" cy="200" r="12" fill="#6B1010"/>
-  <circle cx="262" cy="194" r="5" fill="white" opacity="0.9"/>
+    <!-- O ring gradient: blue to teal sweep -->
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#38bdf8"/>
+      <stop offset="40%"  stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
 
-  <text x="256" y="360"
-        text-anchor="middle"
-        font-family="Arial, sans-serif"
-        font-size="56" font-weight="800"
-        fill="white">OphthoLog</text>
+    <!-- Outer ambient glow filter -->
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
 
-  <line x1="80" y1="378" x2="432" y2="378" stroke="#E8D5A3" stroke-width="1.5" opacity="0.5"/>
+    <!-- Subtle text glow -->
+    <filter id="textGlow" x="-10%" y="-30%" width="120%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
 
-  <text x="256" y="410"
-        text-anchor="middle"
-        font-family="Arial, sans-serif"
-        font-size="20" font-weight="400"
-        fill="#E8D5A3" letter-spacing="4">CASE TRACKER</text>
+  </defs>
+
+  <!-- ── Background ──────────────────────────────────────────────────── -->
+  <rect width="512" height="512" rx="100" fill="url(#bgGrad)"/>
+
+  <!-- Subtle grid overlay -->
+  <rect width="512" height="512" rx="100"
+        fill="none"
+        style="background-image:linear-gradient(rgba(255,255,255,0.015)1px,transparent 1px)"
+        opacity="0.4"/>
+
+  <!-- ── Ambient glow behind the O ring ─────────────────────────────── -->
+  <circle cx="256" cy="200" r="148" fill="none"
+          stroke="#2563eb" stroke-width="60" opacity="0.07" filter="url(#glow)"/>
+  <circle cx="256" cy="200" r="136" fill="none"
+          stroke="#38bdf8" stroke-width="38" opacity="0.10" filter="url(#glow)"/>
+
+  <!-- ── The O ring — Osama · Ophthalmology ─────────────────────────── -->
+  <!-- Shadow ring (depth) -->
+  <circle cx="258" cy="203" r="114" fill="none"
+          stroke="#000814" stroke-width="28" opacity="0.5"/>
+  <!-- Main ring -->
+  <circle cx="256" cy="200" r="114" fill="none"
+          stroke="url(#ringGrad)" stroke-width="22"/>
+  <!-- Inner ring highlight (thin bright edge) -->
+  <circle cx="256" cy="200" r="103" fill="none"
+          stroke="rgba(147,197,253,0.18)" stroke-width="1.5"/>
+
+  <!-- ── Eye interior (inside the O) ────────────────────────────────── -->
+  <!-- Background fill inside O so iris sits on dark -->
+  <circle cx="256" cy="200" r="92" fill="#07101f"/>
+
+  <!-- Iris -->
+  <circle cx="256" cy="200" r="82" fill="url(#irisGrad)"/>
+
+  <!-- Iris texture: subtle radial lines -->
+  <g opacity="0.2" stroke="rgba(255,255,255,0.7)" stroke-width="1" stroke-linecap="round">
+    <line x1="256" y1="122" x2="256" y2="138"/>
+    <line x1="256" y1="262" x2="256" y2="278"/>
+    <line x1="174" y1="200" x2="190" y2="200"/>
+    <line x1="322" y1="200" x2="338" y2="200"/>
+    <line x1="198" y1="142" x2="208" y2="155"/>
+    <line x1="304" y1="245" x2="314" y2="258"/>
+    <line x1="198" y1="258" x2="208" y2="245"/>
+    <line x1="304" y1="155" x2="314" y2="142"/>
+  </g>
+
+  <!-- Pupil -->
+  <circle cx="256" cy="200" r="44" fill="url(#pupilGrad)"/>
+
+  <!-- Primary light reflex (crisp white) -->
+  <circle cx="274" cy="182" r="13" fill="white" opacity="0.92"/>
+  <!-- Secondary reflex (soft) -->
+  <circle cx="244" cy="218" r="6"  fill="white" opacity="0.38"/>
+
+  <!-- ── Horizontal eye silhouette: subtle almond hint ──────────────── -->
+  <!-- These faint curves suggest eyelids crossing the O ring at 3 and 9 o'clock -->
+  <path d="M 142 200 Q 200 158 256 156 Q 312 158 370 200"
+        fill="none" stroke="rgba(147,197,253,0.12)" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 142 200 Q 200 242 256 244 Q 312 242 370 200"
+        fill="none" stroke="rgba(147,197,253,0.12)" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- ── "EyeLog" wordmark ───────────────────────────────────────────── -->
+  <!-- Shadow -->
+  <text x="258" y="374" text-anchor="middle"
+        font-family="Arial Black, Arial, sans-serif"
+        font-size="62" font-weight="900" fill="#000814" opacity="0.6"
+        letter-spacing="-1.5">EyeLog</text>
+  <!-- Main white text -->
+  <text x="256" y="372" text-anchor="middle"
+        font-family="Arial Black, Arial, sans-serif"
+        font-size="62" font-weight="900" fill="white"
+        letter-spacing="-1.5" filter="url(#textGlow)">EyeLog</text>
+
+  <!-- ── Divider line ────────────────────────────────────────────────── -->
+  <line x1="136" y1="388" x2="376" y2="388"
+        stroke="url(#ringGrad)" stroke-width="1.2" opacity="0.45"/>
+
+  <!-- ── OE personal monogram ───────────────────────────────────────── -->
+  <text x="256" y="416" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="17" font-weight="700"
+        fill="#60a5fa" opacity="0.72"
+        letter-spacing="7">O · E</text>
+
+  <!-- ── Corner tick marks (subtle precision feel) ─────────────────── -->
+  <line x1="88"  y1="72"  x2="88"  y2="90"  stroke="#2563eb" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+  <line x1="72"  y1="88"  x2="90"  y2="88"  stroke="#2563eb" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+  <line x1="424" y1="72"  x2="424" y2="90"  stroke="#2563eb" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+  <line x1="422" y1="88"  x2="440" y2="88"  stroke="#2563eb" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+  <line x1="88"  y1="440" x2="88"  y2="422" stroke="#2563eb" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+  <line x1="72"  y1="424" x2="90"  y2="424" stroke="#2563eb" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+  <line x1="424" y1="440" x2="424" y2="422" stroke="#2563eb" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+  <line x1="422" y1="424" x2="440" y2="424" stroke="#2563eb" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+
 </svg>
