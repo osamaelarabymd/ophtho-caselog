@@ -123,6 +123,7 @@ const _CP_COMMANDS = [
     { section:'Navigate', label:'Study',        sub:'QBank · OKAP scores · Didactics',icon:'#faf5ff', iconColor:'#7c3aed', iconPath:'<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>', action:"showTab('journal',null);showWorkspaceTab('study');closeGlobalSearch()" },
     { section:'Navigate', label:'Reading List', sub:'Papers & resources tracker',icon:'#eff6ff', iconColor:'#2563eb', iconPath:'<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>', action:"showTab('journal',null);showWorkspaceTab('reading');closeGlobalSearch()" },
     { section:'Navigate', label:'Match',        sub:'Fellowship pipeline & rank list',icon:'#f0fdf4', iconColor:'#059669', iconPath:'<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>', action:"showTab('journal',null);showWorkspaceTab('fellowship');closeGlobalSearch()" },
+    { section:'Navigate', label:'Research',     sub:'Publications & academic output', icon:'#ecfdf5', iconColor:'#059669', iconPath:'<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>', action:"showTab('journal',null);showWorkspaceTab('research');closeGlobalSearch()" },
     { section:'Navigate', label:'Settings',     sub:'App settings',           icon:'#f1f5f9', iconColor:'#64748b', iconPath:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', action:"showTab('settings',null);closeGlobalSearch()" },
     // Create
     { section:'Create', label:'New Journal Entry',  sub:'Write a reflection',             icon:'#faf5ff', iconColor:'#7c3aed', iconPath:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/>', action:"showTab('journal',null);showWorkspaceTab('journal');closeGlobalSearch();setTimeout(()=>openJournalModal(),100)" },
@@ -3847,9 +3848,9 @@ function showWorkspaceTab(tab) {
     let wsSectionLabel  = document.getElementById('wsSectionLabel');
     if (wsGrid) wsGrid.style.display = 'none';
     if (wsSectionHeader) { wsSectionHeader.style.display = 'flex'; wsSectionHeader.classList.add('active'); }
-    const WS_LABELS = { calendar:'📅 Missions', journal:'📓 Journal', study:'📝 Study', reading:'📚 Reading', fellowship:'🎓 Match', fitness:'💪 Fitness' };
+    const WS_LABELS = { calendar:'📅 Missions', journal:'📓 Journal', study:'📝 Study', reading:'📚 Reading', fellowship:'🎓 Match', fitness:'💪 Fitness', research:'📚 Research' };
     if (wsSectionLabel) wsSectionLabel.textContent = WS_LABELS[tab] || tab;
-    ['calendar','journal','study','reading','fellowship','fitness'].forEach(t => {
+    ['calendar','journal','study','reading','fellowship','fitness','research'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = t === tab ? 'block' : 'none';
         let btn = document.getElementById('ws-tab-'+t);
@@ -3871,6 +3872,7 @@ function showWorkspaceTab(tab) {
     if (tab === 'reading')    renderStudyList();
     if (tab === 'fellowship') { showFpTab('pipeline'); }
     if (tab === 'fitness')    { if (typeof showFitnessView === 'function') showFitnessView(activeFitnessView || 'programs'); else renderFitness(); }
+    if (tab === 'research')   { renderResearch(); }
 }
 
 function showStudySubTab(sub) {
@@ -3934,7 +3936,7 @@ function backToWsGrid() {
     let wsSectionHeader = document.getElementById('wsSectionHeader');
     if (wsGrid) wsGrid.style.display = 'grid';
     if (wsSectionHeader) { wsSectionHeader.style.display = 'none'; wsSectionHeader.classList.remove('active'); }
-    ['calendar','journal','study','reading','fellowship','fitness'].forEach(t => {
+    ['calendar','journal','study','reading','fellowship','fitness','research'].forEach(t => {
         let el = document.getElementById('ws-'+t);
         if (el) el.style.display = 'none';
         let btn = document.getElementById('ws-tab-'+t);
@@ -7025,6 +7027,277 @@ function renderClinicianNotesForCat(cat, listId) {
                 <span style="font-size:10px;color:#94a3b8;flex-shrink:0;margin-top:2px">${ago}</span>
             </div>
             <p style="font-size:12px;color:#64748b;margin:0;line-height:1.5">${preview}${n.content.length > 120 ? '…' : ''}</p>
+        </div>`;
+    }).join('');
+}
+
+// ── Research & Publications ───────────────────────────────────────────────────
+const PUB_KEY = 'eyePublications';
+function getPublications()     { return JSON.parse(localStorage.getItem(PUB_KEY) || '[]'); }
+function savePublications(arr) { localStorage.setItem(PUB_KEY, JSON.stringify(arr)); }
+
+let pubTypeFilter = 'all';
+let pubFaFilter   = false;
+let pubYearFilter = 'all';
+let selectedPubType = 'original';
+
+function setPubTypeFilter(t) {
+    pubTypeFilter = t;
+    ['all','original','review','case_report'].forEach(v => {
+        let btn = document.getElementById('pt-' + v);
+        if (!btn) return;
+        let active = v === t;
+        btn.style.background = active ? '#0f172a' : 'transparent';
+        btn.style.color      = active ? 'white'   : '#64748b';
+        btn.style.boxShadow  = active ? '0 1px 4px rgba(0,0,0,0.15)' : 'none';
+    });
+    renderResearch();
+}
+
+function togglePubFaFilter() {
+    pubFaFilter = !pubFaFilter;
+    let btn = document.getElementById('pub-fa-filter');
+    if (btn) {
+        btn.style.background  = pubFaFilter ? '#2563eb' : '#f1f5f9';
+        btn.style.color       = pubFaFilter ? 'white'   : '#64748b';
+        btn.style.borderColor = pubFaFilter ? '#2563eb' : '#e2e8f0';
+    }
+    renderResearch();
+}
+
+function setPubYearFilter(y) { pubYearFilter = y; renderResearch(); }
+
+function selectPubType(t) {
+    selectedPubType = t;
+    const cfg = {
+        original:    { border:'#bfdbfe', bg:'#eff6ff', col:'#2563eb', activeBg:'#2563eb' },
+        review:      { border:'#e9d5ff', bg:'#faf5ff', col:'#7c3aed', activeBg:'#7c3aed' },
+        case_report: { border:'#fde68a', bg:'#fffbeb', col:'#d97706', activeBg:'#d97706' },
+    };
+    ['original','review','case_report'].forEach(v => {
+        let btn = document.getElementById('ptype-' + v);
+        if (!btn) return;
+        let active = v === t, c = cfg[v];
+        btn.style.background  = active ? c.activeBg : c.bg;
+        btn.style.color       = active ? 'white'    : c.col;
+        btn.style.borderColor = active ? c.activeBg : c.border;
+    });
+}
+
+function openPublicationModal(id) {
+    let pub = id ? getPublications().find(p => p.id === id) : null;
+    document.getElementById('pubId').value       = pub ? pub.id : '';
+    document.getElementById('pubTitle').value    = pub ? pub.title : '';
+    document.getElementById('pubAuthors').value  = pub ? (pub.authors || '') : '';
+    document.getElementById('pubJournal').value  = pub ? (pub.journal || '') : '';
+    document.getElementById('pubYear').value     = pub ? pub.year : new Date().getFullYear();
+    document.getElementById('pubDoi').value      = pub ? (pub.doi || '') : '';
+    document.getElementById('pubPmid').value     = pub ? (pub.pmid || '') : '';
+    document.getElementById('pubAbstract').value = pub ? (pub.abstract || '') : '';
+    document.getElementById('pubFirstAuthor').checked = pub ? (pub.firstAuthor || false) : false;
+    selectPubType(pub ? (pub.type || 'original') : 'original');
+    document.getElementById('pubModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('pubTitle').focus(), 100);
+}
+function closePubModal() { document.getElementById('pubModal').style.display = 'none'; }
+
+function savePublication() {
+    let title = document.getElementById('pubTitle').value.trim();
+    if (!title) { showToast('⚠️ Enter a publication title', 'warning'); return; }
+    let pubs = getPublications();
+    let id   = document.getElementById('pubId').value;
+    let existing = id ? pubs.find(p => p.id === id) : null;
+    let pub = {
+        id:          id || crypto.randomUUID(),
+        title,
+        authors:     document.getElementById('pubAuthors').value.trim(),
+        journal:     document.getElementById('pubJournal').value.trim(),
+        year:        parseInt(document.getElementById('pubYear').value) || new Date().getFullYear(),
+        doi:         document.getElementById('pubDoi').value.trim(),
+        pmid:        document.getElementById('pubPmid').value.trim(),
+        abstract:    document.getElementById('pubAbstract').value.trim(),
+        firstAuthor: document.getElementById('pubFirstAuthor').checked,
+        type:        selectedPubType,
+        summary:     existing ? (existing.summary || '') : '',
+        createdAt:   existing ? existing.createdAt : new Date().toISOString(),
+    };
+    if (id) { let idx = pubs.findIndex(p => p.id === id); if (idx !== -1) pubs[idx] = pub; else pubs.unshift(pub); }
+    else pubs.unshift(pub);
+    savePublications(pubs);
+    closePubModal();
+    renderResearch();
+    showToast('📚 Publication saved');
+}
+
+function deletePublication(id) {
+    if (!confirm('Delete this publication?')) return;
+    savePublications(getPublications().filter(p => p.id !== id));
+    renderResearch();
+    showToast('🗑️ Deleted', 'warning');
+}
+
+// ── AI Summarization ──
+function openAiKeyModal() {
+    let stored = localStorage.getItem('eyeAiKey') || '';
+    document.getElementById('aiKeyInput').value = stored ? '••••••••••••' : '';
+    document.getElementById('aiKeyModal').style.display = 'flex';
+}
+function closeAiKeyModal() { document.getElementById('aiKeyModal').style.display = 'none'; }
+function saveAiKey() {
+    let val = document.getElementById('aiKeyInput').value.trim();
+    if (val && val !== '••••••••••••') localStorage.setItem('eyeAiKey', val);
+    closeAiKeyModal();
+    showToast('✅ API key saved');
+}
+function clearAiKey() {
+    localStorage.removeItem('eyeAiKey');
+    closeAiKeyModal();
+    showToast('API key removed', 'warning');
+}
+
+async function summarizePublication(id) {
+    let pubs = getPublications();
+    let pub  = pubs.find(p => p.id === id);
+    if (!pub) return;
+
+    let apiKey = localStorage.getItem('eyeAiKey');
+    if (!apiKey) {
+        openAiKeyModal();
+        showToast('⚠️ Add your Anthropic API key first', 'warning');
+        return;
+    }
+
+    let btn = document.getElementById('sum-btn-' + id);
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Summarizing…'; }
+
+    let promptText = `Summarize this medical publication in exactly 2–3 concise sentences for a physician audience. Highlight the key question, primary finding, and clinical significance. Be precise and use medical terminology.\n\nTitle: ${pub.title}\nType: ${pub.type}\nJournal: ${pub.journal || 'N/A'} (${pub.year})\nAuthors: ${pub.authors || 'N/A'}${pub.abstract ? '\nAbstract: ' + pub.abstract : ''}`;
+
+    try {
+        let res = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+                'anthropic-dangerous-direct-browser-access': 'true'
+            },
+            body: JSON.stringify({
+                model: 'claude-haiku-4-5',
+                max_tokens: 300,
+                messages: [{ role: 'user', content: promptText }]
+            })
+        });
+        if (!res.ok) {
+            let err = await res.json().catch(() => ({}));
+            if (res.status === 401) { localStorage.removeItem('eyeAiKey'); showToast('❌ Invalid API key — please re-enter', 'warning'); }
+            else showToast('⚠️ AI error: ' + (err.error?.message || res.status), 'warning');
+            if (btn) { btn.disabled = false; btn.innerHTML = '✨ Summarize'; }
+            return;
+        }
+        let data = await res.json();
+        let summary = data.content?.[0]?.text?.trim() || '';
+        if (summary) {
+            let idx = pubs.findIndex(p => p.id === id);
+            if (idx !== -1) { pubs[idx].summary = summary; savePublications(pubs); }
+            renderResearch();
+            showToast('✨ Summary generated');
+        }
+    } catch(e) {
+        console.error('AI summarize:', e);
+        showToast('⚠️ Request failed — check connection', 'warning');
+        if (btn) { btn.disabled = false; btn.innerHTML = '✨ Summarize'; }
+    }
+}
+
+function renderResearch() {
+    let all = getPublications();
+
+    // Stats
+    let statsEl = document.getElementById('researchStats');
+    if (statsEl) {
+        let total = all.length, fa = all.filter(p => p.firstAuthor).length;
+        let orig  = all.filter(p => p.type === 'original').length;
+        let rev   = all.filter(p => p.type === 'review').length;
+        let cr    = all.filter(p => p.type === 'case_report').length;
+        let stat  = (val, lbl, col, bg) => `<div style="background:${bg};border-radius:12px;padding:10px 6px;text-align:center;border:1px solid ${col}30">
+            <div style="font-size:20px;font-weight:800;color:${col};line-height:1">${val}</div>
+            <div style="font-size:9px;font-weight:700;color:${col};opacity:0.75;text-transform:uppercase;letter-spacing:0.5px;margin-top:3px;line-height:1.2">${lbl}</div>
+        </div>`;
+        statsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            ${stat(total,'Total','#059669','#ecfdf5')}
+            ${stat(fa,'First Author','#7c3aed','#faf5ff')}
+            ${stat(orig,'Original','#2563eb','#eff6ff')}
+            ${stat(rev+cr,'Review / CR','#d97706','#fffbeb')}
+        </div>`;
+    }
+
+    // Year filter options
+    let years = [...new Set(all.map(p => p.year))].sort().reverse();
+    let yearSel = document.getElementById('pubYearSel');
+    if (yearSel) {
+        let cur = yearSel.value || pubYearFilter;
+        yearSel.innerHTML = `<option value="all">All Years</option>` +
+            years.map(y => `<option value="${y}" ${cur === String(y) ? 'selected' : ''}>${y}</option>`).join('');
+    }
+
+    // Apply filters
+    let filtered = all.slice();
+    if (pubTypeFilter !== 'all')  filtered = filtered.filter(p => p.type === pubTypeFilter);
+    if (pubFaFilter)              filtered = filtered.filter(p => p.firstAuthor);
+    if (pubYearFilter !== 'all')  filtered = filtered.filter(p => String(p.year) === String(pubYearFilter));
+
+    let listEl = document.getElementById('publicationList');
+    if (!listEl) return;
+
+    if (filtered.length === 0) {
+        listEl.innerHTML = `<div style="text-align:center;padding:52px 20px">
+            <div style="font-size:40px;margin-bottom:14px">📚</div>
+            <div style="font-size:15px;font-weight:700;color:#374151;margin-bottom:6px">${all.length === 0 ? 'No publications yet' : 'No results'}</div>
+            <div style="font-size:13px;color:#94a3b8">${all.length === 0 ? 'Tap Add to log your first publication' : 'Try adjusting your filters'}</div>
+        </div>`;
+        return;
+    }
+
+    const TYPE_CFG = {
+        original:    { label:'Original Research', col:'#2563eb', bg:'#eff6ff', emoji:'🔬' },
+        review:      { label:'Review Article',    col:'#7c3aed', bg:'#faf5ff', emoji:'📖' },
+        case_report: { label:'Case Report',       col:'#d97706', bg:'#fffbeb', emoji:'🩺' },
+    };
+
+    listEl.innerHTML = filtered.map(pub => {
+        let tc = TYPE_CFG[pub.type] || TYPE_CFG.original;
+        return `<div style="background:white;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border:1px solid #f1f5f9">
+            <!-- Badges -->
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+                <span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;background:${tc.bg};color:${tc.col};border:1px solid ${tc.col}30">${tc.emoji} ${tc.label}</span>
+                ${pub.firstAuthor ? `<span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0">★ First Author</span>` : ''}
+                <span style="font-size:11px;font-weight:700;color:#94a3b8;margin-left:auto">${pub.year}</span>
+            </div>
+            <!-- Title -->
+            <div style="font-size:14px;font-weight:700;color:#0f172a;line-height:1.45;margin-bottom:6px">${pub.title}</div>
+            <!-- Journal -->
+            ${pub.journal ? `<div style="font-size:12px;color:#2563eb;font-weight:600;font-style:italic;margin-bottom:5px">${pub.journal}</div>` : ''}
+            <!-- Authors -->
+            ${pub.authors ? `<div style="font-size:11px;color:#64748b;margin-bottom:9px;line-height:1.5">${pub.authors}</div>` : ''}
+            <!-- Links -->
+            ${pub.doi || pub.pmid ? `<div style="display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap">
+                ${pub.doi  ? `<a href="https://doi.org/${pub.doi}" target="_blank" style="font-size:11px;font-weight:700;color:#2563eb;text-decoration:none;background:#eff6ff;padding:4px 10px;border-radius:7px;border:1px solid #bfdbfe">DOI ↗</a>` : ''}
+                ${pub.pmid ? `<a href="https://pubmed.ncbi.nlm.nih.gov/${pub.pmid}" target="_blank" style="font-size:11px;font-weight:700;color:#16a34a;text-decoration:none;background:#f0fdf4;padding:4px 10px;border-radius:7px;border:1px solid #bbf7d0">PubMed ↗</a>` : ''}
+            </div>` : ''}
+            <!-- AI Summary -->
+            ${pub.summary ? `<div style="background:linear-gradient(135deg,#faf5ff,#f5f3ff);border-left:3px solid #7c3aed;padding:10px 13px;border-radius:0 10px 10px 0;margin-bottom:11px">
+                <div style="font-size:10px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px">✨ AI Summary</div>
+                <div style="font-size:12px;color:#374151;line-height:1.65">${pub.summary}</div>
+            </div>` : ''}
+            <!-- Actions -->
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <button id="sum-btn-${pub.id}" onclick="summarizePublication('${pub.id}')" style="all:unset;cursor:pointer;padding:6px 12px;border-radius:8px;background:#faf5ff;color:#7c3aed;border:1.5px solid #e9d5ff;font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    ${pub.summary ? 'Re-summarize' : 'Summarize'}
+                </button>
+                <button onclick="openPublicationModal('${pub.id}')" style="all:unset;cursor:pointer;padding:6px 12px;border-radius:8px;background:#f8fafc;color:#374151;border:1.5px solid #e2e8f0;font-size:11px;font-weight:700">Edit</button>
+                <button onclick="deletePublication('${pub.id}')" style="all:unset;cursor:pointer;padding:6px 12px;border-radius:8px;background:#fef2f2;color:#dc2626;border:1.5px solid #fecaca;font-size:11px;font-weight:700;margin-left:auto">Delete</button>
+            </div>
         </div>`;
     }).join('');
 }
