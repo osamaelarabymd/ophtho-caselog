@@ -502,15 +502,17 @@ function finishOnboarding() {
 
 // Welcome guide
 function checkWelcomeGuide() {
-    if (!localStorage.getItem('welcomeGuideSeen')) {
+    // bump to v2 so returning users see the redesigned welcome once
+    let seen = localStorage.getItem('welcomeGuideSeen');
+    if (!seen || seen === 'true') {
         setTimeout(() => {
             document.getElementById('welcomeGuide').style.display = 'flex';
-        }, 1000);
+        }, 800);
     }
 }
 
 function closeWelcomeGuide() {
-    localStorage.setItem('welcomeGuideSeen', 'true');
+    localStorage.setItem('welcomeGuideSeen', 'v2');
     document.getElementById('welcomeGuide').style.display = 'none';
     showTab('profile', null);
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));

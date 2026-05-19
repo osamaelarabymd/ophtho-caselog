@@ -841,49 +841,86 @@
     </div>
 
     <!-- Welcome Guide -->
-    <div id="welcomeGuide" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9997; align-items:center; justify-content:center; backdrop-filter:blur(6px)">
-        <div style="background:white; border-radius:24px; padding:36px 32px; width:90%; max-width:480px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,0.3)">
-            <div style="text-align:center; margin-bottom:28px">
-                <div style="margin-bottom:12px;display:flex;justify-content:center"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
-                <h2 style="font-size:24px; font-weight:900; color:#0f172a; margin-bottom:8px">Welcome to EyeLog!</h2>
-                <p style="font-size:14px; color:#64748b; line-height:1.6">Here's how to get started in 3 simple steps</p>
+    <style>
+        #welcomeGuide { animation: wgFadeIn 0.35s ease both }
+        @keyframes wgFadeIn { from{opacity:0} to{opacity:1} }
+        .wg-card { animation: wgSlideUp 0.4s cubic-bezier(0.34,1.56,0.64,1) both }
+        @keyframes wgSlideUp { from{opacity:0;transform:translateY(32px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+        .wg-feat { display:flex; align-items:center; gap:14px; padding:13px 16px; border-radius:14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); transition:background 0.2s }
+        .wg-feat:hover { background:rgba(255,255,255,0.09) }
+        .wg-feat-icon { width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0 }
+        .wg-divider { height:1px; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent); margin:18px 0 }
+        .wg-btn { width:100%; border-radius:14px; font-size:15px; font-weight:800; letter-spacing:0.3px; margin:0; padding:15px; border:none; cursor:pointer; background:linear-gradient(135deg,#3b82f6,#6d28d9); color:white; box-shadow:0 8px 32px rgba(59,130,246,0.4); transition:transform 0.15s,box-shadow 0.15s }
+        .wg-btn:hover { transform:translateY(-1px); box-shadow:0 12px 40px rgba(59,130,246,0.5) }
+        .wg-btn:active { transform:scale(0.98) }
+        .wg-ring { position:absolute; top:-60px; right:-60px; width:200px; height:200px; border-radius:50%; border:40px solid rgba(59,130,246,0.07); pointer-events:none }
+        .wg-ring2 { position:absolute; bottom:-80px; left:-80px; width:240px; height:240px; border-radius:50%; border:50px solid rgba(109,40,217,0.06); pointer-events:none }
+    </style>
+    <div id="welcomeGuide" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(2,5,16,0.88); z-index:9997; align-items:center; justify-content:center; backdrop-filter:blur(12px)">
+        <div class="wg-card" style="position:relative; overflow:hidden; background:linear-gradient(160deg,#0d1f48 0%,#0a0f2e 60%,#060c1e 100%); border-radius:26px; padding:32px 28px 28px; width:90%; max-width:420px; max-height:92vh; overflow-y:auto; box-shadow:0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.07)">
+            <div class="wg-ring"></div>
+            <div class="wg-ring2"></div>
+
+            <!-- Logo + greeting -->
+            <div style="text-align:center; margin-bottom:26px; position:relative">
+                <!-- Eye icon -->
+                <div style="display:inline-flex; align-items:center; justify-content:center; width:68px; height:68px; border-radius:20px; background:linear-gradient(135deg,#1e3a8a,#1d4ed8); box-shadow:0 8px 28px rgba(37,99,235,0.45); margin-bottom:18px">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3" fill="white" fill-opacity="0.25"/>
+                        <circle cx="12" cy="12" r="1.2" fill="white"/>
+                    </svg>
+                </div>
+                <div style="font-size:11px; font-weight:700; letter-spacing:3px; color:#60a5fa; text-transform:uppercase; margin-bottom:8px">EyeLog</div>
+                <h2 style="font-size:22px; font-weight:900; color:white; margin:0 0 8px; line-height:1.2">Welcome, <span id="welcomeName" style="background:linear-gradient(90deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Doctor</span> 👋</h2>
+                <p style="font-size:13px; color:#94a3b8; line-height:1.6; margin:0">Your ophthalmology residency command center is ready.</p>
             </div>
-            <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:28px">
-                <div style="display:flex; gap:16px; align-items:flex-start; background:#f0f9ff; padding:16px; border-radius:14px; border:1px solid #bae6fd">
-                    <div style="width:40px; height:40px; background:#2563eb; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+
+            <!-- Feature list -->
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px">
+                <div class="wg-feat">
+                    <div class="wg-feat-icon" style="background:rgba(37,99,235,0.25)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </div>
                     <div>
-                        <p style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:14px">Step 1 — Set up your profile</p>
-                        <p style="font-size:13px; color:#64748b; line-height:1.5">Go to Profile tab and enter your name, PGY year, and program.</p>
+                        <div style="font-size:13px; font-weight:700; color:white; margin-bottom:2px">Log cases in seconds</div>
+                        <div style="font-size:12px; color:#64748b; line-height:1.4">Procedure, role, attending — all in one tap</div>
                     </div>
                 </div>
-                <div style="display:flex; gap:16px; align-items:flex-start; background:#f0fdf4; padding:16px; border-radius:14px; border:1px solid #bbf7d0">
-                    <div style="width:40px; height:40px; background:#16a34a; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+                <div class="wg-feat">
+                    <div class="wg-feat-icon" style="background:rgba(22,163,74,0.2)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    </div>
                     <div>
-                        <p style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:14px">Step 2 — Log your first case</p>
-                        <p style="font-size:13px; color:#64748b; line-height:1.5">Tap Log Case, fill in procedure details, and hit Save. Takes less than 30 seconds!</p>
+                        <div style="font-size:13px; font-weight:700; color:white; margin-bottom:2px">Track ACGME requirements</div>
+                        <div style="font-size:12px; color:#64748b; line-height:1.4">Live progress toward every milestone</div>
                     </div>
                 </div>
-                <div style="display:flex; gap:16px; align-items:flex-start; background:#faf5ff; padding:16px; border-radius:14px; border:1px solid #e9d5ff">
-                    <div style="width:40px; height:40px; background:#7c3aed; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+                <div class="wg-feat">
+                    <div class="wg-feat-icon" style="background:rgba(124,58,237,0.2)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
                     <div>
-                        <p style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:14px">Step 3 — Track your ACGME progress</p>
-                        <p style="font-size:13px; color:#64748b; line-height:1.5">Your dashboard updates automatically showing progress toward all ACGME requirements.</p>
+                        <div style="font-size:13px; font-weight:700; color:white; margin-bottom:2px">Export PDF reports</div>
+                        <div style="font-size:12px; color:#64748b; line-height:1.4">Beautiful reports for your Program Director</div>
                     </div>
                 </div>
-                <div style="display:flex; gap:16px; align-items:flex-start; background:#fff7ed; padding:16px; border-radius:14px; border:1px solid #fed7aa">
-                    <div style="width:40px; height:40px; background:#d97706; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+                <div class="wg-feat">
+                    <div class="wg-feat-icon" style="background:rgba(234,179,8,0.15)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </div>
                     <div>
-                        <p style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:14px">Bonus — Export PDF reports</p>
-                        <p style="font-size:13px; color:#64748b; line-height:1.5">Generate beautiful PDF reports anytime from the Log Case tab.</p>
+                        <div style="font-size:13px; font-weight:700; color:white; margin-bottom:2px">Missions & journal</div>
+                        <div style="font-size:12px; color:#64748b; line-height:1.4">Stay organized throughout residency</div>
                     </div>
                 </div>
             </div>
-            <div style="background:#f8fafc; border-radius:12px; padding:14px; margin-bottom:24px; border:1px solid #e2e8f0">
-                <p style="font-size:12px; color:#64748b; text-align:center; line-height:1.6"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><strong>Pro tip:</strong> Save case templates for procedures you do often!</p>
-            </div>
-            <button onclick="closeWelcomeGuide()" style="width:100%; border-radius:50px; font-size:16px; font-weight:700; background:linear-gradient(135deg,#8C1515,#2563eb); margin:0">
-                Get Started
-            </button>
+
+            <div class="wg-divider"></div>
+
+            <button class="wg-btn" onclick="closeWelcomeGuide()">Let's Go →</button>
+
+            <p style="text-align:center; font-size:11px; color:#334155; margin:12px 0 0">Your data is encrypted and private</p>
         </div>
     </div>
 
