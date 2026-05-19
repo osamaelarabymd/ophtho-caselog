@@ -1864,45 +1864,70 @@ const MOTIVATION_QUOTES = {
         "The OR doesn't care how you feel. It only cares what you do.",
         "One day a patient will see their grandchild's face because of what you learned today.",
     ],
+
+    // ── Arabic — classical poetry & wisdom ──────────────────────────────────
     ar: [
-        { q: "العين أمانة، والجراح وصيّها.", t: "The eye is a trust, and the surgeon its guardian." },
-        { q: "اليد تحفظ ما نسيه العقل.", t: "The hand remembers what the mind forgets." },
-        { q: "ما خاب من استشار.", t: "He who seeks counsel does not fail." },
-        { q: "لكل يد ذاكرتها، فلا تتوقف عن التدريب.", t: "Every hand has its memory — never stop training." },
-        { q: "أحسن النظر حتى لا يفوتك المنظر.", t: "Look carefully so nothing escapes your sight." },
-        { q: "الليلة الصعبة تصنع الطبيب الجيد.", t: "A hard night makes a good doctor." },
-        { q: "تعلّم حتى تعلّم.", t: "Learn until you can teach." },
-        { q: "لا يصنع المبضع الجراح، والجراح يصنع المبضع.", t: "The scalpel doesn't make the surgeon; the surgeon makes the scalpel." },
-        { q: "المريض الذي أمّنك على بصره أمّنك على كل شيء.", t: "The patient who trusts you with their sight trusts you with everything." },
-        { q: "من وقف على حافة الخطأ تعلّم أكثر ممن ابتعد عنه.", t: "Those who stood at the edge of error learned more than those who avoided it." },
-        { q: "زد علمًا تزد نورًا، وزد نورًا تزد رؤية.", t: "Add knowledge, add light. Add light, add vision." },
-        { q: "طبيب بلا صبر كسيف بلا حدّة.", t: "A doctor without patience is a sword without an edge." },
-        { q: "لن تمشي مشية الأساتذة حتى تتعثر مشية التلاميذ.", t: "You won't walk like a master until you've stumbled like a student." },
-        { q: "كلما ضاقت الطريق، اتسعت الحكمة.", t: "The narrower the path, the wider the wisdom." },
-        { q: "الإرهاق لا يُطفئ نور العقل إلا عند من سمح له بذلك.", t: "Exhaustion dims the mind only for those who allow it." },
-        { q: "الحكمة تبدأ من اعتراف الطبيب بأنه لا يعلم كل شيء.", t: "Wisdom begins when the doctor admits he doesn't know everything." },
-        { q: "الصبر مفتاح الفرج.", t: "Patience is the key to relief." },
-        { q: "لا تُحسن الجراحة من لم يتعلم من جراحاته.", t: "No one masters surgery without learning from their wounds." },
-        { q: "يومًا ما سيرى مريضك وجه حفيده بسبب ما تتعلمه اليوم.", t: "One day a patient will see their grandchild's face because of what you learn today." },
-        { q: "الطبيب الحقيقي يتعلم من أخطائه أكثر مما يتعلم من نجاحاته.", t: "The true physician learns more from mistakes than from successes." },
+        { q: "عَلى قَدْرِ أَهْلِ العَزمِ تَأتي العَزائِمُ\nوَتَأتي عَلى قَدْرِ الكِرامِ المَكارِمُ", t: "Great deeds are equal to the greatness of those who dare them, and honors befall those worthy of honor.", a: "المتنبي" },
+        { q: "إِذا غامَرتَ في شَرَفٍ مَرومٍ\nفَلا تَقنَع بِما دونَ النُجومِ", t: "If you risk your life for a high honor, settle for nothing less than the stars.", a: "المتنبي" },
+        { q: "وَمَن يَكُ ذا فَمٍ مُرٍّ مَريضٍ\nيَجِد مُرّاً بِهِ الماءَ الزُلالا", t: "He whose mouth is bitter and sick will find even pure water tastes bitter — the fault is within, not the world.", a: "المتنبي" },
+        { q: "الطِّبُّ عِلمٌ تُعرَفُ بِهِ أَحوالُ بَدَنِ الإِنسانِ مِن جِهَةِ ما يَصِحُّ وَيَزولُ عَنِ الصِّحَّةِ.", t: "Medicine is the science by which we know the states of the human body — in health and in departure from it.", a: "ابن سينا — القانون في الطب" },
+        { q: "الإِنسانُ مَدِينَةٌ صَغيرةٌ، وَالمَدينَةُ إِنسانٌ كَبيرٌ.\nفَأَصلِح نَفسَكَ تَصلُح مَدينَتُكَ.", t: "A person is a small city, and a city is a large person. Fix yourself, and you fix your city.", a: "ابن سينا" },
+        { q: "قيمَةُ كُلِّ امرِئٍ ما يُحسِنُهُ.", t: "The worth of every person lies in what they master.", a: "الإمام علي بن أبي طالب" },
+        { q: "العِلمُ خَيرٌ مِنَ المالِ:\nالعِلمُ يَحرُسُكَ وَأَنتَ تَحرُسُ المالَ.", t: "Knowledge is better than wealth: knowledge guards you, while you must guard wealth.", a: "الإمام علي بن أبي طالب" },
+        { q: "اُطلُبوا العِلمَ مِنَ المَهدِ إِلى اللَّحدِ.", t: "Seek knowledge from the cradle to the grave.", a: "حكمة عربية" },
+        { q: "مَن طَلَبَ العُلا سَهِرَ اللَّيالي.", t: "He who seeks greatness endures sleepless nights.", a: "حكمة عربية" },
+        { q: "لَيسَ العاقِلُ الَّذي يَعرِفُ الخَيرَ مِنَ الشَّرِّ،\nإِنَّما العاقِلُ الَّذي يَعرِفُ خَيرَ الشَّرَّينِ.", t: "The wise man is not he who knows good from evil, but he who knows the lesser of two evils.", a: "الإمام الشافعي" },
+        { q: "العَينُ أَمانَةٌ، وَالجَرّاحُ وَصيُّها.\nفَكُن أَهلاً لِلأَمانَةِ.", t: "The eye is a trust, and the surgeon its guardian. Be worthy of that trust.", a: "حكمة طبية" },
+        { q: "أَبَى اللهُ أَن يَجعَلَ الشِّفاءَ في شَيءٍ حَرَّمَهُ.\nفَابحَث عَن الشِّفاءِ في العِلمِ.", t: "God refuses to place healing in what He has forbidden. So seek healing in knowledge.", a: "حديث نبوي شريف" },
+        { q: "الصَّبرُ مِفتاحُ الفَرَجِ.", t: "Patience is the key to relief.", a: "حكمة عربية" },
+        { q: "أَبصَر عُيونَ الناسِ مَن أَغمَضَ عَينَ العَيبِ.", t: "He sees people most clearly who closes his eye to their faults.", a: "أبو الفضل الميكالي" },
+        { q: "وَما نَيلُ المَطالِبِ بِالتَّمَنّي\nوَلكِن تُؤخَذُ الدُّنيا غِلابا", t: "Goals are not reached by mere wishful longing — the world must be taken with determination.", a: "المتنبي" },
+        { q: "لَكَ مِن نَفسِكَ أَكبَرُ طَبيبٍ وَأَصغَرُ عَدُوٍّ:\nتَوَسَّط في أَمرِكَ يَنجَح أَمرُكَ.", t: "Within you lives your greatest physician and your smallest enemy — find the middle path and your affairs will succeed.", a: "ابن سينا" },
+        { q: "وَالنَّفسُ راغِبَةٌ إِذا رَغَّبتَها\nوَإِذا تُرَدُّ إِلى قَليلٍ تَقنَعُ", t: "The soul expands when you inspire it, and settles for little when you confine it — feed your ambition.", a: "المتنبي" },
+        { q: "أَشَدُّ الناسِ عِلماً مَن جَمَعَ عِلمَ الناسِ إِلى عِلمِهِ.", t: "The most knowledgeable of people is he who adds the knowledge of others to his own.", a: "الإمام علي بن أبي طالب" },
+        { q: "لا تُحسِنُ الجِراحَةَ مَن لَم يَتَعَلَّم مِن جِراحاتِهِ.", t: "No one masters surgery without learning from their own wounds.", a: "حكمة طبية" },
+        { q: "يَوماً ما سَيَرى مَريضُكَ وَجهَ حَفيدِهِ\nبِسَبَبِ ما تَتَعَلَّمُهُ اليَومَ.", t: "One day a patient will see their grandchild's face because of what you are learning right now.", a: "" },
     ],
+
+    // ── Turkish — Yunus Emre, Atatürk, atasözleri ───────────────────────────
+    tr: [
+        { q: "İlim ilim bilmektir,\nİlim kendin bilmektir.\nSen kendini bilmezsen,\nBu nice okumaktır.", t: "Knowledge is knowing; true knowledge is knowing yourself. What good is all your reading if you do not know yourself?", a: "Yunus Emre" },
+        { q: "Bir mum diğer mumu yakmakla\nışığından bir şey kaybetmez.", t: "A candle loses nothing of its light by lighting another candle.", a: "Yunus Emre" },
+        { q: "Dost ile ye, iç — düşmanla alışveriş et.", t: "Eat and drink with a friend, but do business even with your enemy — know your world fully.", a: "Türk atasözü" },
+        { q: "Sabır acıdır, meyvesi tatlıdır.", t: "Patience is bitter, but its fruit is sweet.", a: "Türk atasözü" },
+        { q: "Damlaya damlaya göl olur.", t: "Drop by drop, a lake is formed. Every small effort compounds into mastery.", a: "Türk atasözü" },
+        { q: "Bilmemek ayıp değil,\nöğrenmemek ayıptır.", t: "Not knowing is no shame — not learning is.", a: "Türk atasözü" },
+        { q: "Hayatta en hakiki mürşit ilimdir.", t: "The truest guide in life is science and knowledge.", a: "Mustafa Kemal Atatürk" },
+        { q: "Düşen kalkmayı bilmelidir.", t: "One who falls must know how to rise.", a: "Türk atasözü" },
+        { q: "Ustaya bak işe karar ver.", t: "Look at the master, then decide your craft — find teachers worthy of emulation.", a: "Türk atasözü" },
+        { q: "Gönül ne kahve ister ne kahvehane,\ngönül ahbap ister, kahve bahane.", t: "The heart doesn't really want the coffee or the café — it wants the companion. The rest is just an excuse.", a: "Yunus Emre" },
+        { q: "Azim ile çalışan muvaffak olur.", t: "He who works with unwavering determination will succeed.", a: "Türk atasözü" },
+        { q: "Tez gelen lezzet tez gider.", t: "What comes quickly goes quickly — what is earned slowly is kept.", a: "Türk atasözü" },
+        { q: "Akıl yaşta değil, baştadır.", t: "Wisdom is not found in age but in the mind — the young and disciplined will always surpass the old and complacent.", a: "Türk atasözü" },
+        { q: "İnsan parmağıyla gökyüzünü gösterir,\nânadan doğma kör değilse görür.", t: "A person points to the sky with their finger — if they were not born blind, they will see.", a: "Yunus Emre" },
+        { q: "Çalışmadan, yorulmadan, üretmeden,\nrahat yaşamak isteyen milletler,\nönce haysiyetlerini, sonra hürriyetlerini,\ndaha sonra da istikballerini kaybetmeye mahkumdurlar.", t: "Nations that wish to live in comfort without effort, without toil, without producing — are destined to lose first their dignity, then their freedom, then their future.", a: "Mustafa Kemal Atatürk" },
+    ],
+
+    // ── French ──────────────────────────────────────────────────────────────
     fr: [
-        "L'œil ne ment pas — apprenez à écouter ce qu'il vous dit.",
-        "La résidence forge ce que les années d'école n'ont fait qu'esquisser.",
-        "Ce n'est pas la salle d'opération qui fait le chirurgien — c'est ce qu'il y apporte.",
-        "Chaque complication est un enseignant qui n'a pas pris rendez-vous.",
-        "La main se souvient de ce que l'esprit oublie.",
-        "Opérer, c'est dialoguer avec la matière vivante. Soyez à l'écoute.",
+        "L’œil ne ment pas — apprenez à écouter ce qu’il vous dit.",
+        "La résidence forge ce que les années d’école n’ont fait qu’esquisser.",
+        "Ce n’est pas la salle d’opération qui fait le chirurgien — c’est ce qu’il y apporte.",
+        "Chaque complication est un enseignant qui n’a pas pris rendez-vous.",
+        "La main se souvient de ce que l’esprit oublie.",
+        "Opérer, c’est dialoguer avec la matière vivante. Soyez à l’écoute.",
         "On ne devient pas ophtalmologiste pour voir moins — mais pour voir mieux.",
         "La confiance du patient est le privilège le plus lourd à porter.",
-        "Un bon chirurgien n'est pas celui qui n'a jamais eu de complications — c'est celui qui les a traversées.",
+        "Un bon chirurgien n’est pas celui qui n’a jamais eu de complications — c’est celui qui les a traversées.",
         "Le meilleur diagnostic commence par regarder vraiment.",
         "La fatigue est temporaire. Un geste bien fait est permanent.",
-        "L'ego est l'instrument le plus dangereux en salle d'opération.",
-        "Celui qui cesse de s'interroger cesse d'apprendre.",
+        "L’ego est l’instrument le plus dangereux en salle d’opération.",
+        "Celui qui cesse de s’interroger cesse d’apprendre.",
         "Vos notes survivront à votre mémoire. Rédigez-les avec soin.",
-        "Un jour, un patient verra le visage de son petit-enfant grâce à ce que vous apprenez aujourd'hui.",
+        "Un jour, un patient verra le visage de son petit-enfant grâce à ce que vous apprenez aujourd’hui.",
     ],
+
+    // ── Spanish — fixed with unicode escapes ────────────────────────────────
     es: [
         "La mano aprende lo que el ojo enseña.",
         "No hay cirugía pequeña para quien está en la mesa.",
@@ -1913,10 +1938,10 @@ const MOTIVATION_QUOTES = {
         "El ojo no miente. Aprende a escuchar lo que te dice.",
         "La residencia no construye el carácter — lo revela.",
         "Cada complicación es tu educación llegando sin avisar.",
-        "Los mejores cirujanos que conozco aún se ponen nerviosos antes de un caso difícil.",
+        "Los mejores cirujanos todavía se ponen nerviosos antes de un caso difícil. Eso no es debilidad — es respeto.",
         "El cansancio es temporal. Una cirugía bien hecha es permanente.",
         "El ego es el instrumento más peligroso en el quirófano.",
-        "Tus notas sobrevivirán a tu memoria. Escríbelas bien.",
+        "Tus notas sobrevivirán a tu memoria. Esríbe las bien.",
         "Un día un paciente verá la cara de su nieto gracias a lo que aprendes hoy.",
         "No eres el primero en dudar. Tampoco serás el último. Pero sí puedes ser el mejor.",
     ],
@@ -1925,6 +1950,7 @@ const MOTIVATION_QUOTES = {
 const QUOTE_LANG_META = {
     en: { label:'EN', name:'English',  dir:'ltr', accent:'#1e40af', bg:'linear-gradient(135deg,#eff6ff,#e0f2fe)', border:'#bfdbfe' },
     ar: { label:'ع',  name:'العربية', dir:'rtl', accent:'#92400e', bg:'linear-gradient(135deg,#fffbeb,#fef3c7)', border:'#fde68a' },
+    tr: { label:'TR', name:'Türkçe',  dir:'ltr', accent:'#9f1239', bg:'linear-gradient(135deg,#fff1f2,#ffe4e6)', border:'#fecdd3' },
     fr: { label:'FR', name:'Français', dir:'ltr', accent:'#065f46', bg:'linear-gradient(135deg,#ecfdf5,#d1fae5)', border:'#a7f3d0' },
     es: { label:'ES', name:'Español',  dir:'ltr', accent:'#7c2d12', bg:'linear-gradient(135deg,#fff7ed,#fed7aa)', border:'#fdba74' },
 };
@@ -1950,9 +1976,14 @@ function renderMotivationCard() {
 
     const meta  = QUOTE_LANG_META[quoteLang] || QUOTE_LANG_META.en;
     const raw   = getQuoteForToday(quoteLang);
-    const isAr  = quoteLang === 'ar';
-    const quote = isAr ? raw.q : raw;
-    const trans = isAr ? raw.t : null;
+    // Support both plain strings and {q, t, a} objects (Arabic, Turkish)
+    const isObj  = raw && typeof raw === 'object';
+    const isRTL  = meta.dir === 'rtl';
+    const quote  = isObj ? raw.q : raw;
+    const trans  = isObj ? (raw.t || null) : null;
+    const attr   = isObj ? (raw.a || null) : null;
+    // Preserve line breaks in poetry (\n → <br>)
+    const quoteHtml = quote.replace(/\n/g, '<br>');
 
     const langBtns = Object.entries(QUOTE_LANG_META).map(([k, m]) =>
         `<button onclick="setQuoteLang('${k}')" style="padding:4px 10px;border-radius:20px;border:1.5px solid ${k === quoteLang ? meta.accent : '#e2e8f0'};background:${k === quoteLang ? meta.accent : 'transparent'};color:${k === quoteLang ? 'white' : '#94a3b8'};font-size:11px;font-weight:700;margin:0;box-shadow:none;cursor:pointer;transition:all 0.15s">${m.label}</button>`
@@ -1966,10 +1997,11 @@ function renderMotivationCard() {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="${meta.accent}" opacity="0.7"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
                 <span style="font-size:10px;font-weight:700;color:${meta.accent};text-transform:uppercase;letter-spacing:1px;opacity:0.8">Daily Reflection</span>
             </div>
-            <div style="display:flex;gap:4px">${langBtns}</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">${langBtns}</div>
         </div>
-        <p style="font-size:${isAr ? '17px' : '14px'};font-weight:${isAr ? '600' : '600'};color:#0f172a;line-height:1.7;margin:0 0 ${trans ? '10px' : '0'};direction:${meta.dir};text-align:${isAr ? 'right' : 'left'};font-family:${isAr ? "'Amiri','Arabic UI','Geeza Pro',serif" : 'inherit'}">${quote}</p>
-        ${trans ? `<p style="font-size:11px;color:#94a3b8;margin:0;font-style:italic;line-height:1.5">${trans}</p>` : ''}
+        <p style="font-size:${isRTL ? '18px' : '14px'};font-weight:600;color:#0f172a;line-height:1.85;margin:0 0 ${trans || attr ? '10px' : '0'};direction:${meta.dir};text-align:${isRTL ? 'right' : 'left'};font-family:${isRTL ? "'Amiri','Scheherazade New','Arabic UI','Geeza Pro',serif" : 'inherit'}">${quoteHtml}</p>
+        ${trans ? `<p style="font-size:12px;color:#64748b;margin:0 0 ${attr ? '6px' : '0'};font-style:italic;line-height:1.55;direction:ltr;text-align:left">${trans}</p>` : ''}
+        ${attr ? `<p style="font-size:11px;font-weight:700;color:${meta.accent};margin:0;opacity:0.75;text-align:${isRTL ? 'right' : 'left'};direction:${meta.dir}">— ${attr}</p>` : ''}
     </div>`;
 }
 
