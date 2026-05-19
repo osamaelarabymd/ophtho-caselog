@@ -146,8 +146,9 @@ function openGlobalSearch() {
 // ── Help accordion toggle ─────────────────────────────────────────────────────
 function toggleAcc(item) {
     let isOpen = item.classList.contains('open');
-    // Close all siblings
-    item.closest('.dash-card').querySelectorAll('.help-acc-item.open').forEach(el => el.classList.remove('open'));
+    // Close all siblings (support both dash-card and elite-card containers)
+    let container = item.closest('.elite-card') || item.closest('.dash-card');
+    if (container) container.querySelectorAll('.help-acc-item.open, .elite-help-acc-item.open').forEach(el => el.classList.remove('open'));
     if (!isOpen) item.classList.add('open');
 }
 
@@ -769,16 +770,16 @@ function updateProfileDisplay() {
         let pct   = Math.min(Math.max(Math.round((done / total) * 100), 0), 100);
         let statsEl = document.getElementById('profileStats');
         if (statsEl) {
-            const _ps = (val, label, color, last) =>
-                `<div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 8px;gap:3px;${last?'':'border-right:1px solid #F3F4F6'}">
-                    <span style="font-size:17px;font-weight:800;color:${color};letter-spacing:-0.5px">${val}</span>
-                    <span style="font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.4px">${label}</span>
+            const _ps = (val, label) =>
+                `<div class="elite-stat-cell">
+                    <div class="elite-stat-val">${val}</div>
+                    <div class="elite-stat-lbl">${label}</div>
                 </div>`;
-            statsEl.style.display = 'flex';
+            statsEl.style.display = '';
             statsEl.innerHTML =
-                _ps(profile.startYear, 'Started', '#2563eb') +
-                _ps(profile.endYear,   'Ends',    '#7c3aed') +
-                _ps(pct+'%', 'Done',   '#16a34a', true);
+                _ps(profile.startYear, 'Started') +
+                _ps(profile.endYear,   'Ends') +
+                _ps(pct+'%', 'Done');
         }
     }
 
