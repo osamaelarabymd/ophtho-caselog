@@ -3962,8 +3962,25 @@ async function _getUid() {
 // Maps between app objects (camelCase) and Supabase rows (snake_case)
 const _wsMap = {
     events: {
-        toCloud:   e => ({ id:e.id, title:e.title, date:e.date, time:e.time||null, type:e.type||null, notes:e.notes||null, created_at:e.createdAt||new Date().toISOString() }),
-        fromCloud: r => ({ id:r.id, title:r.title, date:r.date, time:r.time, type:r.type, notes:r.notes, createdAt:r.created_at })
+        // status & priority are encoded into the `type` column (missions never use the type field)
+        // format: JSON string  {"s":"done","p":"high"}   — detected by startsWith('{')
+        toCloud: e => {
+            let s = e.status   || 'pending';
+            let p = e.priority || 'medium';
+            let encoded = (s !== 'pending' || p !== 'medium') ? JSON.stringify({s, p}) : null;
+            // preserve a real event-type string if it exists and isn't an old encoding
+            let realType = (e.type && !e.type.startsWith('{')) ? e.type : null;
+            return { id:e.id, title:e.title, date:e.date, time:e.time||null,
+                     type: encoded || realType || null,
+                     notes:e.notes||null, created_at:e.createdAt||new Date().toISOString() };
+        },
+        fromCloud: r => {
+            let status = 'pending', priority = 'medium', type = r.type;
+            if (r.type && r.type.startsWith('{')) {
+                try { let p = JSON.parse(r.type); status = p.s||'pending'; priority = p.p||'medium'; type = null; } catch(_) {}
+            }
+            return { id:r.id, title:r.title, date:r.date, time:r.time, type, notes:r.notes, createdAt:r.created_at, status, priority };
+        }
     },
     journal: {
         toCloud:   e => ({ id:e.id, date:e.date, mood:e.mood||null, title:e.title||null, body:e.body||null, case_id:e.caseId||null, updated_at:e.updatedAt||new Date().toISOString() }),
@@ -3996,8 +4013,29 @@ async function syncWorkspaceFromCloud() {
         for (let { table, key, map } of tables) {
             let { data } = await db.from(table).select('*').eq('user_id', uid);
             if (data && data.length > 0) {
-                // Cloud has data → use it
-                localStorage.setItem(key, JSON.stringify(data.map(map.fromCloud)));
+                let cloudRows = data.map(map.fromCloud);
+                if (table === 'workspace_events') {
+                    // For missions, preserve local status/priority when cloud lacks them
+                    // (cloud may have old records before status-encoding was added)
+                    let local = JSON.parse(localStorage.getItem(key) || '[]');
+                    let localById = Object.fromEntries(local.map(e => [e.id, e]));
+                    let needsReupload = [];
+                    cloudRows = cloudRows.map(ce => {
+                        let le = localById[ce.id];
+                        // If cloud decoded to default status but local has a real status, prefer local
+                        if (le && (!ce.status || ce.status === 'pending') && le.status && le.status !== 'pending') {
+                            let merged = { ...ce, status: le.status, priority: le.priority || 'medium' };
+                            needsReupload.push(merged); // push back so cloud gets the encoding
+                            return merged;
+                        }
+                        return ce;
+                    });
+                    // Re-upload any events whose status we rescued from local storage
+                    for (let ev of needsReupload) {
+                        db.from(table).upsert({ ...map.toCloud(ev), user_id: uid }).catch(() => {});
+                    }
+                }
+                localStorage.setItem(key, JSON.stringify(cloudRows));
             } else {
                 // Cloud empty → migrate local data up
                 let local = JSON.parse(localStorage.getItem(key) || '[]');
