@@ -1,6 +1,7 @@
 {
   "buildCommand": null,
   "outputDirectory": ".",
+  "alias": ["osama-eyelog.vercel.app"],
   "installCommand": null,
   "framework": null,
   "headers": [
