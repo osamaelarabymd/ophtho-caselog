@@ -1558,11 +1558,21 @@ async function loadCases() {
 
 async function deleteCase(id) {
     if (!confirm('Delete this case?')) return;
-    showLoading();
-    await db.from('cases').delete().eq('id', id);
-    hideLoading();
-    loadCases();
+    // Optimistic update — remove from local array and re-render immediately
+    allCases = allCases.filter(c => c.id !== id);
+    updateDashboard(allCases);
+    checkSmartAlerts(allCases);
+    updateStreak(allCases);
+    if (document.getElementById('caseListTab').style.display !== 'none') renderCaseHero();
     showToast('🗑️ Case deleted', 'warning');
+    // Delete from Supabase in the background
+    db.from('cases').delete().eq('id', id).then(({ error }) => {
+        if (error) {
+            // Roll back on failure
+            showToast('⚠️ Delete failed — please try again', 'warning');
+            loadCases();
+        }
+    });
 }
 
 let _lastPendingCount = 0;
